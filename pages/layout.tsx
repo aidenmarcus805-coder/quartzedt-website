@@ -8,7 +8,7 @@ const inter = Inter({
   display: "swap",
 });
 
-const metadata: Metadata = {
+export const metadata: Metadata = {
   title: "AUTO CUT — AI Wedding Videographer Editor",
   description: "AI-powered video editing engineered for wedding videographers. Edit less. Create more.",
 };
