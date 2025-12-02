@@ -146,7 +146,7 @@ export default function Home() {
                 }}
               />
             </div>
-            
+        
             {/* Top edge highlight */}
             <div 
               className="absolute top-0 left-4 right-4 h-[1px] pointer-events-none"
@@ -170,18 +170,16 @@ export default function Home() {
                 boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.1), inset 0 -20px 40px rgba(0,0,0,0.3)',
               }}
             />
-            
-            {/* Video content area */}
+        
+            {/* Image content area */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
-                <motion.div 
-                  className="w-20 h-20 mx-auto rounded-full border border-white/15 flex items-center justify-center bg-white/5 backdrop-blur-sm"
-                  whileHover={{ scale: 1.1, borderColor: 'rgba(255,255,255,0.3)' }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="w-0 h-0 border-l-[12px] border-l-white/50 border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent ml-1" />
-                </motion.div>
-                <p className="mt-6 text-[10px] tracking-[0.4em] text-white/20">VIDEO MONTAGE</p>
+              <div className="w-[80%] h-[80%] rounded-lg overflow-hidden">
+                {/* Replace this image with a stock image or image of Premiere Pro */}
+                <img 
+                  src="https://path-to-your-premiere-pro-image.jpg" 
+                  alt="Premiere Pro close-up" 
+                  className="object-cover w-full h-full"
+                />
               </div>
             </div>
             
@@ -189,6 +187,7 @@ export default function Home() {
             <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
           </motion.div>
         </div>
+
 
         {/* Hero text - bottom right, inside the video area */}
         <motion.div
