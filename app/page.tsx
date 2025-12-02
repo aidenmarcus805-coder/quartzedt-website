@@ -62,9 +62,12 @@ export default function Home() {
             <a href="#" className="hover:opacity-50 transition-opacity">PRICING</a>
           </div>
           <div className="flex items-center justify-center">
-            <span className="text-[13px] tracking-[0.4em] font-medium">
-              CUTTERA
-            </span>
+            {/* Replace the text with an image */}
+            <img 
+              src="/logo.png" 
+              alt="Cuttera Logo" 
+              className="h-8 object-contain"  // Adjust 'h-8' to fit the logo as needed
+            />
           </div>
           <div className="flex items-center justify-end gap-8">
             <a href="#" className="hover:opacity-50 transition-opacity">LOG IN</a>
@@ -72,7 +75,6 @@ export default function Home() {
           </div>
         </div>
       </motion.nav>
-
       {/* Hero Section - Full viewport height */}
       <section className="relative h-screen overflow-hidden">
         {/* Pure black base */}
