@@ -176,7 +176,7 @@ export default function Home() {
               <div className="w-[80%] h-[80%] rounded-lg overflow-hidden">
                 {/* Replace this image with a stock image or image of Premiere Pro */}
                 <img 
-                  src="https://path-to-your-premiere-pro-image.jpg" 
+                  src="https://cdn.prod.website-files.com/65e5ae1fb7482afd48d22155/6706ebca1574f71e1e353ca5_6706ebc8f2ec15a497a58fb2_Tips-for-Editing-Videos-Faster-Premiere-Pro-1024x576.jpeg" 
                   alt="Premiere Pro close-up" 
                   className="object-cover w-full h-full"
                 />
