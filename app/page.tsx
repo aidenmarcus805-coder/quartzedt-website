@@ -1,108 +1,47 @@
 'use client';
 
-import { ArrowRight, CheckCircle2, Play, Star } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ArrowRight, Upload, Cpu, Sliders, Send } from 'lucide-react';
 
-const heroStats = [
-  { label: 'Editors onboarded', value: '480+' },
-  { label: 'Hours saved per edit', value: '18' },
-  { label: 'Projects delivered', value: '2.4K+' },
-];
-
-const precisionBullets = [
-  'Smart Scene Detection',
-  'Dialogue Prioritization',
-  'Multi-Cam Sync',
-  'Cinematic Flow Engine™',
-];
-
-const aiFeatures = [
+const features = [
   {
     title: 'AUTOSYNC™',
-    desc: 'Instant multi-camera alignment with sub-frame accuracy and audio drift correction.',
+    desc: 'Multi-camera alignment with sub-frame accuracy.',
   },
   {
     title: 'AUTOSELECT™',
-    desc: 'AI spots vows, applause, laughter, and reaction beats worth anchoring scenes around.',
+    desc: 'AI identifies vows, laughter, and key moments.',
   },
   {
-    title: 'AUTOGRADIENT™',
-    desc: 'Color suggestions trained on your LUT library and preferred film stocks.',
-  },
-  {
-    title: 'AUTOCUT FLOW™',
-    desc: 'Edits shaped around emotional rhythm—never frantic jump cuts.',
+    title: 'AUTOFLOW™',
+    desc: 'Edits shaped around emotional rhythm.',
   },
   {
     title: 'AUDIO CLEANUP',
-    desc: 'Wind, hum, HVAC, and shoe scuffs removed in a single pass.',
-  },
-  {
-    title: 'INTELLIGENT TIMELINES',
-    desc: 'Rough cut, selects, and assembly delivered in minutes for Premiere Pro.',
+    desc: 'Wind, hum, and noise removed automatically.',
   },
 ];
 
-const workflowPhases = [
-  {
-    title: 'Upload all cams + audio',
-    detail: 'Drop ProRes, H.265, or proxy clips. AutoCut understands every format and lens.',
-  },
-  {
-    title: 'AutoCut builds assembly',
-    detail: 'Scene detection, pacing, multi-cam sync, and dialogue-first storytelling handled for you.',
-  },
-  {
-    title: 'You finesse + grade',
-    detail: 'Tweak pacing, apply LUTs, and add music once the structure is ready.',
-  },
-  {
-    title: 'Deliver cinematic film',
-    detail: 'Export Premiere project, Final Cut XML, or DaVinci timeline and ship faster.',
-  },
+const workflowSteps = [
+  { num: '01', title: 'Upload', desc: 'Drop all cameras and audio files', icon: Upload },
+  { num: '02', title: 'Process', desc: 'AI builds your assembly edit', icon: Cpu },
+  { num: '03', title: 'Refine', desc: 'Fine-tune pacing and grade', icon: Sliders },
+  { num: '04', title: 'Deliver', desc: 'Export to Premiere, Final Cut, DaVinci', icon: Send },
 ];
 
-const weddingHighlights = [
-  'Emotion-first timeline building',
-  'Vow + speech isolation',
-  'Highlight reel auto-draft',
-  'Protects your LUTs + profiles',
-];
-
-const testimonials = [
+const pricing = [
   {
-    quote: 'AutoCut turned three-day wedding edits into a single afternoon. The pacing still feels human.',
-    author: 'Marisa Ortega',
-    role: 'Founder, Arcadian Weddings',
-  },
-  {
-    quote: 'It is the only AI assistant we trust to respect cinematic storytelling for high-end clients.',
-    author: 'Lewis Pate',
-    role: 'Creative Director, North River Films',
-  },
-];
-
-const pricingPlans = [
-  {
-    tier: 'Free Trial',
-    price: '$0',
-    suffix: '7 days full access',
-    features: ['Unlimited projects', 'Watermarked exports', 'Community support'],
-    cta: 'Start Free Trial',
-  },
-  {
-    tier: 'Starter',
+    name: 'STARTER',
     price: '$100',
-    suffix: 'per month',
-    features: ['All AI engines', 'Premiere + Final Cut export', 'Priority chat support'],
-    highlight: true,
-    cta: 'Choose Starter',
+    period: '/month',
+    features: ['All AI engines', 'Premiere + Final Cut', 'Priority support'],
   },
   {
-    tier: 'Pro',
+    name: 'PRO',
     price: '$250',
-    suffix: 'per month',
-    features: ['DaVinci + CapCut Pro export', 'Multi-user workspaces', 'Dedicated success manager'],
-    cta: 'Choose Pro',
+    period: '/month',
+    features: ['Everything in Starter', 'DaVinci + CapCut Pro', 'Multi-user workspace'],
+    featured: true,
   },
 ];
 
@@ -110,291 +49,451 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white text-black">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-black/10 bg-white/95 backdrop-blur-sm">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 md:px-12 lg:px-16 text-[11px] tracking-[0.2em]">
-          <div className="hidden items-center gap-6 lg:flex">
-            <a href="#features" className="transition-opacity hover:opacity-60">
-              FEATURES
-            </a>
-            <a href="#workflow" className="transition-opacity hover:opacity-60">
-              WORKFLOW
-            </a>
-            <a href="#weddings" className="transition-opacity hover:opacity-60">
-              WEDDINGS
-            </a>
-            <a href="#pricing" className="transition-opacity hover:opacity-60">
-              PRICING
-            </a>
+      <motion.nav
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        className="fixed top-0 left-0 right-0 z-50 bg-white"
+      >
+        <div className="grid grid-cols-3 h-14 items-center px-8 text-[11px] tracking-[0.15em]">
+          <div className="flex items-center gap-8">
+            <a href="#" className="hover:opacity-50 transition-opacity">PRODUCTS</a>
+            <a href="#" className="hover:opacity-50 transition-opacity">TECHNOLOGY</a>
+            <a href="#" className="hover:opacity-50 transition-opacity">PRICING</a>
           </div>
-          <div className="absolute left-1/2 -translate-x-1/2 text-base tracking-[0.35em]">AUTOCUT</div>
-          <div className="flex items-center gap-6">
-            <a href="#" className="hidden text-[10px] tracking-[0.2em] transition-opacity hover:opacity-60 lg:block">
-              LOG IN
-            </a>
-            <button className="border border-black px-5 py-2 text-[10px] tracking-[0.2em] transition-all hover:bg-black hover:text-white">
-              START TRIAL
-            </button>
+          <div className="flex items-center justify-center">
+            <span className="text-[13px] tracking-[0.4em] font-medium">
+              AUTOCUT
+            </span>
+          </div>
+          <div className="flex items-center justify-end gap-8">
+            <a href="#" className="hover:opacity-50 transition-opacity">LOG IN</a>
+            <a href="#" className="hover:opacity-50 transition-opacity">START TRIAL</a>
           </div>
         </div>
-      </nav>
+      </motion.nav>
 
-      <main className="space-y-20 pt-24 sm:pt-28">
-        {/* Hero */}
-        <section className="px-4 pt-4">
-          <div className="mx-auto max-w-6xl space-y-8">
-            <div className="rounded-[36px] border border-black/10 bg-white/90 p-4 shadow-[0_40px_80px_-60px_rgba(0,0,0,0.4)]">
-              <div className="relative rounded-[28px] border border-black/5 bg-[#fdfdfb] px-3 pb-3 pt-6 sm:px-6 sm:pb-6">
-                <div className="absolute inset-0 rounded-[28px] bg-[radial-gradient(circle,rgba(0,0,0,0.08)_1px,transparent_1px)] bg-size-[18px_18px] opacity-50" />
-                <div className="relative rounded-[24px] border border-black/10 bg-black/90 px-4 pb-16 pt-6 sm:px-8 sm:pt-10">
-                  <div className="h-[220px] rounded-[20px] border border-white/10 bg-linear-to-br from-black to-[#1d1d1d] shadow-inner sm:h-[320px]">
-                    <div className="flex h-full w-full flex-col items-center justify-center gap-4 text-white/70">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white/30">
-                        <Play className="h-6 w-6" />
-                      </div>
-                      <p className="text-xs tracking-[0.35em]">AI EDITOR MONTAGE</p>
-                      <p className="text-[11px] tracking-[0.25em] text-white/50">Placeholder reel</p>
-                    </div>
-                  </div>
-                  <div className="absolute inset-x-0 bottom-0 rounded-[24px] bg-linear-to-t from-black/85 via-black/20 to-transparent p-6 text-white sm:p-8">
-                    <p className="text-[10px] tracking-[0.3em] text-white/70">AUTO CUT</p>
-                    <h1 className="mt-2 text-3xl font-light tracking-tighter sm:text-4xl">Edit Less. Create More.</h1>
-                    <p className="mt-4 text-sm text-white/70">
-                      AI-powered Premiere Pro assistant that assembles cinematic wedding films while you stay focused on the story.
-                    </p>
-                    <div className="mt-6 flex flex-wrap gap-3">
-                      <button className="flex items-center gap-2 rounded-full bg-white px-6 py-3 text-[11px] tracking-[0.25em] text-black transition-all hover:bg-white/80">
-                        START FREE TRIAL
-                        <ArrowRight className="h-4 w-4" />
-                      </button>
-                      <button className="flex items-center gap-2 rounded-full border border-white px-6 py-3 text-[11px] tracking-[0.25em] text-white transition-all hover:bg-white hover:text-black">
-                        <Play className="h-4 w-4" />
-                        WATCH DEMO
-                      </button>
-                    </div>
-                    <p className="mt-4 text-[11px] tracking-[0.3em] text-white/60">Start free • Cancel anytime • Creator support</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 gap-6 rounded-[32px] border border-black/10 bg-white px-6 py-6 text-[11px] tracking-[0.25em] text-black/45 sm:grid-cols-3">
-              {heroStats.map((stat) => (
-                <div key={stat.label}>
-                  <p className="text-2xl font-light tracking-tight text-black">{stat.value}</p>
-                  <p>{stat.label.toUpperCase()}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+      {/* Hero Section - Full viewport height */}
+      <section className="relative h-screen overflow-hidden">
+        {/* Pure black base */}
+        <div className="absolute inset-0 bg-black" />
+        
+        {/* Red channel dots - slightly offset left */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `radial-gradient(circle at center, rgba(255, 120, 120, 0.7) 0%, rgba(255, 100, 100, 0.4) 30%, transparent 50%)`,
+            backgroundSize: '7px 7px',
+            backgroundPosition: '-0.5px 0px',
+          }}
+        />
+        
+        {/* Green/cyan channel dots - center */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `radial-gradient(circle at center, rgba(200, 255, 255, 0.9) 0%, rgba(150, 220, 230, 0.5) 30%, transparent 50%)`,
+            backgroundSize: '7px 7px',
+          }}
+        />
+        
+        {/* Blue channel dots - slightly offset right */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `radial-gradient(circle at center, rgba(130, 150, 255, 0.7) 0%, rgba(100, 130, 255, 0.4) 30%, transparent 50%)`,
+            backgroundSize: '7px 7px',
+            backgroundPosition: '0.5px 0px',
+          }}
+        />
+        
+        {/* Bright white LED core */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `radial-gradient(circle at center, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.3) 20%, transparent 40%)`,
+            backgroundSize: '7px 7px',
+          }}
+        />
+        
+        {/* Soft ambient glow from right */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: 'radial-gradient(ellipse 50% 70% at 80% 50%, rgba(180, 200, 220, 0.08) 0%, transparent 50%)',
+          }}
+        />
 
-        {/* Precision by Design */}
-        <section className="bg-[#f6f6f6] px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="rounded-[32px] border border-white bg-linear-to-br from-zinc-900 to-black p-10 text-white">
-              <p className="text-[10px] tracking-[0.3em] text-white/40">PRECISION BY DESIGN</p>
-              <h2 className="mt-4 text-3xl font-light tracking-tight sm:text-4xl">Designed for Filmmakers</h2>
-              <p className="mt-4 text-sm leading-relaxed text-white/70 sm:text-base">
-                Not influencers. Not hobbyists. Professionals. AutoCut understands pacing, emotion, rhythm, and human storytelling—automatically.
-              </p>
-              <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                {precisionBullets.map((item) => (
-                  <div className="rounded-2xl border border-white/20 px-5 py-4 text-sm tracking-[0.2em] text-white/70" key={item}>
-                    {item.toUpperCase()}
-                  </div>
-                ))}
-              </div>
+        {/* Video container - glassmorphism card */}
+        <div className="absolute inset-8 top-20">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+            className="relative w-full h-full rounded-2xl overflow-hidden"
+          >
+            {/* Gradient border - glassmorphism effect */}
+            <div 
+              className="absolute inset-0 rounded-2xl p-[1px]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.1) 100%)',
+              }}
+            >
+              <div 
+                className="w-full h-full rounded-2xl"
+                style={{
+                  background: 'linear-gradient(180deg, #0d0d0f 0%, #0a0a0c 50%, #080809 100%)',
+                }}
+              />
             </div>
-            <div className="rounded-[32px] border border-black/10 bg-white p-10">
-              <p className="text-[10px] tracking-[0.3em] text-black/40">WHY IT MATTERS</p>
-              <p className="mt-4 text-lg font-light leading-relaxed text-black/70">
-                Upload every angle, press generate, and receive a tastefully structured Premiere timeline that respects dialogue, pacing, and lens choices.
-              </p>
-              <div className="mt-8 space-y-4 text-sm text-black/65">
-                <p>— On-beat music edits for vows + speeches</p>
-                <p>— Dialogue-first arcs surfaced automatically</p>
-                <p>— Organic in-camera transitions preserved</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* AI Feature Grid */}
-        <section className="border-t border-black/10 bg-white px-4 py-16 sm:px-6 sm:py-20 lg:px-8" id="features">
-          <div className="mx-auto max-w-6xl">
-            <div className="mb-14 text-center">
-              <p className="text-[10px] tracking-[0.35em] text-black/35">THE AI ENGINE BUILT FOR REAL EDITING</p>
-              <h2 className="mt-4 text-3xl font-light tracking-tight sm:text-4xl">Precision modules you actually use</h2>
-            </div>
-            <div className="grid grid-cols-1 gap-px rounded-[32px] bg-black/10 sm:grid-cols-2">
-              {aiFeatures.map((feature) => (
-                <div className="bg-white p-8 sm:p-10" key={feature.title}>
-                  <p className="text-[11px] tracking-[0.3em] text-black/55">{feature.title}</p>
-                  <p className="mt-3 text-sm leading-relaxed text-black/60">{feature.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Quote Banner */}
-        <section className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-          <div className="mx-auto max-w-5xl rounded-[32px] bg-black px-8 py-16 text-center text-white">
-            <p className="text-2xl font-light tracking-tight sm:text-4xl">
-              “A human editor would spend a week on this timeline. AutoCut delivers it in minutes.”
-            </p>
-            <p className="mt-4 text-[10px] tracking-[0.35em] text-white/60">BEFORE / AFTER — COMING SOON</p>
-          </div>
-        </section>
-
-        {/* Workflow */}
-        <section className="bg-white px-4 py-16 sm:px-6 sm:py-20 lg:px-8" id="workflow">
-          <div className="mx-auto max-w-6xl">
-            <div className="mb-12 text-center">
-              <p className="text-[10px] tracking-[0.35em] text-black/40">YOUR TOOLS. YOUR LENSES. YOUR STYLE.</p>
-              <h2 className="mt-4 text-3xl font-light tracking-tight sm:text-4xl">Works with your workflow</h2>
-            </div>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {workflowPhases.map((phase, index) => (
-                <div className="rounded-3xl border border-black/10 bg-white p-6" key={phase.title}>
-                  <p className="text-[10px] tracking-[0.35em] text-black/30">STEP {index + 1}</p>
-                  <p className="mt-3 text-base font-light text-black">{phase.title}</p>
-                  <p className="mt-2 text-sm text-black/60">{phase.detail}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Wedding Mode */}
-        <section className="bg-[#f8f8f8] px-4 py-16 sm:px-6 sm:py-20 lg:px-8" id="weddings">
-          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-12 lg:grid-cols-2">
-            <div className="space-y-6">
-              <p className="text-[10px] tracking-[0.35em] text-black/35">SPECIALIZED WEDDING MODE</p>
-              <h2 className="text-3xl font-light tracking-tight sm:text-4xl">Built for emotion-first storytelling.</h2>
-              <p className="text-sm leading-relaxed text-black/60 sm:text-base">
-                AutoCut pulls vows, speeches, and reaction shots into an emotion-first timeline so you can polish instead of dig.
-              </p>
-              <div className="space-y-3">
-                {weddingHighlights.map((point) => (
-                  <div className="flex items-center gap-3 text-sm text-black/70" key={point}>
-                    <CheckCircle2 className="h-4 w-4 text-black/50" />
-                    <span>{point}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="rounded-[32px] border border-black/10 bg-white p-10">
-              <p className="text-[10px] tracking-[0.3em] text-black/40">EXPORTS TO</p>
-              <p className="mt-4 text-sm tracking-[0.35em] text-black/70">
-                PREMIERE PRO · FINAL CUT · DAVINCI RESOLVE · CAPCUT PRO
-              </p>
-              <p className="mt-10 text-xs tracking-[0.35em] text-black/35">UPLOAD → AUTOCUT BUILDS → YOU REFINE → DONE</p>
-            </div>
-          </div>
-        </section>
-
-        {/* Testimonials */}
-        <section className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-          <div className="mx-auto max-w-6xl">
-            <div className="mb-12 text-center">
-              <p className="text-[10px] tracking-[0.35em] text-black/40">WHAT FILMMAKERS SAY</p>
-              <h2 className="mt-3 text-3xl font-light tracking-tight">Proof it delivers on set and in post</h2>
-            </div>
-            <div className="grid gap-6 md:grid-cols-2">
-              {testimonials.map((testimonial) => (
-                <div className="rounded-[28px] border border-black/10 bg-white p-8" key={testimonial.author}>
-                  <div className="mb-4 flex gap-1 text-black/20">
-                    {Array.from({ length: 5 }).map((_, idx) => (
-                      <Star className="h-4 w-4 text-black/25" fill="currentColor" key={idx} />
-                    ))}
-                  </div>
-                  <p className="text-lg font-light leading-relaxed text-black/80">“{testimonial.quote}”</p>
-                  <p className="mt-6 text-sm tracking-[0.2em] text-black/60">{testimonial.author.toUpperCase()}</p>
-                  <p className="text-xs uppercase tracking-[0.3em] text-black/40">{testimonial.role}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Pricing */}
-        <section className="bg-white px-4 py-16 sm:px-6 sm:py-20 lg:px-8" id="pricing">
-          <div className="mx-auto max-w-6xl">
-            <div className="mb-12 text-center">
-              <p className="text-[10px] tracking-[0.35em] text-black/40">SUBSCRIPTIONS</p>
-              <h2 className="mt-4 text-3xl font-light tracking-tight sm:text-4xl">Start free, scale when ready</h2>
-            </div>
-            <div className="grid gap-6 lg:grid-cols-3">
-              {pricingPlans.map((plan) => (
-                <div
-                  className={`flex flex-col rounded-[32px] border p-8 ${
-                    plan.highlight ? 'border-black bg-black text-white shadow-2xl' : 'border-black/10 bg-white'
-                  }`}
-                  key={plan.tier}
+            
+            {/* Top edge highlight */}
+            <div 
+              className="absolute top-0 left-4 right-4 h-[1px] pointer-events-none"
+              style={{
+                background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 20%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.4) 80%, transparent 100%)',
+              }}
+            />
+            
+            {/* Left edge highlight */}
+            <div 
+              className="absolute top-4 bottom-4 left-0 w-[1px] pointer-events-none"
+              style={{
+                background: 'linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
+              }}
+            />
+            
+            {/* Inner glow */}
+            <div 
+              className="absolute inset-0 rounded-2xl pointer-events-none"
+              style={{
+                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.1), inset 0 -20px 40px rgba(0,0,0,0.3)',
+              }}
+            />
+            
+            {/* Video content area */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center">
+                <motion.div 
+                  className="w-20 h-20 mx-auto rounded-full border border-white/15 flex items-center justify-center bg-white/5 backdrop-blur-sm"
+                  whileHover={{ scale: 1.1, borderColor: 'rgba(255,255,255,0.3)' }}
+                  transition={{ duration: 0.3 }}
                 >
-                  <p className="text-[10px] tracking-[0.3em]">{plan.tier.toUpperCase()}</p>
-                  <div className="mt-4 flex items-baseline gap-2">
-                    <span className="text-4xl font-light tracking-tight">{plan.price}</span>
-                    <span className={plan.highlight ? 'text-white/70' : 'text-black/40'}>{plan.suffix}</span>
-                  </div>
-                  <ul className="mt-6 space-y-3 text-sm leading-relaxed">
-                    {plan.features.map((feature) => (
-                      <li className={plan.highlight ? 'text-white/75' : 'text-black/60'} key={feature}>
-                        — {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <button
-                    className={`mt-8 rounded-full border px-6 py-3 text-[11px] tracking-[0.2em] ${
-                      plan.highlight
-                        ? 'border-white text-white transition-colors hover:bg-white hover:text-black'
-                        : 'border-black text-black transition-colors hover:bg-black hover:text-white'
-                    }`}
-                  >
-                    {plan.cta.toUpperCase()}
-                  </button>
-                </div>
-              ))}
+                  <div className="w-0 h-0 border-l-[12px] border-l-white/50 border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent ml-1" />
+                </motion.div>
+                <p className="mt-6 text-[10px] tracking-[0.4em] text-white/20">VIDEO MONTAGE</p>
+              </div>
             </div>
-          </div>
-        </section>
+            
+            {/* Gradient overlay at bottom for text readability */}
+            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
+          </motion.div>
+        </div>
 
-        {/* CTA */}
-        <section className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-          <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 rounded-[32px] bg-black px-10 py-16 text-center text-white">
-            <p className="text-[10px] tracking-[0.35em] text-white/60">FINAL CALL</p>
-            <h2 className="text-3xl font-light tracking-tight sm:text-4xl">Ready to ship edits in hours, not days?</h2>
-            <p className="text-sm text-white/70">Early users receive lifetime pricing and founder-level support.</p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <button className="rounded-full border border-white bg-white px-8 py-4 text-[11px] tracking-[0.2em] text-black transition-colors hover:bg-transparent hover:text-white">
-                START FREE TRIAL
-              </button>
-              <button className="rounded-full border border-white px-8 py-4 text-[11px] tracking-[0.2em] text-white transition-colors hover:bg-white hover:text-black">
-                TALK TO SALES
-              </button>
-            </div>
+        {/* Hero text - bottom right, inside the video area */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="absolute bottom-16 right-16 text-right text-white z-10"
+        >
+          <h1 className="text-[72px] font-light tracking-tight leading-none">
+            AUTO CUT
+          </h1>
+          <p className="mt-4 text-[18px] font-light tracking-wide text-white/70">
+            Edit Less. Create More.
+          </p>
+          <div className="mt-8 flex items-center justify-end gap-6 text-[11px] tracking-[0.2em]">
+            <motion.a
+              href="#"
+              whileHover={{ x: 4 }}
+              className="flex items-center gap-2 text-white/90 hover:text-white transition-colors"
+            >
+              GET EARLY ACCESS
+              <ArrowRight className="w-4 h-4" />
+            </motion.a>
+            <a href="#" className="text-white/50 hover:text-white/90 transition-colors">
+              WATCH DEMO
+            </a>
           </div>
-        </section>
-      </main>
+        </motion.div>
+      </section>
+
+      {/* Technology Section */}
+      <section className="grid grid-cols-2 min-h-screen">
+        {/* Left - Image placeholder */}
+        <div className="relative bg-[#0a0a0a] overflow-hidden">
+          <motion.div
+            initial={{ scale: 1.1, opacity: 0 }}
+            whileInView={{ scale: 1, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.2 }}
+            className="absolute inset-0 bg-gradient-to-br from-[#1a1a1a] to-black"
+          >
+            {/* Placeholder for cinematic image */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-[60%] h-[70%] bg-gradient-to-br from-[#2a2a2a] to-[#0a0a0a] rounded-lg shadow-2xl" />
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Right - Content */}
+        <div className="bg-black text-white flex items-center">
+          <motion.div
+            initial={{ opacity: 0, x: 40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="px-20 py-24 max-w-xl"
+          >
+            <p className="text-[10px] tracking-[0.4em] text-white/40 mb-6">TECHNOLOGY</p>
+            <h2 className="text-[42px] font-light leading-tight tracking-tight">
+              AI PRIME—A NEW<br />
+              BENCHMARK<br />
+              FOR FILMMAKING
+            </h2>
+            <p className="mt-8 text-[15px] leading-relaxed text-white/60">
+              Our proprietary AI engine analyzes over 47 emotional markers per frame. 
+              It understands context, anticipates narrative beats, and crafts a film 
+              that feels intentionally human.
+            </p>
+            <div className="mt-12 grid grid-cols-3 gap-8">
+              <div>
+                <p className="text-[32px] font-light">47</p>
+                <p className="text-[10px] tracking-[0.2em] text-white/40 mt-1">EMOTION MARKERS</p>
+              </div>
+              <div>
+                <p className="text-[32px] font-light">4K</p>
+                <p className="text-[10px] tracking-[0.2em] text-white/40 mt-1">RESOLUTION</p>
+              </div>
+              <div>
+                <p className="text-[32px] font-light">48H</p>
+                <p className="text-[10px] tracking-[0.2em] text-white/40 mt-1">DELIVERY</p>
+              </div>
+            </div>
+            <motion.a
+              href="#"
+              whileHover={{ x: 4 }}
+              className="inline-flex items-center gap-2 mt-12 text-[11px] tracking-[0.2em] text-white/70 hover:text-white transition-colors border-b border-white/30 pb-1"
+            >
+              READ MORE
+            </motion.a>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Features Grid */}
+      <section className="bg-[#f5f5f5] py-32">
+        <div className="max-w-6xl mx-auto px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
+          >
+            <p className="text-[10px] tracking-[0.4em] text-black/40 mb-4">CAPABILITIES</p>
+            <h2 className="text-[36px] font-light tracking-tight">Precision AI Modules</h2>
+          </motion.div>
+
+          <div className="grid grid-cols-2 gap-px bg-black/10">
+            {features.map((feature, idx) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                className="bg-[#f5f5f5] p-12 hover:bg-white transition-colors"
+              >
+                <p className="text-[11px] tracking-[0.3em] text-black/50 mb-3">{feature.title}</p>
+                <p className="text-[18px] font-light text-black/70">{feature.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Workflow Section */}
+      <section className="bg-white py-32">
+        <div className="max-w-6xl mx-auto px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-20"
+          >
+            <p className="text-[10px] tracking-[0.4em] text-black/40 mb-4">WORKFLOW</p>
+            <h2 className="text-[36px] font-light tracking-tight">Four Steps to Cinematic</h2>
+          </motion.div>
+
+          <div className="grid grid-cols-4 gap-12">
+            {workflowSteps.map((step, idx) => {
+              const IconComponent = step.icon;
+              return (
+                <motion.div
+                  key={step.num}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.15 }}
+                  whileHover="hover"
+                  className="group cursor-pointer relative"
+                >
+                  {/* Number with icon overlay on hover */}
+                  <div className="relative h-16">
+                    <motion.p 
+                      className="text-[48px] font-light text-black/10 absolute"
+                      variants={{
+                        hover: { opacity: 0, y: -10 }
+                      }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {step.num}
+                    </motion.p>
+                    <motion.div
+                      className="absolute top-2"
+                      initial={{ opacity: 0, y: 10 }}
+                      variants={{
+                        hover: { opacity: 1, y: 0 }
+                      }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center">
+                        <IconComponent className="w-5 h-5 text-white" />
+                      </div>
+                    </motion.div>
+                  </div>
+                  <motion.p 
+                    className="text-[14px] tracking-[0.1em] mt-4"
+                    variants={{
+                      hover: { x: 4 }
+                    }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {step.title}
+                  </motion.p>
+                  <p className="text-[13px] text-black/50 mt-2 leading-relaxed group-hover:text-black/70 transition-colors">
+                    {step.desc}
+                  </p>
+                  {/* Underline animation */}
+                  <motion.div 
+                    className="h-px bg-black mt-6 origin-left"
+                    initial={{ scaleX: 0 }}
+                    variants={{
+                      hover: { scaleX: 1 }
+                    }}
+                    transition={{ duration: 0.4 }}
+                  />
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section className="bg-[#0a0a0a] text-white py-32">
+        <div className="max-w-4xl mx-auto px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
+          >
+            <p className="text-[10px] tracking-[0.4em] text-white/40 mb-4">PRICING</p>
+            <h2 className="text-[36px] font-light tracking-tight">Start Creating Today</h2>
+          </motion.div>
+
+          <div className="grid grid-cols-2 gap-8">
+            {pricing.map((plan, idx) => (
+              <motion.div
+                key={plan.name}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.15 }}
+                className={`p-10 ${plan.featured ? 'bg-white text-black' : 'border border-white/20'}`}
+              >
+                <p className="text-[10px] tracking-[0.3em] opacity-50">{plan.name}</p>
+                <div className="mt-4 flex items-baseline">
+                  <span className="text-[48px] font-light">{plan.price}</span>
+                  <span className="text-[14px] opacity-50 ml-2">{plan.period}</span>
+                </div>
+                <ul className="mt-8 space-y-3">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className="text-[13px] opacity-70">— {feature}</li>
+                  ))}
+                </ul>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`mt-10 w-full py-4 text-[11px] tracking-[0.2em] transition-colors ${
+                    plan.featured
+                      ? 'bg-black text-white hover:bg-black/80'
+                      : 'border border-white/30 hover:bg-white hover:text-black'
+                  }`}
+                >
+                  GET STARTED
+                </motion.button>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mt-12 text-[12px] text-white/40"
+          >
+            7-day free trial included. No credit card required.
+          </motion.p>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="bg-white py-32">
+        <div className="max-w-3xl mx-auto px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-[42px] font-light tracking-tight leading-tight">
+              Ready to transform<br />your workflow?
+            </h2>
+            <p className="mt-6 text-[15px] text-black/50">
+              Join hundreds of wedding filmmakers who edit less and create more.
+            </p>
+            <motion.a
+              href="#"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="inline-block mt-10 px-12 py-4 bg-black text-white text-[11px] tracking-[0.2em] hover:bg-black/80 transition-colors"
+            >
+              START FREE TRIAL
+            </motion.a>
+          </motion.div>
+        </div>
+      </section>
 
       {/* Footer */}
-      <footer className="bg-[#050505] py-12 text-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
-          <div>
-            <p className="text-base tracking-[0.3em]">AUTOCUT</p>
-            <p className="mt-2 text-[11px] tracking-[0.2em] text-white/40">Precision AI Editing for Wedding Filmmakers</p>
+      <footer className="bg-[#f5f5f5] py-16">
+        <div className="max-w-6xl mx-auto px-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[13px] tracking-[0.3em]">AUTOCUT</p>
+              <p className="text-[11px] text-black/40 mt-2">AI Video Editing for Wedding Filmmakers</p>
+            </div>
+            <div className="flex items-center gap-12 text-[11px] tracking-[0.15em] text-black/50">
+              <a href="#" className="hover:text-black transition-colors">PRIVACY</a>
+              <a href="#" className="hover:text-black transition-colors">TERMS</a>
+              <a href="#" className="hover:text-black transition-colors">CONTACT</a>
+              <a href="#" className="hover:text-black transition-colors">TWITTER</a>
+            </div>
           </div>
-          <div className="flex items-center justify-center gap-8 text-[11px] tracking-[0.2em] text-white/40">
-            <a href="#" className="transition-colors hover:text-white">
-              PRIVACY
-            </a>
-            <a href="#" className="transition-colors hover:text-white">
-              TERMS
-            </a>
-            <a href="#" className="transition-colors hover:text-white">
-              CONTACT
-          </a>
-        </div>
+          <div className="mt-12 pt-8 border-t border-black/10 text-[10px] text-black/30">
+            © 2024 AutoCut. All rights reserved.
+          </div>
         </div>
       </footer>
     </div>
