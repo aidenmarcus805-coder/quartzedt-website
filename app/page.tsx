@@ -63,7 +63,7 @@ export default function Home() {
           </div>
           <div className="flex items-center justify-center">
             <span className="text-[13px] tracking-[0.4em] font-medium">
-              AUTOCUT
+              CUTTERA
             </span>
           </div>
           <div className="flex items-center justify-end gap-8">
@@ -197,7 +197,7 @@ export default function Home() {
           className="absolute bottom-16 right-16 text-right text-white z-10"
         >
           <h1 className="text-[72px] font-light tracking-tight leading-none">
-            AUTO CUT
+            CUTTERA
           </h1>
           <p className="mt-4 text-[18px] font-light tracking-wide text-white/70">
             Edit Less. Create More.
@@ -480,7 +480,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-8">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[13px] tracking-[0.3em]">AUTOCUT</p>
+              <p className="text-[13px] tracking-[0.3em]">CUTTERA</p>
               <p className="text-[11px] text-black/40 mt-2">AI Video Editing for Wedding Filmmakers</p>
             </div>
             <div className="flex items-center gap-12 text-[11px] tracking-[0.15em] text-black/50">
@@ -491,7 +491,7 @@ export default function Home() {
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-black/10 text-[10px] text-black/30">
-            © 2024 AutoCut. All rights reserved.
+            © 2024 Cuttera. All rights reserved.
           </div>
         </div>
       </footer>
