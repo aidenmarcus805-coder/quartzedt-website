@@ -2,6 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { ArrowRight, Upload, Cpu, Sliders, Send } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import Link from 'next/link';
 
 const features = [
   {
@@ -32,20 +34,156 @@ const workflowSteps = [
 const pricing = [
   {
     name: 'STARTER',
-    price: '$100',
+    price: '$129',
     period: '/month',
-    features: ['All AI engines', 'Premiere + Final Cut', 'Priority support'],
+    subtitle: '2 weddings/month',
+    features: [
+      'Auto-sorting & multi-cam sync',
+      'Speech & vow extraction',
+      'Story recommendations',
+      'Rough-cut generation',
+      'XML export for Premiere / Resolve',
+    ],
   },
   {
     name: 'PRO',
-    price: '$250',
+    price: '$249',
     period: '/month',
-    features: ['Everything in Starter', 'DaVinci + CapCut Pro', 'Multi-user workspace'],
+    subtitle: '4 weddings/month',
+    features: [
+      'Everything in Starter',
+      'Full timeline assembly',
+      'AI story building & scene ordering',
+      'AI shot rating & angle selection',
+      'Music beat sync & color match',
+      'Priority GPU processing',
+    ],
     featured: true,
   },
 ];
 
 export default function Home() {
+  const heroRef = useRef<HTMLElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const hero = heroRef.current;
+    if (!canvas || !hero) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const resizeCanvas = () => {
+      canvas.width = hero.offsetWidth;
+      canvas.height = hero.offsetHeight;
+    };
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const dotSpacing = 7;
+    const baseRadius = 1.2;
+    const maxRadius = 2.5;
+    const waveRadius = 150;
+
+    let animationId: number;
+    let currentMouseX = 0;
+    let currentMouseY = 0;
+    let targetMouseX = 0;
+    let targetMouseY = 0;
+
+    const lerp = (start: number, end: number, factor: number) => {
+      return start + (end - start) * factor;
+    };
+
+    const draw = () => {
+      if (!ctx || !canvas) return;
+      
+      // Smooth mouse following
+      currentMouseX = lerp(currentMouseX, targetMouseX, 0.1);
+      currentMouseY = lerp(currentMouseY, targetMouseY, 0.1);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const cols = Math.ceil(canvas.width / dotSpacing) + 1;
+      const rows = Math.ceil(canvas.height / dotSpacing) + 1;
+
+      for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows; j++) {
+          const x = i * dotSpacing;
+          const y = j * dotSpacing;
+
+          const dx = x - currentMouseX;
+          const dy = y - currentMouseY;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          // Wave effect - dots expand near cursor
+          let radius = baseRadius;
+          let brightness = 0.6;
+
+          if (distance < waveRadius) {
+            const wave = 1 - (distance / waveRadius);
+            const waveFactor = Math.pow(wave, 2); // Smooth falloff
+            radius = baseRadius + (maxRadius - baseRadius) * waveFactor;
+            brightness = 0.6 + 0.4 * waveFactor;
+          }
+
+          // Chromatic aberration offsets
+          const chromaticOffset = radius > baseRadius ? (radius - baseRadius) * 0.3 : 0;
+
+          // Red channel (offset left)
+          ctx.beginPath();
+          ctx.arc(x - chromaticOffset - 0.5, y, radius * 0.8, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 120, 120, ${brightness * 0.5})`;
+          ctx.fill();
+
+          // Cyan/green channel (center)
+          ctx.beginPath();
+          ctx.arc(x, y, radius * 0.9, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(200, 255, 255, ${brightness * 0.6})`;
+          ctx.fill();
+
+          // Blue channel (offset right)
+          ctx.beginPath();
+          ctx.arc(x + chromaticOffset + 0.5, y, radius * 0.8, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(130, 150, 255, ${brightness * 0.5})`;
+          ctx.fill();
+
+          // White core
+          ctx.beginPath();
+          ctx.arc(x, y, radius * 0.5, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${brightness * 0.9})`;
+          ctx.fill();
+        }
+      }
+
+      animationId = requestAnimationFrame(draw);
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = hero.getBoundingClientRect();
+      targetMouseX = e.clientX - rect.left;
+      targetMouseY = e.clientY - rect.top;
+    };
+
+    const handleMouseLeave = () => {
+      targetMouseX = -1000;
+      targetMouseY = -1000;
+    };
+
+    hero.addEventListener('mousemove', handleMouseMove);
+    hero.addEventListener('mouseleave', handleMouseLeave);
+
+    draw();
+
+    return () => {
+      window.removeEventListener('resize', resizeCanvas);
+      hero.removeEventListener('mousemove', handleMouseMove);
+      hero.removeEventListener('mouseleave', handleMouseLeave);
+      cancelAnimationFrame(animationId);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-white text-black">
       {/* Navigation */}
@@ -59,11 +197,11 @@ export default function Home() {
           <div className="flex items-center gap-8">
             <a href="#" className="hover:opacity-50 transition-opacity">PRODUCTS</a>
             <a href="#" className="hover:opacity-50 transition-opacity">TECHNOLOGY</a>
-            <a href="#" className="hover:opacity-50 transition-opacity">PRICING</a>
+            <Link href="/pricing" className="hover:opacity-50 transition-opacity">PRICING</Link>
           </div>
           <div className="flex items-center justify-center">
             <span className="text-[13px] tracking-[0.4em] font-medium">
-              AUTOCUT
+              VELLUM
             </span>
           </div>
           <div className="flex items-center justify-end gap-8">
@@ -74,51 +212,19 @@ export default function Home() {
       </motion.nav>
 
       {/* Hero Section - Full viewport height */}
-      <section className="relative h-screen overflow-hidden">
+      <section ref={heroRef} className="relative h-screen overflow-hidden">
         {/* Pure black base */}
         <div className="absolute inset-0 bg-black" />
         
-        {/* Red channel dots - slightly offset left */}
-        <div 
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `radial-gradient(circle at center, rgba(255, 120, 120, 0.7) 0%, rgba(255, 100, 100, 0.4) 30%, transparent 50%)`,
-            backgroundSize: '7px 7px',
-            backgroundPosition: '-0.5px 0px',
-          }}
-        />
-        
-        {/* Green/cyan channel dots - center */}
-        <div 
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `radial-gradient(circle at center, rgba(200, 255, 255, 0.9) 0%, rgba(150, 220, 230, 0.5) 30%, transparent 50%)`,
-            backgroundSize: '7px 7px',
-          }}
-        />
-        
-        {/* Blue channel dots - slightly offset right */}
-        <div 
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `radial-gradient(circle at center, rgba(130, 150, 255, 0.7) 0%, rgba(100, 130, 255, 0.4) 30%, transparent 50%)`,
-            backgroundSize: '7px 7px',
-            backgroundPosition: '0.5px 0px',
-          }}
-        />
-        
-        {/* Bright white LED core */}
-        <div 
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `radial-gradient(circle at center, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.3) 20%, transparent 40%)`,
-            backgroundSize: '7px 7px',
-          }}
+        {/* Interactive dot canvas */}
+        <canvas 
+          ref={canvasRef}
+          className="absolute inset-0 z-[1]"
         />
         
         {/* Soft ambient glow from right */}
         <div 
-          className="absolute inset-0"
+          className="absolute inset-0 z-[2] pointer-events-none"
           style={{
             background: 'radial-gradient(ellipse 50% 70% at 80% 50%, rgba(180, 200, 220, 0.08) 0%, transparent 50%)',
           }}
@@ -198,7 +304,7 @@ export default function Home() {
           className="absolute bottom-16 right-16 text-right text-white z-10"
         >
           <h1 className="text-[72px] font-light tracking-tight leading-none">
-            AUTO CUT
+            VELLUM
           </h1>
           <p className="mt-4 text-[18px] font-light tracking-wide text-white/70">
             Edit Less. Create More.
@@ -362,7 +468,7 @@ export default function Home() {
                         <IconComponent className="w-5 h-5 text-white" />
                       </div>
                     </motion.div>
-                  </div>
+        </div>
                   <motion.p 
                     className="text-[14px] tracking-[0.1em] mt-4"
                     variants={{
@@ -419,6 +525,7 @@ export default function Home() {
                   <span className="text-[48px] font-light">{plan.price}</span>
                   <span className="text-[14px] opacity-50 ml-2">{plan.period}</span>
                 </div>
+                <p className="mt-2 text-[12px] tracking-[0.1em] opacity-60">{plan.subtitle}</p>
                 <ul className="mt-8 space-y-3">
                   {plan.features.map((feature) => (
                     <li key={feature} className="text-[13px] opacity-70">— {feature}</li>
@@ -481,7 +588,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-8">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[13px] tracking-[0.3em]">AUTOCUT</p>
+              <p className="text-[13px] tracking-[0.3em]">VELLUM</p>
               <p className="text-[11px] text-black/40 mt-2">AI Video Editing for Wedding Filmmakers</p>
             </div>
             <div className="flex items-center gap-12 text-[11px] tracking-[0.15em] text-black/50">
@@ -492,7 +599,7 @@ export default function Home() {
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-black/10 text-[10px] text-black/30">
-            © 2024 AutoCut. All rights reserved.
+            © 2024 Vellum. All rights reserved.
           </div>
         </div>
       </footer>

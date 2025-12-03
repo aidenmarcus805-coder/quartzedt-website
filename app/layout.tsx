@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'AUTO CUT — AI Wedding Videographer Editor',
+  title: 'VELLUM — AI Wedding Videographer Editor',
   description: 'AI-powered video editing engineered for wedding videographers. Edit less. Create more.',
 };
 
