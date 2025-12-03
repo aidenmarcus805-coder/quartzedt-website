@@ -74,119 +74,79 @@ export default function Home() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Use device pixel ratio for crisp rendering but limit for performance
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     
-    const resizeCanvas = () => {
+    const draw = () => {
       const rect = hero.getBoundingClientRect();
       canvas.width = rect.width * dpr;
       canvas.height = rect.height * dpr;
       canvas.style.width = `${rect.width}px`;
       canvas.style.height = `${rect.height}px`;
-      ctx.scale(dpr, dpr);
-    };
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-
-    const dotSpacing = 10; // Larger spacing = fewer dots = better performance
-    const waveWidth = 200; // Width of the horizontal wave effect
-
-    let animationId: number;
-    let mouseX = -1000;
-    let isMouseInHero = false;
-
-    // Pre-calculate colors for performance
-    const redColor = 'rgba(255, 120, 120, 0.4)';
-    const cyanColor = 'rgba(200, 255, 255, 0.5)';
-    const blueColor = 'rgba(130, 150, 255, 0.4)';
-    const whiteColor = 'rgba(255, 255, 255, 0.7)';
-    const brightRedColor = 'rgba(255, 120, 120, 0.6)';
-    const brightCyanColor = 'rgba(200, 255, 255, 0.8)';
-    const brightBlueColor = 'rgba(130, 150, 255, 0.6)';
-    const brightWhiteColor = 'rgba(255, 255, 255, 1)';
-
-    const draw = () => {
-      if (!ctx || !canvas) return;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       
-      const width = canvas.width / dpr;
-      const height = canvas.height / dpr;
-      
-      ctx.clearRect(0, 0, width, height);
+      const width = rect.width;
+      const height = rect.height;
+      const dotSpacing = 8;
 
       const cols = Math.ceil(width / dotSpacing) + 1;
       const rows = Math.ceil(height / dotSpacing) + 1;
 
+      // Gradient center point (bottom-right area)
+      const gradientX = width * 0.75;
+      const gradientY = height * 0.7;
+      const maxDistance = Math.sqrt(width * width + height * height) * 0.6;
+
       for (let i = 0; i < cols; i++) {
         const x = i * dotSpacing;
-        
-        // Horizontal wave - only depends on x distance from cursor
-        const dx = Math.abs(x - mouseX);
-        const inWave = isMouseInHero && dx < waveWidth;
-        const waveFactor = inWave ? Math.pow(1 - dx / waveWidth, 2) : 0;
-        
-        // Pre-calculate values for this column
-        const radius = 1.2 + waveFactor * 1.5;
-        const chromaticOffset = waveFactor * 0.8;
-        
-        // Select colors based on wave
-        const rColor = inWave ? brightRedColor : redColor;
-        const cColor = inWave ? brightCyanColor : cyanColor;
-        const bColor = inWave ? brightBlueColor : blueColor;
-        const wColor = inWave ? brightWhiteColor : whiteColor;
         
         for (let j = 0; j < rows; j++) {
           const y = j * dotSpacing;
 
+          // Calculate distance from gradient center
+          const dx = x - gradientX;
+          const dy = y - gradientY;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          // Size gradient - larger near center, smaller far away
+          const gradientFactor = Math.max(0, 1 - distance / maxDistance);
+          const sizeFactor = 0.3 + gradientFactor * 0.7; // Range from 0.3 to 1.0
+          
+          const baseRadius = 1.0 + sizeFactor * 1.8; // Range from 1.0 to 2.8
+          const brightness = 0.4 + sizeFactor * 0.5; // Range from 0.4 to 0.9
+          const chromaticOffset = sizeFactor * 0.6;
+
           // Red channel (offset left)
           ctx.beginPath();
-          ctx.arc(x - chromaticOffset - 0.5, y, radius * 0.7, 0, Math.PI * 2);
-          ctx.fillStyle = rColor;
+          ctx.arc(x - chromaticOffset - 0.3, y, baseRadius * 0.7, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 120, 120, ${brightness * 0.5})`;
           ctx.fill();
 
           // Cyan/green channel (center)
           ctx.beginPath();
-          ctx.arc(x, y, radius * 0.8, 0, Math.PI * 2);
-          ctx.fillStyle = cColor;
+          ctx.arc(x, y, baseRadius * 0.8, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(200, 255, 255, ${brightness * 0.6})`;
           ctx.fill();
 
           // Blue channel (offset right)
           ctx.beginPath();
-          ctx.arc(x + chromaticOffset + 0.5, y, radius * 0.7, 0, Math.PI * 2);
-          ctx.fillStyle = bColor;
+          ctx.arc(x + chromaticOffset + 0.3, y, baseRadius * 0.7, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(130, 150, 255, ${brightness * 0.5})`;
           ctx.fill();
 
           // White core
           ctx.beginPath();
-          ctx.arc(x, y, radius * 0.4, 0, Math.PI * 2);
-          ctx.fillStyle = wColor;
+          ctx.arc(x, y, baseRadius * 0.4, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${brightness * 0.9})`;
           ctx.fill();
         }
       }
-
-      animationId = requestAnimationFrame(draw);
     };
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = hero.getBoundingClientRect();
-      mouseX = e.clientX - rect.left;
-      isMouseInHero = true;
-    };
-
-    const handleMouseLeave = () => {
-      mouseX = -1000;
-      isMouseInHero = false;
-    };
-
-    hero.addEventListener('mousemove', handleMouseMove);
-    hero.addEventListener('mouseleave', handleMouseLeave);
 
     draw();
+    window.addEventListener('resize', draw);
 
     return () => {
-      window.removeEventListener('resize', resizeCanvas);
-      hero.removeEventListener('mousemove', handleMouseMove);
-      hero.removeEventListener('mouseleave', handleMouseLeave);
-      cancelAnimationFrame(animationId);
+      window.removeEventListener('resize', draw);
     };
   }, []);
 
