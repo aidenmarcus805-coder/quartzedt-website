@@ -196,7 +196,7 @@ export default function Home() {
         />
 
         {/* Video container - glassmorphism card */}
-        <div className="absolute inset-8 top-20">
+        <div className="absolute inset-8 top-20 z-[5]">
           <motion.div
             initial={{ opacity: 0, scale: 0.98, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
