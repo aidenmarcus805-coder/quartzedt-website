@@ -74,85 +74,91 @@ export default function Home() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Use device pixel ratio for crisp rendering but limit for performance
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    
     const resizeCanvas = () => {
-      canvas.width = hero.offsetWidth;
-      canvas.height = hero.offsetHeight;
+      const rect = hero.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      canvas.style.width = `${rect.width}px`;
+      canvas.style.height = `${rect.height}px`;
+      ctx.scale(dpr, dpr);
     };
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    const dotSpacing = 7;
-    const baseRadius = 1.2;
-    const maxRadius = 2.5;
-    const waveRadius = 150;
+    const dotSpacing = 10; // Larger spacing = fewer dots = better performance
+    const waveWidth = 200; // Width of the horizontal wave effect
 
     let animationId: number;
-    let currentMouseX = 0;
-    let currentMouseY = 0;
-    let targetMouseX = 0;
-    let targetMouseY = 0;
+    let mouseX = -1000;
+    let isMouseInHero = false;
 
-    const lerp = (start: number, end: number, factor: number) => {
-      return start + (end - start) * factor;
-    };
+    // Pre-calculate colors for performance
+    const redColor = 'rgba(255, 120, 120, 0.4)';
+    const cyanColor = 'rgba(200, 255, 255, 0.5)';
+    const blueColor = 'rgba(130, 150, 255, 0.4)';
+    const whiteColor = 'rgba(255, 255, 255, 0.7)';
+    const brightRedColor = 'rgba(255, 120, 120, 0.6)';
+    const brightCyanColor = 'rgba(200, 255, 255, 0.8)';
+    const brightBlueColor = 'rgba(130, 150, 255, 0.6)';
+    const brightWhiteColor = 'rgba(255, 255, 255, 1)';
 
     const draw = () => {
       if (!ctx || !canvas) return;
       
-      // Smooth mouse following
-      currentMouseX = lerp(currentMouseX, targetMouseX, 0.1);
-      currentMouseY = lerp(currentMouseY, targetMouseY, 0.1);
+      const width = canvas.width / dpr;
+      const height = canvas.height / dpr;
+      
+      ctx.clearRect(0, 0, width, height);
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      const cols = Math.ceil(canvas.width / dotSpacing) + 1;
-      const rows = Math.ceil(canvas.height / dotSpacing) + 1;
+      const cols = Math.ceil(width / dotSpacing) + 1;
+      const rows = Math.ceil(height / dotSpacing) + 1;
 
       for (let i = 0; i < cols; i++) {
+        const x = i * dotSpacing;
+        
+        // Horizontal wave - only depends on x distance from cursor
+        const dx = Math.abs(x - mouseX);
+        const inWave = isMouseInHero && dx < waveWidth;
+        const waveFactor = inWave ? Math.pow(1 - dx / waveWidth, 2) : 0;
+        
+        // Pre-calculate values for this column
+        const radius = 1.2 + waveFactor * 1.5;
+        const chromaticOffset = waveFactor * 0.8;
+        
+        // Select colors based on wave
+        const rColor = inWave ? brightRedColor : redColor;
+        const cColor = inWave ? brightCyanColor : cyanColor;
+        const bColor = inWave ? brightBlueColor : blueColor;
+        const wColor = inWave ? brightWhiteColor : whiteColor;
+        
         for (let j = 0; j < rows; j++) {
-          const x = i * dotSpacing;
           const y = j * dotSpacing;
-
-          const dx = x - currentMouseX;
-          const dy = y - currentMouseY;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-
-          // Wave effect - dots expand near cursor
-          let radius = baseRadius;
-          let brightness = 0.6;
-
-          if (distance < waveRadius) {
-            const wave = 1 - (distance / waveRadius);
-            const waveFactor = Math.pow(wave, 2); // Smooth falloff
-            radius = baseRadius + (maxRadius - baseRadius) * waveFactor;
-            brightness = 0.6 + 0.4 * waveFactor;
-          }
-
-          // Chromatic aberration offsets
-          const chromaticOffset = radius > baseRadius ? (radius - baseRadius) * 0.3 : 0;
 
           // Red channel (offset left)
           ctx.beginPath();
-          ctx.arc(x - chromaticOffset - 0.5, y, radius * 0.8, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255, 120, 120, ${brightness * 0.5})`;
+          ctx.arc(x - chromaticOffset - 0.5, y, radius * 0.7, 0, Math.PI * 2);
+          ctx.fillStyle = rColor;
           ctx.fill();
 
           // Cyan/green channel (center)
           ctx.beginPath();
-          ctx.arc(x, y, radius * 0.9, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(200, 255, 255, ${brightness * 0.6})`;
+          ctx.arc(x, y, radius * 0.8, 0, Math.PI * 2);
+          ctx.fillStyle = cColor;
           ctx.fill();
 
           // Blue channel (offset right)
           ctx.beginPath();
-          ctx.arc(x + chromaticOffset + 0.5, y, radius * 0.8, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(130, 150, 255, ${brightness * 0.5})`;
+          ctx.arc(x + chromaticOffset + 0.5, y, radius * 0.7, 0, Math.PI * 2);
+          ctx.fillStyle = bColor;
           ctx.fill();
 
           // White core
           ctx.beginPath();
-          ctx.arc(x, y, radius * 0.5, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255, 255, 255, ${brightness * 0.9})`;
+          ctx.arc(x, y, radius * 0.4, 0, Math.PI * 2);
+          ctx.fillStyle = wColor;
           ctx.fill();
         }
       }
@@ -162,13 +168,13 @@ export default function Home() {
 
     const handleMouseMove = (e: MouseEvent) => {
       const rect = hero.getBoundingClientRect();
-      targetMouseX = e.clientX - rect.left;
-      targetMouseY = e.clientY - rect.top;
+      mouseX = e.clientX - rect.left;
+      isMouseInHero = true;
     };
 
     const handleMouseLeave = () => {
-      targetMouseX = -1000;
-      targetMouseY = -1000;
+      mouseX = -1000;
+      isMouseInHero = false;
     };
 
     hero.addEventListener('mousemove', handleMouseMove);
@@ -210,7 +216,6 @@ export default function Home() {
           </div>
         </div>
       </motion.nav>
-
       {/* Hero Section - Full viewport height */}
       <section ref={heroRef} className="relative h-screen overflow-hidden">
         {/* Pure black base */}
@@ -252,7 +257,7 @@ export default function Home() {
                 }}
               />
             </div>
-            
+        
             {/* Top edge highlight */}
             <div 
               className="absolute top-0 left-4 right-4 h-[1px] pointer-events-none"
@@ -276,18 +281,16 @@ export default function Home() {
                 boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.1), inset 0 -20px 40px rgba(0,0,0,0.3)',
               }}
             />
-            
-            {/* Video content area */}
+        
+            {/* Image content area */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
-                <motion.div 
-                  className="w-20 h-20 mx-auto rounded-full border border-white/15 flex items-center justify-center bg-white/5 backdrop-blur-sm"
-                  whileHover={{ scale: 1.1, borderColor: 'rgba(255,255,255,0.3)' }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="w-0 h-0 border-l-[12px] border-l-white/50 border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent ml-1" />
-                </motion.div>
-                <p className="mt-6 text-[10px] tracking-[0.4em] text-white/20">VIDEO MONTAGE</p>
+              <div className="w-[80%] h-[80%] rounded-lg overflow-hidden">
+                {/* Replace this image with a stock image or image of Premiere Pro */}
+                <img 
+                  src="https://cdn.prod.website-files.com/65e5ae1fb7482afd48d22155/6706ebca1574f71e1e353ca5_6706ebc8f2ec15a497a58fb2_Tips-for-Editing-Videos-Faster-Premiere-Pro-1024x576.jpeg" 
+                  alt="Premiere Pro close-up" 
+                  className="object-cover w-full h-full"
+                />
               </div>
             </div>
             
@@ -295,6 +298,7 @@ export default function Home() {
             <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
           </motion.div>
         </div>
+
 
         {/* Hero text - bottom right, inside the video area */}
         <motion.div
