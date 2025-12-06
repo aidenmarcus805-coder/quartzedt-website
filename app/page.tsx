@@ -174,6 +174,39 @@ export default function Home() {
           }}
         />
 
+        {/* Camera Image - Right Side */}
+        <motion.div
+          initial={{ opacity: 0, x: 100, rotateY: -15 }}
+          animate={isLoaded ? { opacity: 1, x: 0, rotateY: 0 } : {}}
+          transition={{ duration: 1.5, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="absolute right-[-5%] top-1/2 -translate-y-1/2 w-[55%] hidden lg:block pointer-events-none"
+          style={{ perspective: '1000px' }}
+        >
+          <motion.div
+            animate={{ y: [0, -10, 0] }}
+            transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img 
+              src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1964&auto=format&fit=crop"
+              alt="Professional camera"
+              className="w-full h-auto object-contain opacity-60 mix-blend-lighten"
+              style={{
+                filter: 'contrast(1.1) brightness(0.9)',
+                maskImage: 'linear-gradient(to left, black 60%, transparent 100%)',
+                WebkitMaskImage: 'linear-gradient(to left, black 60%, transparent 100%)',
+              }}
+            />
+            {/* Glow effect behind camera */}
+            <div 
+              className="absolute inset-0 -z-10 blur-3xl opacity-20"
+              style={{
+                background: 'radial-gradient(ellipse at center, rgba(100,150,255,0.3) 0%, transparent 70%)',
+              }}
+            />
+          </motion.div>
+        </motion.div>
+
         {/* Hero content */}
         <div className="relative z-10">
           {/* Eyebrow */}
