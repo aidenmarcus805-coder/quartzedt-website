@@ -1,16 +1,23 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Syne, DM_Sans } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({
-  variable: '--font-inter',
+const syne = Syne({
+  variable: '--font-display',
   subsets: ['latin'],
   display: 'swap',
 });
 
+const dmSans = DM_Sans({
+  variable: '--font-sans',
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['300', '400', '500'],
+});
+
 export const metadata: Metadata = {
-  title: 'VELLUM — AI Wedding Videographer Editor',
-  description: 'AI-powered video editing engineered for wedding videographers. Edit less. Create more.',
+  title: 'VELLUM — AI Video Editing for Wedding Filmmakers',
+  description: 'AI-powered precision editing that transforms hours of wedding footage into cinematic stories. Edit less. Create more.',
 };
 
 export default function RootLayout({
@@ -19,8 +26,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.variable} antialiased`}>{children}</body>
+    <html lang="en" className={`${syne.variable} ${dmSans.variable}`}>
+      <body className="font-sans antialiased">{children}</body>
     </html>
   );
 }

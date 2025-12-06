@@ -1,569 +1,650 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { ArrowRight, Upload, Cpu, Sliders, Send } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { ArrowRight, ArrowUpRight, Play } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 
+// Smooth scroll link component
+const SmoothLink = ({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) => (
+  <motion.a 
+    href={href} 
+    className={className}
+    whileHover={{ opacity: 0.6 }}
+    transition={{ duration: 0.2 }}
+  >
+    {children}
+  </motion.a>
+);
+
+
+// Magnetic button component
+const MagneticButton = ({ children, className = '', ...props }: React.ComponentProps<typeof motion.button> & { className?: string }) => {
+  const ref = useRef<HTMLButtonElement>(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  const handleMouse = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const { clientX, clientY } = e;
+    const { left, top, width, height } = ref.current!.getBoundingClientRect();
+    const x = (clientX - left - width / 2) * 0.15;
+    const y = (clientY - top - height / 2) * 0.15;
+    setPosition({ x, y });
+  };
+
+  const reset = () => setPosition({ x: 0, y: 0 });
+
+  return (
+    <motion.button
+      ref={ref}
+      onMouseMove={handleMouse}
+      onMouseLeave={reset}
+      animate={{ x: position.x, y: position.y }}
+      transition={{ type: 'spring', stiffness: 150, damping: 15 }}
+      className={className}
+      {...props}
+    >
+      {children}
+    </motion.button>
+  );
+};
+
+// Horizontal Marquee
+const Marquee = ({ children, speed = 30 }: { children: React.ReactNode; speed?: number }) => (
+  <div className="overflow-hidden whitespace-nowrap">
+    <motion.div
+      animate={{ x: ['0%', '-50%'] }}
+      transition={{ duration: speed, repeat: Infinity, ease: 'linear' }}
+      className="inline-flex"
+    >
+      {children}
+      {children}
+    </motion.div>
+  </div>
+);
+
 const features = [
-  {
-    title: 'AUTOSYNC™',
-    desc: 'Multi-camera alignment with sub-frame accuracy.',
-  },
-  {
-    title: 'AUTOSELECT™',
-    desc: 'AI identifies vows, laughter, and key moments.',
-  },
-  {
-    title: 'AUTOFLOW™',
-    desc: 'Edits shaped around emotional rhythm.',
-  },
-  {
-    title: 'AUDIO CLEANUP',
-    desc: 'Wind, hum, and noise removed automatically.',
-  },
+  { title: 'AUTOSYNC™', desc: 'Multi-camera alignment with sub-frame accuracy', num: '01' },
+  { title: 'AUTOSELECT™', desc: 'AI identifies vows, laughter, and key moments', num: '02' },
+  { title: 'AUTOFLOW™', desc: 'Edits shaped around emotional rhythm', num: '03' },
+  { title: 'AUDIO CLEANUP', desc: 'Wind, hum, and noise removed automatically', num: '04' },
 ];
 
-const workflowSteps = [
-  { num: '01', title: 'Upload', desc: 'Drop all cameras and audio files', icon: Upload },
-  { num: '02', title: 'Process', desc: 'AI builds your assembly edit', icon: Cpu },
-  { num: '03', title: 'Refine', desc: 'Fine-tune pacing and grade', icon: Sliders },
-  { num: '04', title: 'Deliver', desc: 'Export to Premiere, Final Cut, DaVinci', icon: Send },
-];
-
-const pricing = [
-  {
-    name: 'STARTER',
-    price: '$129',
-    period: '/month',
-    subtitle: '2 weddings/month',
-    features: [
-      'Auto-sorting & multi-cam sync',
-      'Speech & vow extraction',
-      'Story recommendations',
-      'Rough-cut generation',
-      'XML export for Premiere / Resolve',
-    ],
-  },
-  {
-    name: 'PRO',
-    price: '$249',
-    period: '/month',
-    subtitle: '4 weddings/month',
-    features: [
-      'Everything in Starter',
-      'Full timeline assembly',
-      'AI story building & scene ordering',
-      'AI shot rating & angle selection',
-      'Music beat sync & color match',
-      'Priority GPU processing',
-    ],
-    featured: true,
-  },
+const stats = [
+  { value: '47', label: 'EMOTION MARKERS', suffix: '' },
+  { value: '10', label: 'HOUR TURNAROUND', suffix: 'hr' },
+  { value: '4K', label: 'RESOLUTION', suffix: '' },
+  { value: '99', label: 'SATISFACTION', suffix: '%' },
 ];
 
 export default function Home() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { scrollYProgress } = useScroll();
+  const [cursorVariant, setCursorVariant] = useState('default');
+  
+  // Parallax values
+  const heroY = useTransform(scrollYProgress, [0, 0.3], [0, -150]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
+  const heroScale = useTransform(scrollYProgress, [0, 0.3], [1, 0.95]);
 
+  // Loading state
+  const [isLoaded, setIsLoaded] = useState(false);
+  
   useEffect(() => {
-    const canvas = canvasRef.current;
-    const hero = heroRef.current;
-    if (!canvas || !hero) return;
+    const timer = setTimeout(() => setIsLoaded(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    
-    const draw = () => {
-      const rect = hero.getBoundingClientRect();
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
-      canvas.style.width = `${rect.width}px`;
-      canvas.style.height = `${rect.height}px`;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      
-      const width = rect.width;
-      const height = rect.height;
-      const dotSpacing = 8;
-
-      const cols = Math.ceil(width / dotSpacing) + 1;
-      const rows = Math.ceil(height / dotSpacing) + 1;
-
-      // Gradient center point (bottom-right area)
-      const gradientX = width * 0.75;
-      const gradientY = height * 0.7;
-      const maxDistance = Math.sqrt(width * width + height * height) * 0.6;
-
-      for (let i = 0; i < cols; i++) {
-        const x = i * dotSpacing;
-        
-        for (let j = 0; j < rows; j++) {
-          const y = j * dotSpacing;
-
-          // Calculate distance from gradient center
-          const dx = x - gradientX;
-          const dy = y - gradientY;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          
-          // Size gradient - larger near center, smaller far away
-          const gradientFactor = Math.max(0, 1 - distance / maxDistance);
-          const sizeFactor = 0.3 + gradientFactor * 0.7; // Range from 0.3 to 1.0
-          
-          const baseRadius = 1.0 + sizeFactor * 1.8; // Range from 1.0 to 2.8
-          const brightness = 0.4 + sizeFactor * 0.5; // Range from 0.4 to 0.9
-          const chromaticOffset = sizeFactor * 0.6;
-
-          // Red channel (offset left)
-          ctx.beginPath();
-          ctx.arc(x - chromaticOffset - 0.3, y, baseRadius * 0.7, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255, 120, 120, ${brightness * 0.5})`;
-          ctx.fill();
-
-          // Cyan/green channel (center)
-          ctx.beginPath();
-          ctx.arc(x, y, baseRadius * 0.8, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(200, 255, 255, ${brightness * 0.6})`;
-          ctx.fill();
-
-          // Blue channel (offset right)
-          ctx.beginPath();
-          ctx.arc(x + chromaticOffset + 0.3, y, baseRadius * 0.7, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(130, 150, 255, ${brightness * 0.5})`;
-          ctx.fill();
-
-          // White core
-          ctx.beginPath();
-          ctx.arc(x, y, baseRadius * 0.4, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255, 255, 255, ${brightness * 0.9})`;
-          ctx.fill();
-        }
+  // Custom cursor
+  const cursorRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    const moveCursor = (e: MouseEvent) => {
+      if (cursorRef.current) {
+        cursorRef.current.style.left = `${e.clientX}px`;
+        cursorRef.current.style.top = `${e.clientY}px`;
       }
     };
-
-    draw();
-    window.addEventListener('resize', draw);
-
-    return () => {
-      window.removeEventListener('resize', draw);
-    };
+    window.addEventListener('mousemove', moveCursor);
+    return () => window.removeEventListener('mousemove', moveCursor);
   }, []);
 
   return (
-    <div className="min-h-screen bg-white text-black">
+    <div ref={containerRef} className="bg-[#0a0a0a] text-white min-h-screen selection:bg-white selection:text-black">
+      {/* Custom Cursor */}
+      <motion.div
+        ref={cursorRef}
+        className="fixed w-4 h-4 pointer-events-none z-[100] mix-blend-difference hidden lg:block"
+        animate={cursorVariant}
+        variants={{
+          default: { scale: 1, backgroundColor: '#fff' },
+          text: { scale: 3, backgroundColor: '#fff' },
+          button: { scale: 2.5, backgroundColor: '#fff' },
+        }}
+        style={{ borderRadius: '50%', transform: 'translate(-50%, -50%)' }}
+      />
+
       {/* Navigation */}
       <motion.nav
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
-        className="fixed top-0 left-0 right-0 z-50 bg-white"
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="fixed top-0 left-0 right-0 z-50 mix-blend-difference"
       >
-        <div className="grid grid-cols-3 h-14 items-center px-8 text-[11px] tracking-[0.15em]">
-          <div className="flex items-center gap-8">
-            <a href="#" className="hover:opacity-50 transition-opacity">PRODUCTS</a>
-            <a href="#" className="hover:opacity-50 transition-opacity">TECHNOLOGY</a>
-            <Link href="/pricing" className="hover:opacity-50 transition-opacity">PRICING</Link>
+        <div className="flex items-center justify-between h-20 px-8 lg:px-16">
+          <Link href="/" className="text-[13px] tracking-[0.5em] font-medium text-white">
+            VELLUM
+          </Link>
+          
+          <div className="hidden md:flex items-center gap-12 text-[11px] tracking-[0.2em]">
+            <SmoothLink href="#work" className="text-white/60 hover:text-white">WORK</SmoothLink>
+            <SmoothLink href="#about" className="text-white/60 hover:text-white">ABOUT</SmoothLink>
+            <Link href="/pricing" className="text-white/60 hover:text-white transition-opacity">PRICING</Link>
           </div>
-          <div className="flex items-center justify-center">
-            <span className="text-[13px] tracking-[0.4em] font-medium">
-              VELLUM
-            </span>
-          </div>
-          <div className="flex items-center justify-end gap-8">
-            <a href="#" className="hover:opacity-50 transition-opacity">LOG IN</a>
-            <a href="#" className="hover:opacity-50 transition-opacity">START TRIAL</a>
-          </div>
+
+          <motion.a
+            href="#"
+            className="text-[11px] tracking-[0.2em] text-white flex items-center gap-2"
+            onMouseEnter={() => setCursorVariant('button')}
+            onMouseLeave={() => setCursorVariant('default')}
+            whileHover={{ gap: '12px' }}
+          >
+            START TRIAL
+            <ArrowUpRight className="w-4 h-4" />
+          </motion.a>
         </div>
       </motion.nav>
-      {/* Hero Section - Full viewport height */}
-      <section ref={heroRef} className="relative h-screen overflow-hidden">
-        {/* Pure black base */}
-        <div className="absolute inset-0 bg-black" />
+
+      {/* Hero Section */}
+      <motion.section 
+        ref={heroRef}
+        style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
+        className="relative h-screen flex flex-col justify-end pb-24 px-8 lg:px-16 overflow-hidden"
+      >
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a] to-[#111]" />
         
-        {/* Interactive dot canvas */}
-        <canvas 
-          ref={canvasRef}
-          className="absolute inset-0 z-[1]"
-        />
-        
-        {/* Soft ambient glow from right */}
+        {/* Subtle grid pattern */}
         <div 
-          className="absolute inset-0 z-[2] pointer-events-none"
+          className="absolute inset-0 opacity-[0.03]"
           style={{
-            background: 'radial-gradient(ellipse 50% 70% at 80% 50%, rgba(180, 200, 220, 0.08) 0%, transparent 50%)',
+            backgroundImage: `linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)`,
+            backgroundSize: '100px 100px'
           }}
         />
 
-        {/* Video container - glassmorphism card */}
-        <div className="absolute inset-8 top-20 z-[5]">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-            className="relative w-full h-full rounded-2xl overflow-hidden"
-          >
-            {/* Gradient border - glassmorphism effect */}
-            <div 
-              className="absolute inset-0 rounded-2xl p-[1px]"
-              style={{
-                background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.1) 100%)',
-              }}
-            >
-              <div 
-                className="w-full h-full rounded-2xl"
-                style={{
-                  background: 'linear-gradient(180deg, #0d0d0f 0%, #0a0a0c 50%, #080809 100%)',
-                }}
-              />
-            </div>
-        
-            {/* Top edge highlight */}
-            <div 
-              className="absolute top-0 left-4 right-4 h-[1px] pointer-events-none"
-              style={{
-                background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 20%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.4) 80%, transparent 100%)',
-              }}
-            />
-            
-            {/* Left edge highlight */}
-            <div 
-              className="absolute top-4 bottom-4 left-0 w-[1px] pointer-events-none"
-              style={{
-                background: 'linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 50%, transparent 100%)',
-              }}
-            />
-            
-            {/* Inner glow */}
-            <div 
-              className="absolute inset-0 rounded-2xl pointer-events-none"
-              style={{
-                boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.1), inset 0 -20px 40px rgba(0,0,0,0.3)',
-              }}
-            />
-        
-            {/* Image content area */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-[80%] h-[80%] rounded-lg overflow-hidden">
-                {/* Replace this image with a stock image or image of Premiere Pro */}
-                <img 
-                  src="https://cdn.prod.website-files.com/65e5ae1fb7482afd48d22155/6706ebca1574f71e1e353ca5_6706ebc8f2ec15a497a58fb2_Tips-for-Editing-Videos-Faster-Premiere-Pro-1024x576.jpeg" 
-                  alt="Premiere Pro close-up" 
-                  className="object-cover w-full h-full"
-                />
-              </div>
-            </div>
-            
-            {/* Gradient overlay at bottom for text readability */}
-            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
-          </motion.div>
-        </div>
-
-
-        {/* Hero text - bottom right, inside the video area */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="absolute bottom-16 right-16 text-right text-white z-10"
-        >
-          <h1 className="text-[72px] font-light tracking-tight leading-none">
-            VELLUM
-          </h1>
-          <p className="mt-4 text-[18px] font-light tracking-wide text-white/70">
-            Edit Less. Create More.
-          </p>
-          <div className="mt-8 flex items-center justify-end gap-6 text-[11px] tracking-[0.2em]">
-            <motion.a
-              href="#"
-              whileHover={{ x: 4 }}
-              className="flex items-center gap-2 text-white/90 hover:text-white transition-colors"
-            >
-              GET EARLY ACCESS
-              <ArrowRight className="w-4 h-4" />
-            </motion.a>
-            <a href="#" className="text-white/50 hover:text-white/90 transition-colors">
-              WATCH DEMO
-            </a>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* Technology Section */}
-      <section className="grid grid-cols-2 min-h-screen">
-        {/* Left - Image placeholder */}
-        <div className="relative bg-[#0a0a0a] overflow-hidden">
-          <motion.div
-            initial={{ scale: 1.1, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1.2 }}
-            className="absolute inset-0 bg-gradient-to-br from-[#1a1a1a] to-black"
-          >
-            {/* Placeholder for cinematic image */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-[60%] h-[70%] bg-gradient-to-br from-[#2a2a2a] to-[#0a0a0a] rounded-lg shadow-2xl" />
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Right - Content */}
-        <div className="bg-black text-white flex items-center">
-          <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="px-20 py-24 max-w-xl"
-          >
-            <p className="text-[10px] tracking-[0.4em] text-white/40 mb-6">TECHNOLOGY</p>
-            <h2 className="text-[42px] font-light leading-tight tracking-tight">
-              AI PRIME—A NEW<br />
-              BENCHMARK<br />
-              FOR FILMMAKING
-            </h2>
-            <p className="mt-8 text-[15px] leading-relaxed text-white/60">
-              Our proprietary AI engine analyzes over 47 emotional markers per frame. 
-              It understands context, anticipates narrative beats, and crafts a film 
-              that feels intentionally human.
-            </p>
-            <div className="mt-12 grid grid-cols-3 gap-8">
-              <div>
-                <p className="text-[32px] font-light">47</p>
-                <p className="text-[10px] tracking-[0.2em] text-white/40 mt-1">EMOTION MARKERS</p>
-              </div>
-              <div>
-                <p className="text-[32px] font-light">4K</p>
-                <p className="text-[10px] tracking-[0.2em] text-white/40 mt-1">RESOLUTION</p>
-              </div>
-              <div>
-                <p className="text-[32px] font-light">48H</p>
-                <p className="text-[10px] tracking-[0.2em] text-white/40 mt-1">DELIVERY</p>
-              </div>
-            </div>
-            <motion.a
-              href="#"
-              whileHover={{ x: 4 }}
-              className="inline-flex items-center gap-2 mt-12 text-[11px] tracking-[0.2em] text-white/70 hover:text-white transition-colors border-b border-white/30 pb-1"
-            >
-              READ MORE
-            </motion.a>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Features Grid */}
-      <section className="bg-[#f5f5f5] py-32">
-        <div className="max-w-6xl mx-auto px-8">
+        {/* Hero content */}
+        <div className="relative z-10">
+          {/* Eyebrow */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-20"
+            animate={isLoaded ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.8 }}
+            className="mb-8"
           >
-            <p className="text-[10px] tracking-[0.4em] text-black/40 mb-4">CAPABILITIES</p>
-            <h2 className="text-[36px] font-light tracking-tight">Precision AI Modules</h2>
+            <span className="text-[10px] tracking-[0.5em] text-white/40">
+              AI VIDEO EDITING FOR WEDDING FILMMAKERS
+            </span>
           </motion.div>
 
-          <div className="grid grid-cols-2 gap-px bg-black/10">
-            {features.map((feature, idx) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className="bg-[#f5f5f5] p-12 hover:bg-white transition-colors"
+          {/* Main headline */}
+          <div className="overflow-hidden">
+            <motion.h1
+              initial={{ y: '100%' }}
+              animate={isLoaded ? { y: 0 } : {}}
+              transition={{ duration: 1.2, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="text-[clamp(48px,12vw,180px)] font-light leading-[0.85] tracking-[-0.03em]"
+              onMouseEnter={() => setCursorVariant('text')}
+              onMouseLeave={() => setCursorVariant('default')}
+            >
+              EDIT LESS.
+            </motion.h1>
+          </div>
+          <div className="overflow-hidden">
+            <motion.h1
+              initial={{ y: '100%' }}
+              animate={isLoaded ? { y: 0 } : {}}
+              transition={{ duration: 1.2, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              className="text-[clamp(48px,12vw,180px)] font-light leading-[0.85] tracking-[-0.03em] text-white/20"
+            >
+              CREATE MORE.
+            </motion.h1>
+          </div>
+
+          {/* Bottom info row */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={isLoaded ? { opacity: 1 } : {}}
+            transition={{ duration: 0.8, delay: 1.2 }}
+            className="flex flex-col md:flex-row md:items-end justify-between mt-16 gap-8"
+          >
+            <p className="text-[14px] md:text-[16px] leading-relaxed text-white/50 max-w-md">
+              AI-powered precision editing that transforms hours of wedding footage 
+              into cinematic stories. Built for professionals.
+            </p>
+
+            <div className="flex items-center gap-8">
+              <MagneticButton
+                className="group flex items-center gap-4 text-[11px] tracking-[0.2em]"
+                onMouseEnter={() => setCursorVariant('button')}
+                onMouseLeave={() => setCursorVariant('default')}
               >
-                <p className="text-[11px] tracking-[0.3em] text-black/50 mb-3">{feature.title}</p>
-                <p className="text-[18px] font-light text-black/70">{feature.desc}</p>
+                <span className="w-16 h-16 rounded-full border border-white/30 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-500">
+                  <Play className="w-4 h-4 ml-1" />
+                </span>
+                WATCH REEL
+              </MagneticButton>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={isLoaded ? { opacity: 1 } : {}}
+          transition={{ delay: 2 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        >
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            className="w-[1px] h-12 bg-gradient-to-b from-white/50 to-transparent"
+          />
+        </motion.div>
+      </motion.section>
+
+      {/* Marquee Section */}
+      <section className="py-8 border-y border-white/10 overflow-hidden">
+        <Marquee speed={40}>
+          <div className="flex items-center gap-16 px-8 text-[11px] tracking-[0.3em] text-white/30">
+            <span>PREMIERE PRO</span>
+            <span className="text-white/10">◆</span>
+            <span>FINAL CUT</span>
+            <span className="text-white/10">◆</span>
+            <span>DAVINCI RESOLVE</span>
+            <span className="text-white/10">◆</span>
+            <span>CAPCUT PRO</span>
+            <span className="text-white/10">◆</span>
+            <span>PREMIERE PRO</span>
+            <span className="text-white/10">◆</span>
+            <span>FINAL CUT</span>
+            <span className="text-white/10">◆</span>
+            <span>DAVINCI RESOLVE</span>
+            <span className="text-white/10">◆</span>
+            <span>CAPCUT PRO</span>
+            <span className="text-white/10">◆</span>
+          </div>
+        </Marquee>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-32 px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-4">
+            {stats.map((stat, idx) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-100px' }}
+                transition={{ duration: 0.8, delay: idx * 0.1 }}
+                className="relative group"
+              >
+                <div className="text-[clamp(48px,8vw,96px)] font-light tracking-[-0.02em] leading-none">
+                  {stat.value}
+                  <span className="text-white/30">{stat.suffix}</span>
+                </div>
+                <div className="text-[10px] tracking-[0.3em] text-white/30 mt-4">
+                  {stat.label}
+                </div>
+                <motion.div 
+                  className="absolute bottom-0 left-0 h-[1px] bg-white/20"
+                  initial={{ width: 0 }}
+                  whileInView={{ width: '100%' }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1, delay: 0.5 + idx * 0.1 }}
+                />
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Workflow Section */}
-      <section className="bg-white py-32">
-        <div className="max-w-6xl mx-auto px-8">
+      {/* About Section - Full Width Image */}
+      <section id="about" className="relative min-h-screen flex items-center">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-transparent to-[#0a0a0a]/50 z-10" />
+        <div 
+          className="absolute inset-0 bg-cover bg-center opacity-40"
+          style={{
+            backgroundImage: 'url(https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2071&auto=format&fit=crop)'
+          }}
+        />
+        
+        <div className="relative z-20 px-8 lg:px-16 py-32 max-w-3xl">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 60 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-20"
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 1 }}
           >
-            <p className="text-[10px] tracking-[0.4em] text-black/40 mb-4">WORKFLOW</p>
-            <h2 className="text-[36px] font-light tracking-tight">Four Steps to Cinematic</h2>
+            <span className="text-[10px] tracking-[0.5em] text-white/40 block mb-8">ABOUT</span>
+            <h2 className="text-[clamp(32px,5vw,64px)] font-light leading-[1.1] tracking-[-0.02em]">
+              We believe editing should feel like{' '}
+              <span className="italic text-white/40">creating</span>, not labor.
+            </h2>
+            <p className="mt-12 text-[16px] leading-[1.8] text-white/50 max-w-xl">
+              Our AI engine analyzes 47 emotional markers per frame. It understands context, 
+              anticipates narrative beats, and crafts films that feel intentionally human—because 
+              the best technology is invisible.
+            </p>
+            <motion.a
+              href="#"
+              className="inline-flex items-center gap-3 mt-12 text-[11px] tracking-[0.2em] group"
+              whileHover={{ gap: '16px' }}
+            >
+              <span>OUR STORY</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </motion.a>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="work" className="py-32 px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="mb-24"
+          >
+            <span className="text-[10px] tracking-[0.5em] text-white/40">CAPABILITIES</span>
           </motion.div>
 
-          <div className="grid grid-cols-4 gap-12">
-            {workflowSteps.map((step, idx) => {
-              const IconComponent = step.icon;
-              return (
-                <motion.div
-                  key={step.num}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.15 }}
-                  whileHover="hover"
-                  className="group cursor-pointer relative"
-                >
-                  {/* Number with icon overlay on hover */}
-                  <div className="relative h-16">
-                    <motion.p 
-                      className="text-[48px] font-light text-black/10 absolute"
-                      variants={{
-                        hover: { opacity: 0, y: -10 }
-                      }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      {step.num}
-                    </motion.p>
-                    <motion.div
-                      className="absolute top-2"
-                      initial={{ opacity: 0, y: 10 }}
-                      variants={{
-                        hover: { opacity: 1, y: 0 }
-                      }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <div className="w-12 h-12 rounded-full bg-black flex items-center justify-center">
-                        <IconComponent className="w-5 h-5 text-white" />
-                      </div>
-                    </motion.div>
-        </div>
-                  <motion.p 
-                    className="text-[14px] tracking-[0.1em] mt-4"
-                    variants={{
-                      hover: { x: 4 }
-                    }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {step.title}
-                  </motion.p>
-                  <p className="text-[13px] text-black/50 mt-2 leading-relaxed group-hover:text-black/70 transition-colors">
-                    {step.desc}
-                  </p>
-                  {/* Underline animation */}
+          <div className="space-y-0">
+            {features.map((feature) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true, margin: '-50px' }}
+                transition={{ duration: 0.6 }}
+                className="group border-t border-white/10 py-12 cursor-pointer"
+                onMouseEnter={() => setCursorVariant('text')}
+                onMouseLeave={() => setCursorVariant('default')}
+              >
+                <div className="grid grid-cols-12 gap-4 items-center">
+                  <div className="col-span-1 text-[12px] text-white/20 font-mono">
+                    {feature.num}
+                  </div>
                   <motion.div 
-                    className="h-px bg-black mt-6 origin-left"
-                    initial={{ scaleX: 0 }}
-                    variants={{
-                      hover: { scaleX: 1 }
-                    }}
+                    className="col-span-5 lg:col-span-4"
+                    whileHover={{ x: 20 }}
                     transition={{ duration: 0.4 }}
-                  />
+                  >
+                    <h3 className="text-[clamp(24px,3vw,42px)] font-light tracking-[-0.02em] group-hover:text-white/60 transition-colors duration-500">
+                      {feature.title}
+                    </h3>
+                  </motion.div>
+                  <div className="col-span-5 lg:col-span-6 text-[14px] text-white/40 group-hover:text-white/60 transition-colors duration-500">
+                    {feature.desc}
+                  </div>
+                  <div className="col-span-1 flex justify-end">
+                    <motion.div
+                      initial={{ rotate: 0, opacity: 0 }}
+                      whileHover={{ rotate: 45, opacity: 1 }}
+                      className="w-8 h-8 border border-white/20 rounded-full flex items-center justify-center group-hover:border-white/40 transition-colors"
+                    >
+                      <ArrowUpRight className="w-4 h-4" />
+                    </motion.div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Process Section */}
+      <section className="py-32 bg-white text-black">
+        <div className="px-8 lg:px-16 max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-24">
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+            >
+              <span className="text-[10px] tracking-[0.5em] text-black/40">PROCESS</span>
+              <h2 className="mt-8 text-[clamp(36px,5vw,64px)] font-light leading-[1.05] tracking-[-0.02em]">
+                Four steps to cinematic
+              </h2>
+              <p className="mt-8 text-[16px] leading-[1.8] text-black/50 max-w-md">
+                From raw footage to timeline-ready sequences. 
+                Upload, let AI work, refine, and export directly to your NLE.
+              </p>
+            </motion.div>
+
+            <div className="space-y-12">
+              {['Upload all cameras', 'AI builds assembly', 'Refine your edit', 'Export to NLE'].map((step, idx) => (
+                <motion.div
+                  key={step}
+                  initial={{ opacity: 0, x: 40 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: idx * 0.1 }}
+                  className="flex items-start gap-8 group"
+                >
+                  <span className="text-[48px] font-light text-black/10 leading-none group-hover:text-black/30 transition-colors">
+                    0{idx + 1}
+                  </span>
+                  <div className="pt-4">
+                    <h3 className="text-[20px] font-light">{step}</h3>
+                    <motion.div 
+                      className="h-[1px] bg-black/20 mt-4 origin-left"
+                      initial={{ scaleX: 0 }}
+                      whileInView={{ scaleX: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.8, delay: 0.3 + idx * 0.1 }}
+                    />
+                  </div>
                 </motion.div>
-              );
-            })}
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section className="bg-[#0a0a0a] text-white py-32">
-        <div className="max-w-4xl mx-auto px-8">
+      <section className="py-32 px-8 lg:px-16 bg-[#050505]">
+        <div className="max-w-5xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-20"
+            className="text-center mb-24"
           >
-            <p className="text-[10px] tracking-[0.4em] text-white/40 mb-4">PRICING</p>
-            <h2 className="text-[36px] font-light tracking-tight">Start Creating Today</h2>
+            <span className="text-[10px] tracking-[0.5em] text-white/40">PRICING</span>
+            <h2 className="mt-8 text-[clamp(36px,5vw,56px)] font-light tracking-[-0.02em]">
+              Simple, transparent pricing
+            </h2>
           </motion.div>
 
-          <div className="grid grid-cols-2 gap-8">
-            {pricing.map((plan, idx) => (
-              <motion.div
-                key={plan.name}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.15 }}
-                className={`p-10 ${plan.featured ? 'bg-white text-black' : 'border border-white/20'}`}
-              >
-                <p className="text-[10px] tracking-[0.3em] opacity-50">{plan.name}</p>
-                <div className="mt-4 flex items-baseline">
-                  <span className="text-[48px] font-light">{plan.price}</span>
-                  <span className="text-[14px] opacity-50 ml-2">{plan.period}</span>
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Starter */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="group relative border border-white/10 p-10 lg:p-12 hover:border-white/30 transition-colors duration-500"
+            >
+              <div className="flex items-start justify-between mb-12">
+                <div>
+                  <span className="text-[10px] tracking-[0.3em] text-white/40">STARTER</span>
+                  <p className="text-[11px] text-white/30 mt-2">2 weddings/month</p>
                 </div>
-                <p className="mt-2 text-[12px] tracking-[0.1em] opacity-60">{plan.subtitle}</p>
-                <ul className="mt-8 space-y-3">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="text-[13px] opacity-70">— {feature}</li>
-                  ))}
-                </ul>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={`mt-10 w-full py-4 text-[11px] tracking-[0.2em] transition-colors ${
-                    plan.featured
-                      ? 'bg-black text-white hover:bg-black/80'
-                      : 'border border-white/30 hover:bg-white hover:text-black'
-                  }`}
-                >
-                  GET STARTED
-                </motion.button>
-              </motion.div>
-            ))}
+                <div className="text-right">
+                  <span className="text-[48px] font-light">$129</span>
+                  <span className="text-white/30 text-[14px]">/mo</span>
+                </div>
+              </div>
+              
+              <div className="space-y-4 text-[14px] text-white/50">
+                {['Multi-cam sync', 'Speech extraction', 'Story recommendations', 'Rough-cut generation', 'XML export'].map((item) => (
+                  <div key={item} className="flex items-center gap-3">
+                    <span className="w-1 h-1 bg-white/30 rounded-full" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="mt-12 w-full py-4 border border-white/20 text-[11px] tracking-[0.2em] hover:bg-white hover:text-black transition-all duration-500"
+              >
+                START FREE TRIAL
+              </motion.button>
+            </motion.div>
+
+            {/* Pro */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="group relative bg-white text-black p-10 lg:p-12"
+            >
+              <div className="absolute top-0 right-0 px-4 py-2 bg-black text-white text-[9px] tracking-[0.3em]">
+                POPULAR
+              </div>
+              
+              <div className="flex items-start justify-between mb-12">
+                <div>
+                  <span className="text-[10px] tracking-[0.3em] text-black/40">PRO</span>
+                  <p className="text-[11px] text-black/30 mt-2">4 weddings/month</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-[48px] font-light">$249</span>
+                  <span className="text-black/30 text-[14px]">/mo</span>
+                </div>
+              </div>
+              
+              <div className="space-y-4 text-[14px] text-black/60">
+                {['Everything in Starter', 'Full timeline assembly', 'AI shot rating', 'Music beat sync', 'Priority processing'].map((item) => (
+                  <div key={item} className="flex items-center gap-3">
+                    <span className="w-1 h-1 bg-black/40 rounded-full" />
+                    {item}
+                  </div>
+                ))}
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="mt-12 w-full py-4 bg-black text-white text-[11px] tracking-[0.2em] hover:bg-black/80 transition-all duration-500"
+              >
+                START FREE TRIAL
+              </motion.button>
+            </motion.div>
           </div>
 
           <motion.p
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-center mt-12 text-[12px] text-white/40"
+            className="text-center mt-12 text-[12px] text-white/30"
           >
-            7-day free trial included. No credit card required.
+            7-day free trial. No credit card required. Cancel anytime.
           </motion.p>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="bg-white py-32">
-        <div className="max-w-3xl mx-auto px-8 text-center">
+      <section className="py-32 px-8 lg:px-16 relative overflow-hidden">
+        <div 
+          className="absolute inset-0 opacity-5"
+          style={{
+            backgroundImage: `radial-gradient(circle at center, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+            backgroundSize: '32px 32px'
+          }}
+        />
+        
+        <div className="max-w-4xl mx-auto text-center relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 60 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            transition={{ duration: 1 }}
           >
-            <h2 className="text-[42px] font-light tracking-tight leading-tight">
-              Ready to transform<br />your workflow?
+            <h2 className="text-[clamp(36px,6vw,72px)] font-light leading-[1.05] tracking-[-0.02em]">
+              Ready to transform
+              <br />
+              <span className="text-white/30">your workflow?</span>
             </h2>
-            <p className="mt-6 text-[15px] text-black/50">
-              Join hundreds of wedding filmmakers who edit less and create more.
-            </p>
-            <motion.a
-              href="#"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="inline-block mt-10 px-12 py-4 bg-black text-white text-[11px] tracking-[0.2em] hover:bg-black/80 transition-colors"
-            >
-              START FREE TRIAL
-            </motion.a>
+            
+            <motion.div className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-6">
+              <MagneticButton
+                className="px-12 py-5 bg-white text-black text-[11px] tracking-[0.2em] hover:bg-white/90 transition-colors"
+                onMouseEnter={() => setCursorVariant('button')}
+                onMouseLeave={() => setCursorVariant('default')}
+              >
+                START FREE TRIAL
+              </MagneticButton>
+              
+              <motion.a
+                href="#"
+                className="flex items-center gap-3 text-[11px] tracking-[0.2em] text-white/50 hover:text-white transition-colors"
+                whileHover={{ gap: '16px' }}
+              >
+                SCHEDULE DEMO
+                <ArrowRight className="w-4 h-4" />
+              </motion.a>
+            </motion.div>
           </motion.div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-[#f5f5f5] py-16">
-        <div className="max-w-6xl mx-auto px-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[13px] tracking-[0.3em]">VELLUM</p>
-              <p className="text-[11px] text-black/40 mt-2">AI Video Editing for Wedding Filmmakers</p>
+      <footer className="border-t border-white/10">
+        <div className="px-8 lg:px-16 py-16">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-4 gap-16 lg:gap-8">
+              <div className="lg:col-span-2">
+                <span className="text-[13px] tracking-[0.5em]">VELLUM</span>
+                <p className="mt-4 text-[14px] text-white/40 max-w-sm">
+                  AI-powered video editing engineered for wedding filmmakers. Edit less. Create more.
+                </p>
+              </div>
+              
+              <div>
+                <span className="text-[10px] tracking-[0.3em] text-white/30">PRODUCT</span>
+                <div className="mt-6 space-y-4 text-[13px] text-white/50">
+                  <a href="#" className="block hover:text-white transition-colors">Features</a>
+                  <Link href="/pricing" className="block hover:text-white transition-colors">Pricing</Link>
+                  <a href="#" className="block hover:text-white transition-colors">Changelog</a>
+                </div>
+              </div>
+              
+              <div>
+                <span className="text-[10px] tracking-[0.3em] text-white/30">COMPANY</span>
+                <div className="mt-6 space-y-4 text-[13px] text-white/50">
+                  <a href="#" className="block hover:text-white transition-colors">About</a>
+                  <a href="#" className="block hover:text-white transition-colors">Contact</a>
+                  <a href="#" className="block hover:text-white transition-colors">Twitter</a>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-12 text-[11px] tracking-[0.15em] text-black/50">
-              <a href="#" className="hover:text-black transition-colors">PRIVACY</a>
-              <a href="#" className="hover:text-black transition-colors">TERMS</a>
-              <a href="#" className="hover:text-black transition-colors">CONTACT</a>
-              <a href="#" className="hover:text-black transition-colors">TWITTER</a>
+            
+            <div className="mt-24 pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between gap-4 text-[11px] text-white/30">
+              <span>© 2024 Vellum. All rights reserved.</span>
+              <div className="flex gap-8">
+                <a href="#" className="hover:text-white transition-colors">Privacy</a>
+                <a href="#" className="hover:text-white transition-colors">Terms</a>
+              </div>
             </div>
-          </div>
-          <div className="mt-12 pt-8 border-t border-black/10 text-[10px] text-black/30">
-            © 2024 Vellum. All rights reserved.
           </div>
         </div>
       </footer>
