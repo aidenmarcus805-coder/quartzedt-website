@@ -4,13 +4,6 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, ArrowUpRight, Play } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
-
-// Dynamic import for 3D scene (client-side only)
-const CameraScene = dynamic(() => import('./components/CameraScene'), {
-  ssr: false,
-  loading: () => null,
-});
 
 // Smooth scroll link component
 const SmoothLink = ({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) => (
@@ -180,13 +173,6 @@ export default function Home() {
             backgroundSize: '100px 100px'
           }}
         />
-
-        {/* 3D Camera Scene */}
-        <div className="absolute inset-0 flex items-center justify-end pr-[5%]">
-          <div className="w-[50%] h-full">
-            <CameraScene />
-          </div>
-        </div>
 
         {/* Hero content */}
         <div className="relative z-10">
