@@ -328,7 +328,6 @@ export default function Home() {
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 1 }}
           >
-            <span className="text-[10px] tracking-[0.5em] text-white/40 block mb-8">ABOUT</span>
             <h2 className="text-[clamp(32px,5vw,64px)] font-light leading-[1.1] tracking-[-0.02em]">
               We believe editing should feel like{' '}
               <span className="italic text-white/40">creating</span>, not labor.
@@ -353,14 +352,6 @@ export default function Home() {
       {/* Features Section */}
       <section id="work" className="py-32 px-8 lg:px-16">
         <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="mb-24"
-          >
-            <span className="text-[10px] tracking-[0.5em] text-white/40">CAPABILITIES</span>
-          </motion.div>
 
           <div className="space-y-0">
             {features.map((feature) => (
@@ -416,8 +407,7 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
             >
-              <span className="text-[10px] tracking-[0.5em] text-black/40">PROCESS</span>
-              <h2 className="mt-8 text-[clamp(36px,5vw,64px)] font-light leading-[1.05] tracking-[-0.02em]">
+              <h2 className="text-[clamp(36px,5vw,64px)] font-light leading-[1.05] tracking-[-0.02em]">
                 Four steps to cinematic
               </h2>
               <p className="mt-8 text-[16px] leading-[1.8] text-black/50 max-w-md">
@@ -458,41 +448,41 @@ export default function Home() {
 
       {/* Pricing Section */}
       <section className="py-32 px-8 lg:px-16 bg-[#050505]">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-center mb-24"
           >
-            <span className="text-[10px] tracking-[0.5em] text-white/40">PRICING</span>
-            <h2 className="mt-8 text-[clamp(36px,5vw,56px)] font-light tracking-[-0.02em]">
-              Simple, transparent pricing
+            <h2 className="text-[clamp(36px,5vw,56px)] font-light tracking-[-0.02em]">
+              One-time purchase. Yours forever.
             </h2>
+            <p className="mt-4 text-[14px] text-white/40 max-w-md mx-auto">
+              No subscriptions, no hidden fees. Buy once, own it for life.
+            </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Starter */}
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Lite */}
             <motion.div
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="group relative border border-white/10 p-10 lg:p-12 hover:border-white/30 transition-colors duration-500"
+              className="group relative border border-white/10 p-8 lg:p-10 hover:border-white/30 transition-colors duration-500"
             >
-              <div className="flex items-start justify-between mb-12">
-                <div>
-                  <span className="text-[10px] tracking-[0.3em] text-white/40">STARTER</span>
-                  <p className="text-[11px] text-white/30 mt-2">2 weddings/month</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-[48px] font-light">$129</span>
-                  <span className="text-white/30 text-[14px]">/mo</span>
-                </div>
+              <div className="mb-8">
+                <span className="text-[10px] tracking-[0.3em] text-white/40">LITE</span>
+                <p className="text-[11px] text-white/30 mt-2">Essential editing tools</p>
+              </div>
+              <div className="mb-8">
+                <span className="text-[56px] font-light leading-none">$79</span>
+                <span className="text-white/30 text-[14px] ml-2">one-time</span>
               </div>
               
               <div className="space-y-4 text-[14px] text-white/50">
-                {['Multi-cam sync', 'Speech extraction', 'Story recommendations', 'Rough-cut generation', 'XML export'].map((item) => (
+                {['Multi-cam sync', 'Basic speech extraction', 'Auto-sorting', 'Rough-cut generation', 'XML export'].map((item) => (
                   <div key={item} className="flex items-center gap-3">
                     <span className="w-1 h-1 bg-white/30 rounded-full" />
                     <span>{item}</span>
@@ -503,40 +493,38 @@ export default function Home() {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="mt-12 w-full py-4 border border-white/20 text-[11px] tracking-[0.2em] hover:bg-white hover:text-black transition-all duration-500"
+                className="mt-10 w-full py-4 border border-white/20 text-[11px] tracking-[0.2em] hover:bg-white hover:text-black transition-all duration-500"
               >
-                START FREE TRIAL
+                BUY LITE
               </motion.button>
             </motion.div>
 
-            {/* Pro */}
+            {/* Max */}
             <motion.div
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
-              className="group relative bg-white text-black p-10 lg:p-12"
+              className="group relative bg-white text-black p-8 lg:p-10"
             >
               <div className="absolute top-0 right-0 px-4 py-2 bg-black text-white text-[9px] tracking-[0.3em]">
                 POPULAR
               </div>
               
-              <div className="flex items-start justify-between mb-12">
-                <div>
-                  <span className="text-[10px] tracking-[0.3em] text-black/40">PRO</span>
-                  <p className="text-[11px] text-black/30 mt-2">4 weddings/month</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-[48px] font-light">$249</span>
-                  <span className="text-black/30 text-[14px]">/mo</span>
-                </div>
+              <div className="mb-8">
+                <span className="text-[10px] tracking-[0.3em] text-black/40">MAX</span>
+                <p className="text-[11px] text-black/30 mt-2">Full professional suite</p>
+              </div>
+              <div className="mb-8">
+                <span className="text-[56px] font-light leading-none">$149</span>
+                <span className="text-black/30 text-[14px] ml-2">one-time</span>
               </div>
               
               <div className="space-y-4 text-[14px] text-black/60">
-                {['Everything in Starter', 'Full timeline assembly', 'AI shot rating', 'Music beat sync', 'Priority processing'].map((item) => (
+                {['Everything in Lite', 'Full timeline assembly', 'AI story building', 'AI shot rating & selection', 'Music beat sync', 'Advanced color match'].map((item) => (
                   <div key={item} className="flex items-center gap-3">
                     <span className="w-1 h-1 bg-black/40 rounded-full" />
-                    {item}
+                    <span>{item}</span>
                   </div>
                 ))}
               </div>
@@ -544,12 +532,51 @@ export default function Home() {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="mt-12 w-full py-4 bg-black text-white text-[11px] tracking-[0.2em] hover:bg-black/80 transition-all duration-500"
+                className="mt-10 w-full py-4 bg-black text-white text-[11px] tracking-[0.2em] hover:bg-black/80 transition-all duration-500"
               >
-                START FREE TRIAL
+                BUY MAX
               </motion.button>
             </motion.div>
-          </div>
+
+            {/* Max+ */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3 }}
+              className="group relative border border-white/10 p-8 lg:p-10 hover:border-white/30 transition-colors duration-500 bg-gradient-to-b from-white/[0.03] to-transparent"
+            >
+              <div className="absolute top-0 right-0 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[9px] tracking-[0.3em]">
+                ADD-ON
+              </div>
+              
+              <div className="mb-8">
+                <span className="text-[10px] tracking-[0.3em] text-white/40">MAX+</span>
+                <p className="text-[11px] text-white/30 mt-2">Requires Max license</p>
+              </div>
+              <div className="mb-8">
+                <span className="text-[56px] font-light leading-none">$29</span>
+                <span className="text-white/30 text-[14px] ml-2">/month</span>
+              </div>
+              
+              <div className="space-y-4 text-[14px] text-white/50">
+                {['Priority GPU processing', 'Cloud rendering', 'Early access features', 'Premium support', 'Team collaboration', 'Custom LUT profiles'].map((item) => (
+                  <div key={item} className="flex items-center gap-3">
+                    <span className="w-1 h-1 bg-amber-500/50 rounded-full" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="mt-10 w-full py-4 border border-amber-500/30 text-[11px] tracking-[0.2em] hover:bg-amber-500 hover:text-black hover:border-amber-500 transition-all duration-500"
+              >
+                ADD MAX+
+              </motion.button>
+            </motion.div>
+        </div>
 
           <motion.p
             initial={{ opacity: 0 }}
@@ -557,7 +584,7 @@ export default function Home() {
             viewport={{ once: true }}
             className="text-center mt-12 text-[12px] text-white/30"
           >
-            7-day free trial. No credit card required. Cancel anytime.
+            Instant download. Lifetime updates for major versions. 30-day money-back guarantee.
           </motion.p>
         </div>
       </section>
