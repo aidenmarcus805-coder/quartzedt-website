@@ -174,53 +174,8 @@ export default function Home() {
           }}
         />
 
-        {/* Camera Image - Right Side */}
-        <motion.div
-          initial={{ opacity: 0, x: 100, rotateY: -15 }}
-          animate={isLoaded ? { opacity: 1, x: 0, rotateY: 0 } : {}}
-          transition={{ duration: 1.5, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute right-[-5%] top-1/2 -translate-y-1/2 w-[55%] hidden lg:block pointer-events-none"
-          style={{ perspective: '1000px' }}
-        >
-          <motion.div
-            animate={{ y: [0, -10, 0] }}
-            transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1964&auto=format&fit=crop"
-              alt="Professional camera"
-              className="w-full h-auto object-contain opacity-60 mix-blend-lighten"
-              style={{
-                filter: 'contrast(1.1) brightness(0.9)',
-                maskImage: 'linear-gradient(to left, black 60%, transparent 100%)',
-                WebkitMaskImage: 'linear-gradient(to left, black 60%, transparent 100%)',
-              }}
-            />
-            {/* Glow effect behind camera */}
-            <div 
-              className="absolute inset-0 -z-10 blur-3xl opacity-20"
-              style={{
-                background: 'radial-gradient(ellipse at center, rgba(100,150,255,0.3) 0%, transparent 70%)',
-              }}
-            />
-          </motion.div>
-        </motion.div>
-
         {/* Hero content */}
         <div className="relative z-10">
-          {/* Eyebrow */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={isLoaded ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            className="mb-8"
-          >
-            <span className="text-[10px] tracking-[0.5em] text-white/40">
-              AI VIDEO EDITING FOR WEDDING FILMMAKERS
-            </span>
-          </motion.div>
-
           {/* Main headline */}
           <div className="overflow-hidden">
             <motion.h1
@@ -311,11 +266,8 @@ export default function Home() {
         </Marquee>
       </section>
 
-      {/* Transfer/Import Section - SD Card connects here */}
+      {/* Transfer/Import Section */}
       <section id="transfer" className="relative py-32 px-8 lg:px-16 bg-gradient-to-b from-[#0a0a0a] to-[#050505] overflow-hidden">
-        {/* Connecting line from SD card */}
-        <div className="absolute top-0 left-1/2 w-[1px] h-32 bg-gradient-to-b from-white/20 to-transparent" />
-        
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 60 }}
@@ -324,10 +276,6 @@ export default function Home() {
             transition={{ duration: 0.8 }}
             className="text-center mb-20"
           >
-            <div className="inline-flex items-center gap-3 mb-8 px-4 py-2 border border-white/10 rounded-full">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-[11px] tracking-[0.2em] text-white/50">FOOTAGE DETECTED</span>
-            </div>
             <h2 className="text-[clamp(32px,5vw,56px)] font-light tracking-[-0.02em]">
               From camera to timeline
               <br />
