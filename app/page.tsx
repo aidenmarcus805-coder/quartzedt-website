@@ -4,6 +4,13 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, ArrowUpRight, Play } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+
+// Dynamic import for 3D scene (client-side only)
+const CameraScene = dynamic(() => import('./components/CameraScene'), {
+  ssr: false,
+  loading: () => null,
+});
 
 // Smooth scroll link component
 const SmoothLink = ({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) => (
@@ -174,6 +181,13 @@ export default function Home() {
           }}
         />
 
+        {/* 3D Camera Scene */}
+        <div className="absolute inset-0 flex items-center justify-end pr-[5%]">
+          <div className="w-[50%] h-full">
+            <CameraScene />
+          </div>
+        </div>
+
         {/* Hero content */}
         <div className="relative z-10">
           {/* Eyebrow */}
@@ -276,6 +290,81 @@ export default function Home() {
             <span className="text-white/10">◆</span>
           </div>
         </Marquee>
+      </section>
+
+      {/* Transfer/Import Section - SD Card connects here */}
+      <section id="transfer" className="relative py-32 px-8 lg:px-16 bg-gradient-to-b from-[#0a0a0a] to-[#050505] overflow-hidden">
+        {/* Connecting line from SD card */}
+        <div className="absolute top-0 left-1/2 w-[1px] h-32 bg-gradient-to-b from-white/20 to-transparent" />
+        
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 60 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-20"
+          >
+            <div className="inline-flex items-center gap-3 mb-8 px-4 py-2 border border-white/10 rounded-full">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-[11px] tracking-[0.2em] text-white/50">FOOTAGE DETECTED</span>
+            </div>
+            <h2 className="text-[clamp(32px,5vw,56px)] font-light tracking-[-0.02em]">
+              From camera to timeline
+              <br />
+              <span className="text-white/30">in minutes, not hours.</span>
+            </h2>
+          </motion.div>
+
+          {/* Feature cards - what happens after import */}
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                step: '01',
+                title: 'Auto-Ingest',
+                desc: 'Drop your SD card. VELLUM scans, sorts, and organizes every file by camera, timestamp, and content type.',
+                icon: '↓'
+              },
+              {
+                step: '02', 
+                title: 'AI Analysis',
+                desc: 'Our engine analyzes audio peaks, facial expressions, and scene composition to identify the best moments.',
+                icon: '◎'
+              },
+              {
+                step: '03',
+                title: 'Smart Assembly',
+                desc: 'Receive a rough-cut timeline built around emotional beats, ready for your creative refinement.',
+                icon: '▶'
+              }
+            ].map((feature, idx) => (
+              <motion.div
+                key={feature.step}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.15 }}
+                className="group relative p-8 border border-white/10 hover:border-white/20 transition-colors duration-500"
+              >
+                <div className="flex items-start justify-between mb-6">
+                  <span className="text-[11px] tracking-[0.3em] text-white/30">{feature.step}</span>
+                  <span className="text-2xl opacity-20 group-hover:opacity-50 transition-opacity">{feature.icon}</span>
+                </div>
+                <h3 className="text-[20px] font-light mb-3">{feature.title}</h3>
+                <p className="text-[14px] text-white/40 leading-relaxed">{feature.desc}</p>
+                
+                {/* Progress line */}
+                <motion.div 
+                  className="absolute bottom-0 left-0 h-[2px] bg-white/20"
+                  initial={{ width: 0 }}
+                  whileInView={{ width: '100%' }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1, delay: 0.5 + idx * 0.2 }}
+                />
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* Stats Section */}
