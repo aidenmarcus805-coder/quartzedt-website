@@ -68,28 +68,29 @@ function CameraModel({ scrollProgress, videoElement }: { scrollProgress: number;
     if (groupRef.current) {
       // Gentle idle animation
       const time = Date.now() * 0.001;
-      const idleY = Math.sin(time * 0.3) * 0.01;
+      const idleY = Math.sin(time * 0.3) * 0.008;
       
       // SCROLL ANIMATION
-      // Progress 0 = zoomed in, Progress 0.5+ = zoomed out showing full camera
+      // Progress 0 = zoomed in on screen, Progress 0.5+ = zoomed out showing full camera
       const scrollEase = Math.min(scrollProgress * 2, 1);
       
       // Scale: Start large (zoomed in), shrink to normal size
-      const startScale = 0.06;
-      const endScale = 0.025;
+      const startScale = 0.055;
+      const endScale = 0.022;
       const currentScale = THREE.MathUtils.lerp(startScale, endScale, scrollEase);
       groupRef.current.scale.setScalar(currentScale);
       
       // Position Y: Move up as we zoom out
-      const targetY = THREE.MathUtils.lerp(-1, 0.5, scrollEase);
+      const targetY = THREE.MathUtils.lerp(-0.5, 0.3, scrollEase);
       groupRef.current.position.y = THREE.MathUtils.lerp(
         groupRef.current.position.y,
         targetY,
         0.08
       );
       
-      // Rotation: Start showing screen, rotate slightly
-      const targetRotY = THREE.MathUtils.lerp(Math.PI, Math.PI - 0.4, scrollEase) + idleY;
+      // Rotation: Start showing screen (back), rotate slightly to show angle
+      // No rotation = back of camera, rotate towards Math.PI = front/lens
+      const targetRotY = THREE.MathUtils.lerp(0, 0.4, scrollEase) + idleY;
       groupRef.current.rotation.y = THREE.MathUtils.lerp(
         groupRef.current.rotation.y,
         targetRotY,
@@ -99,7 +100,7 @@ function CameraModel({ scrollProgress, videoElement }: { scrollProgress: number;
       // Slight tilt
       groupRef.current.rotation.x = THREE.MathUtils.lerp(
         groupRef.current.rotation.x,
-        0.1 + scrollEase * 0.1,
+        0.05 + scrollEase * 0.1,
         0.06
       );
       
@@ -112,12 +113,12 @@ function CameraModel({ scrollProgress, videoElement }: { scrollProgress: number;
   });
 
   return (
-    <group ref={groupRef} position={[0, 0, 0]} rotation={[0, Math.PI, 0]}>
+    <group ref={groupRef} position={[0, 0, 0]} rotation={[0, 0, 0]}>
       <primitive object={obj} />
       
-      {/* Camera LCD screen with video - positioned on the back */}
-      <mesh position={[0, 10, -22]}>
-        <planeGeometry args={[50, 35]} />
+      {/* Camera LCD screen with video - positioned on the back of camera body */}
+      <mesh position={[0, 8, 22]}>
+        <planeGeometry args={[48, 34]} />
         <meshBasicMaterial ref={screenMaterialRef} color="#111111" toneMapped={false} />
       </mesh>
     </group>
