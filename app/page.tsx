@@ -181,7 +181,7 @@ export default function Home() {
               <TextReveal delay={0.4}>
                 <h1 className="text-[clamp(48px,12vw,160px)] font-light leading-[0.85] tracking-[-0.04em] text-white/20">
                   Create more
-                </h1>
+          </h1>
               </TextReveal>
             </div>
             
@@ -308,34 +308,43 @@ export default function Home() {
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              className="group border-b border-white/[0.06] py-10 lg:py-14 cursor-pointer"
+              className="group border-b border-white/[0.06] py-8 lg:py-12 cursor-pointer"
             >
-              <div className="grid grid-cols-12 gap-4 items-center">
-                <div className="col-span-1 hidden lg:block">
+              <div className="flex items-center gap-6 lg:gap-12">
+                {/* Icon */}
+                <div className="hidden lg:flex w-12 shrink-0">
                   <cap.icon className="w-5 h-5 text-white/20 group-hover:text-white/60 transition-colors" />
                 </div>
+                
+                {/* Title */}
                 <motion.div 
-                  className="col-span-12 lg:col-span-5"
+                  className="w-full lg:w-[300px] shrink-0"
                   whileHover={{ x: 10 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <h3 className="text-[clamp(22px,2.5vw,32px)] font-light tracking-[-0.02em] group-hover:text-white/70 transition-colors">
+                  <h3 className="text-[clamp(20px,2vw,28px)] font-light tracking-[-0.02em] group-hover:text-white/70 transition-colors">
                     {cap.title}
                   </h3>
                 </motion.div>
-                <div className="col-span-10 lg:col-span-5 text-[14px] text-white/30 group-hover:text-white/50 transition-colors">
+                
+                {/* Description */}
+                <div className="hidden lg:block flex-1 text-[14px] text-white/30 group-hover:text-white/50 transition-colors">
                   {cap.desc}
                 </div>
-                <div className="col-span-2 lg:col-span-1 flex justify-end">
+                
+                {/* Arrow */}
+                <div className="shrink-0 ml-auto">
                   <motion.div
-                    initial={{ opacity: 0, rotate: 0 }}
-                    whileHover={{ opacity: 1, rotate: 45 }}
-                    className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center group-hover:border-white/30 transition-colors"
+                    whileHover={{ rotate: 45 }}
+                    className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center group-hover:border-white/30 transition-colors opacity-0 group-hover:opacity-100"
                   >
                     <ArrowUpRight className="w-4 h-4 text-white/40" />
                   </motion.div>
                 </div>
               </div>
+              
+              {/* Mobile description */}
+              <p className="lg:hidden text-[13px] text-white/30 mt-3">{cap.desc}</p>
             </motion.div>
           ))}
         </div>
@@ -344,7 +353,7 @@ export default function Home() {
       {/* Stats Row */}
       <section className="py-24 lg:py-32 bg-white text-black">
         <div className="px-4 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0">
             {[
               { value: '47', label: 'Emotion markers', suffix: '' },
               { value: '10', label: 'Hour turnaround', suffix: 'hr' },
@@ -352,12 +361,12 @@ export default function Home() {
               { value: '99', label: 'Satisfaction rate', suffix: '%' },
             ].map((stat, idx) => (
               <Reveal key={stat.label} delay={idx * 0.1}>
-                <div className="relative">
-                  <div className="text-[clamp(40px,7vw,80px)] font-light tracking-[-0.03em] leading-none">
+                <div className="relative lg:text-center">
+                  <div className="text-[clamp(48px,8vw,96px)] font-light tracking-[-0.04em] leading-none">
                     {stat.value}
-                    <span className="text-black/20">{stat.suffix}</span>
+                    <span className="text-black/15">{stat.suffix}</span>
                   </div>
-                  <div className="text-[12px] tracking-[0.1em] text-black/40 mt-3 uppercase">
+                  <div className="text-[11px] tracking-[0.2em] text-black/40 mt-4 uppercase">
                     {stat.label}
                   </div>
                 </div>
