@@ -34,7 +34,7 @@ function CameraModel({ scrollProgress, videoElement }: { scrollProgress: number;
             normalMap: textures.normal,
             roughnessMap: textures.glossiness,
             metalnessMap: textures.specular,
-            metalness: 0.4,
+            metalness: 0.5,
             roughness: 0.3,
             envMapIntensity: 1.5,
           });
@@ -69,68 +69,56 @@ function CameraModel({ scrollProgress, videoElement }: { scrollProgress: number;
       // Gentle idle animation
       const time = Date.now() * 0.001;
       const idleY = Math.sin(time * 0.3) * 0.01;
-      const idleX = Math.cos(time * 0.2) * 0.005;
       
-      // SCROLL ANIMATION: Start zoomed in, zoom out to reveal camera
-      // Progress 0 = zoomed in on screen, Progress 0.5+ = zoomed out showing full camera
+      // SCROLL ANIMATION
+      // Progress 0 = zoomed in, Progress 0.5+ = zoomed out showing full camera
+      const scrollEase = Math.min(scrollProgress * 2, 1);
       
       // Scale: Start large (zoomed in), shrink to normal size
-      const startScale = 0.12; // Zoomed in - camera fills more of screen
-      const endScale = 0.04;   // Zoomed out - see full camera
-      const currentScale = THREE.MathUtils.lerp(startScale, endScale, Math.min(scrollProgress * 2, 1));
+      const startScale = 0.06;
+      const endScale = 0.025;
+      const currentScale = THREE.MathUtils.lerp(startScale, endScale, scrollEase);
       groupRef.current.scale.setScalar(currentScale);
       
-      // Position: Start centered on screen area, move to show full camera
-      const startY = -0.3;
-      const endY = 0.5;
-      const startZ = 1;
-      const endZ = 0;
-      
+      // Position Y: Move up as we zoom out
+      const targetY = THREE.MathUtils.lerp(-1, 0.5, scrollEase);
       groupRef.current.position.y = THREE.MathUtils.lerp(
         groupRef.current.position.y,
-        THREE.MathUtils.lerp(startY, endY, Math.min(scrollProgress * 2, 1)),
+        targetY,
         0.08
       );
       
-      groupRef.current.position.z = THREE.MathUtils.lerp(
-        groupRef.current.position.z,
-        THREE.MathUtils.lerp(startZ, endZ, Math.min(scrollProgress * 2, 1)),
-        0.08
-      );
-      
-      // Rotation: Subtle rotation as you scroll
-      const startRotY = -0.1; // Start showing screen
-      const endRotY = -0.4;   // Rotate to show more of the side
-      
+      // Rotation: Start showing screen, rotate slightly
+      const targetRotY = THREE.MathUtils.lerp(Math.PI, Math.PI - 0.4, scrollEase) + idleY;
       groupRef.current.rotation.y = THREE.MathUtils.lerp(
         groupRef.current.rotation.y,
-        THREE.MathUtils.lerp(startRotY, endRotY, Math.min(scrollProgress * 1.5, 1)) + idleY,
-        0.05
+        targetRotY,
+        0.06
       );
       
+      // Slight tilt
       groupRef.current.rotation.x = THREE.MathUtils.lerp(
         groupRef.current.rotation.x,
-        0.1 + scrollProgress * 0.15 + idleX,
-        0.05
+        0.1 + scrollEase * 0.1,
+        0.06
       );
       
-      // After 50% scroll, camera starts moving down and away
-      if (scrollProgress > 0.5) {
-        const exitProgress = (scrollProgress - 0.5) * 2;
-        groupRef.current.position.y -= exitProgress * 2;
-        groupRef.current.rotation.x += exitProgress * 0.3;
+      // After 60% scroll, camera moves down and away
+      if (scrollProgress > 0.6) {
+        const exitProgress = (scrollProgress - 0.6) * 2.5;
+        groupRef.current.position.y -= exitProgress * 3;
       }
     }
   });
 
   return (
-    <group ref={groupRef} position={[0, 0, 0]} scale={0.08} rotation={[0.1, -0.2, 0]}>
+    <group ref={groupRef} position={[0, 0, 0]} rotation={[0, Math.PI, 0]}>
       <primitive object={obj} />
       
-      {/* Camera screen showing video - positioned on back LCD */}
-      <mesh position={[0, 8, 23]} rotation={[0, Math.PI, 0]}>
-        <planeGeometry args={[52, 36]} />
-        <meshBasicMaterial ref={screenMaterialRef} color="#000000" toneMapped={false} />
+      {/* Camera LCD screen with video - positioned on the back */}
+      <mesh position={[0, 10, -22]}>
+        <planeGeometry args={[50, 35]} />
+        <meshBasicMaterial ref={screenMaterialRef} color="#111111" toneMapped={false} />
       </mesh>
     </group>
   );
@@ -140,75 +128,50 @@ function CameraModel({ scrollProgress, videoElement }: { scrollProgress: number;
 function Lighting() {
   return (
     <>
-      {/* Hemisphere light - sky and ground colors */}
-      <hemisphereLight args={['#ffffff', '#333333', 1.5]} />
+      {/* Hemisphere light */}
+      <hemisphereLight args={['#ffffff', '#222222', 2]} />
       
-      {/* Strong ambient light for base visibility */}
-      <ambientLight intensity={1} />
+      {/* Ambient */}
+      <ambientLight intensity={1.5} />
       
-      {/* Main key light - front right */}
-      <directionalLight 
-        position={[5, 5, 8]} 
-        intensity={3}
-        color="#ffffff"
-      />
+      {/* Key light - front */}
+      <directionalLight position={[0, 5, 10]} intensity={3} color="#ffffff" />
       
-      {/* Fill light - front left */}
-      <directionalLight 
-        position={[-5, 3, 8]} 
-        intensity={2}
-        color="#ffffff"
-      />
+      {/* Fill lights */}
+      <directionalLight position={[-5, 3, 5]} intensity={2} color="#ffffff" />
+      <directionalLight position={[5, 3, 5]} intensity={2} color="#ffffff" />
       
       {/* Top light */}
-      <directionalLight 
-        position={[0, 10, 5]} 
-        intensity={2}
-        color="#ffffff"
-      />
+      <directionalLight position={[0, 10, 0]} intensity={1.5} color="#ffffff" />
       
-      {/* Back rim light for edge definition */}
-      <directionalLight 
-        position={[0, 3, -5]} 
-        intensity={1.5}
-        color="#6080ff"
-      />
+      {/* Rim light */}
+      <directionalLight position={[0, 2, -10]} intensity={1} color="#4060ff" />
       
-      {/* Front facing light - illuminates the screen area */}
-      <pointLight position={[0, 0, 12]} intensity={2} color="#ffffff" />
-      
-      {/* Side accent lights */}
-      <pointLight position={[8, 0, 4]} intensity={1.5} color="#ffffff" />
-      <pointLight position={[-8, 0, 4]} intensity={1.5} color="#ffffff" />
-      
-      {/* Subtle light on screen */}
-      <spotLight 
-        position={[0, 2, 8]}
-        angle={0.5}
-        penumbra={0.5}
-        intensity={2}
-        color="#ffffff"
-        target-position={[0, 0, 0]}
-      />
+      {/* Point lights for detail */}
+      <pointLight position={[0, 0, 8]} intensity={2} color="#ffffff" />
+      <pointLight position={[-6, 0, 4]} intensity={1} color="#ffffff" />
+      <pointLight position={[6, 0, 4]} intensity={1} color="#ffffff" />
     </>
   );
 }
 
-// Loading fallback - spinning camera silhouette
+// Loading fallback
 function LoadingFallback() {
   const meshRef = useRef<THREE.Mesh>(null);
   
   useFrame(() => {
     if (meshRef.current) {
-      meshRef.current.rotation.y += 0.01;
+      meshRef.current.rotation.y += 0.02;
     }
   });
 
   return (
-    <mesh ref={meshRef}>
-      <boxGeometry args={[2, 1.4, 0.8]} />
-      <meshStandardMaterial color="#222222" />
-    </mesh>
+    <group>
+      <mesh ref={meshRef}>
+        <boxGeometry args={[2, 1.4, 0.8]} />
+        <meshStandardMaterial color="#333333" metalness={0.5} roughness={0.5} />
+      </mesh>
+    </group>
   );
 }
 
@@ -224,12 +187,11 @@ export default function CameraScene() {
     offset: ['start start', 'end start']
   });
 
-  // Set video element after mount using callback ref
+  // Set video element after mount
   const handleVideoRef = useCallback((element: HTMLVideoElement | null) => {
     videoRef.current = element;
     if (element) {
       setVideoElement(element);
-      // Ensure video plays
       element.play().catch(() => {});
     }
   }, []);
@@ -243,7 +205,7 @@ export default function CameraScene() {
 
   return (
     <div ref={containerRef} className="relative w-full h-[200vh]">
-      {/* Hidden video element for texture */}
+      {/* Video element for texture */}
       <video
         ref={handleVideoRef}
         className="hidden"
@@ -256,14 +218,14 @@ export default function CameraScene() {
       </video>
 
       {/* Sticky 3D Canvas */}
-      <div className="sticky top-0 w-full h-screen">
+      <div className="sticky top-0 w-full h-screen flex items-center justify-center">
         <Canvas
-          camera={{ position: [0, 0, 5], fov: 50 }}
+          camera={{ position: [0, 0, 4], fov: 55 }}
           gl={{ 
             antialias: true, 
             alpha: true,
             toneMapping: THREE.ACESFilmicToneMapping,
-            toneMappingExposure: 1.2,
+            toneMappingExposure: 1.3,
           }}
           style={{ background: 'transparent' }}
         >
