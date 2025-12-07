@@ -1,52 +1,40 @@
 'use client';
 
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, ArrowUpRight, Play } from 'lucide-react';
+import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import { ArrowRight, ArrowUpRight, Play, Zap, Layers, Wand2, Volume2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 
-// Smooth scroll link component
-const SmoothLink = ({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) => (
-  <motion.a 
-    href={href} 
-    className={className}
-    whileHover={{ opacity: 0.6 }}
-    transition={{ duration: 0.2 }}
-  >
-    {children}
-  </motion.a>
-);
-
-
-// Magnetic button component
-const MagneticButton = ({ children, className = '', ...props }: React.ComponentProps<typeof motion.button> & { className?: string }) => {
-  const ref = useRef<HTMLButtonElement>(null);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-
-  const handleMouse = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const { clientX, clientY } = e;
-    const { left, top, width, height } = ref.current!.getBoundingClientRect();
-    const x = (clientX - left - width / 2) * 0.15;
-    const y = (clientY - top - height / 2) * 0.15;
-    setPosition({ x, y });
-  };
-
-  const reset = () => setPosition({ x: 0, y: 0 });
-
+// Reveal animation wrapper
+const Reveal = ({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: '-100px' });
+  
   return (
-    <motion.button
-      ref={ref}
-      onMouseMove={handleMouse}
-      onMouseLeave={reset}
-      animate={{ x: position.x, y: position.y }}
-      transition={{ type: 'spring', stiffness: 150, damping: 15 }}
-      className={className}
-      {...props}
-    >
-      {children}
-    </motion.button>
+    <div ref={ref}>
+      <motion.div
+        initial={{ opacity: 0, y: 60 }}
+        animate={isInView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
+      >
+        {children}
+      </motion.div>
+    </div>
   );
 };
+
+// Text reveal animation
+const TextReveal = ({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) => (
+  <div className="overflow-hidden">
+    <motion.div
+      initial={{ y: '100%' }}
+      animate={{ y: 0 }}
+      transition={{ duration: 1.2, delay, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.div>
+  </div>
+);
 
 // Horizontal Marquee
 const Marquee = ({ children, speed = 30 }: { children: React.ReactNode; speed?: number }) => (
@@ -62,671 +50,488 @@ const Marquee = ({ children, speed = 30 }: { children: React.ReactNode; speed?: 
   </div>
 );
 
-const features = [
-  { title: 'AUTOSYNC™', desc: 'Multi-camera alignment with sub-frame accuracy', num: '01' },
-  { title: 'AUTOSELECT™', desc: 'AI identifies vows, laughter, and key moments', num: '02' },
-  { title: 'AUTOFLOW™', desc: 'Edits shaped around emotional rhythm', num: '03' },
-  { title: 'AUDIO CLEANUP', desc: 'Wind, hum, and noise removed automatically', num: '04' },
-];
-
-const stats = [
-  { value: '47', label: 'EMOTION MARKERS', suffix: '' },
-  { value: '10', label: 'HOUR TURNAROUND', suffix: 'hr' },
-  { value: '4K', label: 'RESOLUTION', suffix: '' },
-  { value: '99', label: 'SATISFACTION', suffix: '%' },
-];
-
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll();
-  const [cursorVariant, setCursorVariant] = useState('default');
-  
-  // Parallax values
-  const heroY = useTransform(scrollYProgress, [0, 0.3], [0, -150]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 0.3], [1, 0.95]);
-
-  // Loading state
   const [isLoaded, setIsLoaded] = useState(false);
   
+  // Parallax values
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
+  const heroScale = useTransform(scrollYProgress, [0, 0.2], [1, 0.9]);
+  const videoScale = useTransform(scrollYProgress, [0, 0.3], [1, 1.1]);
+
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 100);
     return () => clearTimeout(timer);
   }, []);
 
-  // Custom cursor
-  const cursorRef = useRef<HTMLDivElement>(null);
-  
-  useEffect(() => {
-    const moveCursor = (e: MouseEvent) => {
-      if (cursorRef.current) {
-        cursorRef.current.style.left = `${e.clientX}px`;
-        cursorRef.current.style.top = `${e.clientY}px`;
-      }
-    };
-    window.addEventListener('mousemove', moveCursor);
-    return () => window.removeEventListener('mousemove', moveCursor);
-  }, []);
+  const capabilities = [
+    { icon: Zap, title: 'AUTOSYNC™', desc: 'Multi-camera alignment with sub-frame accuracy' },
+    { icon: Wand2, title: 'AUTOSELECT™', desc: 'AI identifies vows, laughter, and key moments' },
+    { icon: Layers, title: 'AUTOFLOW™', desc: 'Edits shaped around emotional rhythm' },
+    { icon: Volume2, title: 'AUDIO CLEANUP', desc: 'Wind, hum, and noise removed automatically' },
+  ];
 
   return (
-    <div ref={containerRef} className="bg-[#0a0a0a] text-white min-h-screen selection:bg-white selection:text-black">
-      {/* Custom Cursor */}
-      <motion.div
-        ref={cursorRef}
-        className="fixed w-4 h-4 pointer-events-none z-[100] mix-blend-difference hidden lg:block"
-        animate={cursorVariant}
-        variants={{
-          default: { scale: 1, backgroundColor: '#fff' },
-          text: { scale: 3, backgroundColor: '#fff' },
-          button: { scale: 2.5, backgroundColor: '#fff' },
-        }}
-        style={{ borderRadius: '50%', transform: 'translate(-50%, -50%)' }}
-      />
-
+    <div ref={containerRef} className="bg-[#050505] text-white min-h-screen selection:bg-white selection:text-black overflow-x-hidden">
+      
       {/* Navigation */}
       <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed top-0 left-0 right-0 z-50 mix-blend-difference"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1, delay: 0.5 }}
+        className="fixed top-0 left-0 right-0 z-50"
       >
-        <div className="flex items-center justify-between h-20 px-8 lg:px-16">
-          <Link href="/" className="text-[13px] tracking-[0.5em] font-medium text-white">
+        <div className="flex items-center justify-between h-20 px-6 lg:px-12">
+          <Link href="/" className="text-[13px] tracking-[0.4em] font-medium">
             VELLUM
           </Link>
           
-          <div className="hidden md:flex items-center gap-12 text-[11px] tracking-[0.2em]">
-            <SmoothLink href="#work" className="text-white/60 hover:text-white">WORK</SmoothLink>
-            <SmoothLink href="#about" className="text-white/60 hover:text-white">ABOUT</SmoothLink>
-            <Link href="/pricing" className="text-white/60 hover:text-white transition-opacity">PRICING</Link>
+          <div className="hidden md:flex items-center gap-10 text-[11px] tracking-[0.15em] text-white/50">
+            <a href="#capabilities" className="hover:text-white transition-colors">CAPABILITIES</a>
+            <a href="#about" className="hover:text-white transition-colors">ABOUT</a>
+            <Link href="/pricing" className="hover:text-white transition-colors">PRICING</Link>
           </div>
 
-          <motion.a
+          <a
             href="#"
-            className="text-[11px] tracking-[0.2em] text-white flex items-center gap-2"
-            onMouseEnter={() => setCursorVariant('button')}
-            onMouseLeave={() => setCursorVariant('default')}
-            whileHover={{ gap: '12px' }}
+            className="text-[11px] tracking-[0.15em] text-white/50 hover:text-white transition-colors flex items-center gap-2"
           >
             START TRIAL
-            <ArrowUpRight className="w-4 h-4" />
-          </motion.a>
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </a>
         </div>
       </motion.nav>
 
-      {/* Hero Section */}
+      {/* Hero Section - Full viewport with video */}
       <motion.section 
         ref={heroRef}
-        style={{ y: heroY, opacity: heroOpacity, scale: heroScale }}
-        className="relative h-screen flex flex-col justify-end pb-24 px-8 lg:px-16 overflow-hidden"
+        style={{ opacity: heroOpacity, scale: heroScale }}
+        className="relative h-screen"
       >
-        {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a] to-[#111]" />
-        
-        {/* Subtle grid pattern */}
-        <div 
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)`,
-            backgroundSize: '100px 100px'
-          }}
-        />
-
-        {/* Hero content */}
-        <div className="relative z-10">
-          {/* Main headline */}
-          <div className="overflow-hidden">
-            <motion.h1
-              initial={{ y: '100%' }}
-              animate={isLoaded ? { y: 0 } : {}}
-              transition={{ duration: 1.2, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="text-[clamp(48px,12vw,180px)] font-light leading-[0.85] tracking-[-0.03em]"
-              onMouseEnter={() => setCursorVariant('text')}
-              onMouseLeave={() => setCursorVariant('default')}
+        {/* Video container */}
+        <motion.div 
+          style={{ scale: videoScale }}
+          className="absolute inset-6 lg:inset-10 top-24 rounded-2xl overflow-hidden"
+        >
+          {/* Video background with gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
+          <div className="absolute inset-0 bg-[#0a0a0a]" />
+          
+          {/* Placeholder for video - replace with actual video */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={isLoaded ? { scale: 1 } : {}}
+              transition={{ delay: 1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="w-24 h-24 rounded-full border border-white/20 flex items-center justify-center cursor-pointer hover:bg-white/5 transition-colors group"
             >
-              EDIT LESS.
-            </motion.h1>
+              <Play className="w-8 h-8 ml-1 text-white/60 group-hover:text-white transition-colors" />
+            </motion.div>
           </div>
-          <div className="overflow-hidden">
-            <motion.h1
-              initial={{ y: '100%' }}
-              animate={isLoaded ? { y: 0 } : {}}
-              transition={{ duration: 1.2, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="text-[clamp(48px,12vw,180px)] font-light leading-[0.85] tracking-[-0.03em] text-white/20"
-            >
-              CREATE MORE.
-            </motion.h1>
-          </div>
+          
+          {/* Subtle grid overlay */}
+          <div 
+            className="absolute inset-0 opacity-[0.02]"
+            style={{
+              backgroundImage: `linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px),
+                                linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)`,
+              backgroundSize: '60px 60px'
+            }}
+          />
+        </motion.div>
 
-          {/* Bottom info row */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={isLoaded ? { opacity: 1 } : {}}
-            transition={{ duration: 0.8, delay: 1.2 }}
-            className="flex flex-col md:flex-row md:items-end justify-between mt-16 gap-8"
-          >
-            <p className="text-[14px] md:text-[16px] leading-relaxed text-white/50 max-w-md">
-              AI-powered precision editing that transforms hours of wedding footage 
-              into cinematic stories. Built for professionals.
-            </p>
-
-            <div className="flex items-center gap-8">
-              <MagneticButton
-                className="group flex items-center gap-4 text-[11px] tracking-[0.2em]"
-                onMouseEnter={() => setCursorVariant('button')}
-                onMouseLeave={() => setCursorVariant('default')}
+        {/* Hero text overlay */}
+        <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-12 z-10">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-8 items-end">
+              <div>
+                <TextReveal delay={0.3}>
+                  <h1 className="text-[clamp(42px,10vw,140px)] font-light leading-[0.9] tracking-[-0.04em]">
+                    Edit less
+                  </h1>
+                </TextReveal>
+                <TextReveal delay={0.4}>
+                  <h1 className="text-[clamp(42px,10vw,140px)] font-light leading-[0.9] tracking-[-0.04em] text-white/25">
+                    Create more
+                  </h1>
+                </TextReveal>
+              </div>
+              
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={isLoaded ? { opacity: 1 } : {}}
+                transition={{ delay: 1.2, duration: 0.8 }}
+                className="lg:text-right lg:pb-4"
               >
-                <span className="w-16 h-16 rounded-full border border-white/30 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-500">
-                  <Play className="w-4 h-4 ml-1" />
-                </span>
-                WATCH REEL
-              </MagneticButton>
+                <p className="text-[15px] leading-[1.7] text-white/40 max-w-md lg:ml-auto">
+                  AI-powered precision editing that transforms hours of wedding footage into cinematic stories.
+                </p>
+                <div className="flex lg:justify-end gap-6 mt-6">
+                  <a href="#" className="text-[11px] tracking-[0.15em] flex items-center gap-2 group">
+                    <span className="text-white/60 group-hover:text-white transition-colors">WATCH DEMO</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-white/40" />
+                  </a>
+                </div>
+              </motion.div>
             </div>
-          </motion.div>
+          </div>
         </div>
 
-        {/* Scroll indicator */}
+        {/* Corner decorative element */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={isLoaded ? { opacity: 1 } : {}}
-          transition={{ delay: 2 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+          transition={{ delay: 1.5, duration: 1 }}
+          className="absolute top-28 right-12 lg:right-16 hidden lg:block"
         >
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-            className="w-[1px] h-12 bg-gradient-to-b from-white/50 to-transparent"
-          />
+          <div className="text-[10px] tracking-[0.3em] text-white/20 writing-mode-vertical">
+            SCROLL TO EXPLORE
+          </div>
         </motion.div>
       </motion.section>
 
-      {/* Marquee Section */}
-      <section className="py-8 border-y border-white/10 overflow-hidden">
-        <Marquee speed={40}>
-          <div className="flex items-center gap-16 px-8 text-[11px] tracking-[0.3em] text-white/30">
-            <span>PREMIERE PRO</span>
-            <span className="text-white/10">◆</span>
-            <span>FINAL CUT</span>
-            <span className="text-white/10">◆</span>
-            <span>DAVINCI RESOLVE</span>
-            <span className="text-white/10">◆</span>
-            <span>CAPCUT PRO</span>
-            <span className="text-white/10">◆</span>
-            <span>PREMIERE PRO</span>
-            <span className="text-white/10">◆</span>
-            <span>FINAL CUT</span>
-            <span className="text-white/10">◆</span>
-            <span>DAVINCI RESOLVE</span>
-            <span className="text-white/10">◆</span>
-            <span>CAPCUT PRO</span>
-            <span className="text-white/10">◆</span>
+      {/* Marquee */}
+      <section className="py-6 border-y border-white/[0.06]">
+        <Marquee speed={50}>
+          <div className="flex items-center gap-20 px-10 text-[11px] tracking-[0.25em] text-white/20">
+            {['PREMIERE PRO', 'FINAL CUT', 'DAVINCI RESOLVE', 'CAPCUT PRO', 'PREMIERE PRO', 'FINAL CUT', 'DAVINCI RESOLVE', 'CAPCUT PRO'].map((item, idx) => (
+              <span key={idx} className="flex items-center gap-20">
+                {item}
+                <span className="text-white/10">◆</span>
+              </span>
+            ))}
           </div>
         </Marquee>
       </section>
 
-      {/* Transfer/Import Section */}
-      <section id="transfer" className="relative py-32 px-8 lg:px-16 bg-gradient-to-b from-[#0a0a0a] to-[#050505] overflow-hidden">
+      {/* Bento Grid Section */}
+      <section className="py-24 lg:py-40 px-6 lg:px-12">
         <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 60 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-20"
-          >
-            <h2 className="text-[clamp(32px,5vw,56px)] font-light tracking-[-0.02em]">
-              From camera to timeline
-              <br />
-              <span className="text-white/30">in minutes, not hours.</span>
-            </h2>
-          </motion.div>
+          {/* Section header */}
+          <Reveal>
+            <div className="grid lg:grid-cols-2 gap-6 lg:gap-20 mb-16 lg:mb-24">
+              <h2 className="text-[clamp(28px,4vw,48px)] font-light leading-[1.1] tracking-[-0.02em]">
+                From camera to timeline<br />
+                <span className="text-white/30">in minutes.</span>
+              </h2>
+              <p className="text-[15px] leading-[1.8] text-white/40 lg:pt-2 max-w-md">
+                Our AI engine analyzes 47 emotional markers per frame. It understands context, 
+                anticipates narrative beats, and crafts films that feel intentionally human.
+              </p>
+            </div>
+          </Reveal>
 
-          {/* Feature cards - what happens after import */}
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                step: '01',
-                title: 'Auto-Ingest',
-                desc: 'Drop your SD card. VELLUM scans, sorts, and organizes every file by camera, timestamp, and content type.',
-                icon: '↓'
-              },
-              {
-                step: '02', 
-                title: 'AI Analysis',
-                desc: 'Our engine analyzes audio peaks, facial expressions, and scene composition to identify the best moments.',
-                icon: '◎'
-              },
-              {
-                step: '03',
-                title: 'Smart Assembly',
-                desc: 'Receive a rough-cut timeline built around emotional beats, ready for your creative refinement.',
-                icon: '▶'
-              }
-            ].map((feature, idx) => (
-              <motion.div
-                key={feature.step}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.15 }}
-                className="group relative p-8 border border-white/10 hover:border-white/20 transition-colors duration-500"
-              >
-                <div className="flex items-start justify-between mb-6">
-                  <span className="text-[11px] tracking-[0.3em] text-white/30">{feature.step}</span>
-                  <span className="text-2xl opacity-20 group-hover:opacity-50 transition-opacity">{feature.icon}</span>
-                </div>
-                <h3 className="text-[20px] font-light mb-3">{feature.title}</h3>
-                <p className="text-[14px] text-white/40 leading-relaxed">{feature.desc}</p>
-                
-                {/* Progress line */}
-                <motion.div 
-                  className="absolute bottom-0 left-0 h-[2px] bg-white/20"
-                  initial={{ width: 0 }}
-                  whileInView={{ width: '100%' }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1, delay: 0.5 + idx * 0.2 }}
-                />
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-32 px-8 lg:px-16">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-4">
-            {stats.map((stat, idx) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-100px' }}
-                transition={{ duration: 0.8, delay: idx * 0.1 }}
-                className="relative group"
-              >
-                <div className="text-[clamp(48px,8vw,96px)] font-light tracking-[-0.02em] leading-none">
-                  {stat.value}
-                  <span className="text-white/30">{stat.suffix}</span>
-                </div>
-                <div className="text-[10px] tracking-[0.3em] text-white/30 mt-4">
-                  {stat.label}
-                </div>
-                <motion.div 
-                  className="absolute bottom-0 left-0 h-[1px] bg-white/20"
-                  initial={{ width: 0 }}
-                  whileInView={{ width: '100%' }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1, delay: 0.5 + idx * 0.1 }}
-                />
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* About Section - Full Width Image */}
-      <section id="about" className="relative min-h-screen flex items-center">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-transparent to-[#0a0a0a]/50 z-10" />
-        <div 
-          className="absolute inset-0 bg-cover bg-center opacity-40"
-          style={{
-            backgroundImage: 'url(https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2071&auto=format&fit=crop)'
-          }}
-        />
-        
-        <div className="relative z-20 px-8 lg:px-16 py-32 max-w-3xl">
-          <motion.div
-            initial={{ opacity: 0, y: 60 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 1 }}
-          >
-            <h2 className="text-[clamp(32px,5vw,64px)] font-light leading-[1.1] tracking-[-0.02em]">
-              We believe editing should feel like{' '}
-              <span className="italic text-white/40">creating</span>, not labor.
-            </h2>
-            <p className="mt-12 text-[16px] leading-[1.8] text-white/50 max-w-xl">
-              Our AI engine analyzes 47 emotional markers per frame. It understands context, 
-              anticipates narrative beats, and crafts films that feel intentionally human—because 
-              the best technology is invisible.
-            </p>
-            <motion.a
-              href="#"
-              className="inline-flex items-center gap-3 mt-12 text-[11px] tracking-[0.2em] group"
-              whileHover={{ gap: '16px' }}
-            >
-              <span>OUR STORY</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </motion.a>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="work" className="py-32 px-8 lg:px-16">
-        <div className="max-w-7xl mx-auto">
-
-          <div className="space-y-0">
-            {features.map((feature) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{ duration: 0.6 }}
-                className="group border-t border-white/10 py-12 cursor-pointer"
-                onMouseEnter={() => setCursorVariant('text')}
-                onMouseLeave={() => setCursorVariant('default')}
-              >
-                <div className="grid grid-cols-12 gap-4 items-center">
-                  <div className="col-span-1 text-[12px] text-white/20 font-mono">
-                    {feature.num}
-                  </div>
-                  <motion.div 
-                    className="col-span-5 lg:col-span-4"
-                    whileHover={{ x: 20 }}
-                    transition={{ duration: 0.4 }}
-                  >
-                    <h3 className="text-[clamp(24px,3vw,42px)] font-light tracking-[-0.02em] group-hover:text-white/60 transition-colors duration-500">
-                      {feature.title}
-                    </h3>
-                  </motion.div>
-                  <div className="col-span-5 lg:col-span-6 text-[14px] text-white/40 group-hover:text-white/60 transition-colors duration-500">
-                    {feature.desc}
-                  </div>
-                  <div className="col-span-1 flex justify-end">
-                    <motion.div
-                      initial={{ rotate: 0, opacity: 0 }}
-                      whileHover={{ rotate: 45, opacity: 1 }}
-                      className="w-8 h-8 border border-white/20 rounded-full flex items-center justify-center group-hover:border-white/40 transition-colors"
-                    >
-                      <ArrowUpRight className="w-4 h-4" />
-                    </motion.div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Process Section */}
-      <section className="py-32 bg-white text-black">
-        <div className="px-8 lg:px-16 max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-24">
+          {/* Bento grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Large feature card */}
             <motion.div
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
+              transition={{ duration: 0.6 }}
+              className="lg:col-span-2 lg:row-span-2 group relative bg-white/[0.02] rounded-2xl p-8 lg:p-12 border border-white/[0.06] hover:border-white/10 transition-colors overflow-hidden"
             >
-              <h2 className="text-[clamp(36px,5vw,64px)] font-light leading-[1.05] tracking-[-0.02em]">
-                Four steps to cinematic
-              </h2>
-              <p className="mt-8 text-[16px] leading-[1.8] text-black/50 max-w-md">
-                From raw footage to timeline-ready sequences. 
-                Upload, let AI work, refine, and export directly to your NLE.
-              </p>
+              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              
+              <div className="relative z-10 h-full flex flex-col">
+                <span className="text-[10px] tracking-[0.3em] text-white/30">01</span>
+                <h3 className="text-[clamp(24px,3vw,36px)] font-light mt-4 mb-4 tracking-[-0.02em]">
+                  Auto-Ingest
+                </h3>
+                <p className="text-[14px] text-white/40 leading-relaxed max-w-md">
+                  Drop your SD card. VELLUM scans, sorts, and organizes every file by camera, 
+                  timestamp, and content type. No manual organization needed.
+                </p>
+                
+                {/* Visual element */}
+                <div className="mt-auto pt-12">
+                  <div className="flex gap-3">
+                    {[80, 110, 70, 100, 90].map((height, i) => (
+                      <motion.div
+                        key={i}
+                        className="bg-white/[0.03] rounded-lg flex-1"
+                        initial={{ height }}
+                        whileHover={{ height: height + 20 }}
+                        style={{ height }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
             </motion.div>
 
-            <div className="space-y-12">
-              {['Upload all cameras', 'AI builds assembly', 'Refine your edit', 'Export to NLE'].map((step, idx) => (
-                <motion.div
-                  key={step}
-                  initial={{ opacity: 0, x: 40 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: idx * 0.1 }}
-                  className="flex items-start gap-8 group"
+            {/* Smaller feature cards */}
+            {[
+              { num: '02', title: 'AI Analysis', desc: 'Our engine analyzes audio peaks, facial expressions, and scene composition.' },
+              { num: '03', title: 'Smart Assembly', desc: 'Receive a rough-cut timeline built around emotional beats.' },
+              { num: '04', title: 'Export Ready', desc: 'Direct XML export to Premiere, Final Cut, and DaVinci Resolve.' },
+              { num: '05', title: 'Audio Polish', desc: 'Automatic wind, hum, and noise removal with AI enhancement.' },
+            ].map((feature, idx) => (
+              <motion.div
+                key={feature.num}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1, duration: 0.6 }}
+                className="group relative bg-white/[0.02] rounded-2xl p-6 lg:p-8 border border-white/[0.06] hover:border-white/10 transition-colors"
+              >
+                <span className="text-[10px] tracking-[0.3em] text-white/30">{feature.num}</span>
+                <h3 className="text-[18px] font-light mt-3 mb-2">{feature.title}</h3>
+                <p className="text-[13px] text-white/40 leading-relaxed">{feature.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Capabilities Section */}
+      <section id="capabilities" className="py-24 lg:py-32 border-t border-white/[0.06]">
+        <div className="px-6 lg:px-12 max-w-7xl mx-auto">
+          {capabilities.map((cap) => (
+            <motion.div
+              key={cap.title}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="group border-b border-white/[0.06] py-10 lg:py-14 cursor-pointer"
+            >
+              <div className="grid grid-cols-12 gap-4 items-center">
+                <div className="col-span-1 hidden lg:block">
+                  <cap.icon className="w-5 h-5 text-white/20 group-hover:text-white/60 transition-colors" />
+                </div>
+                <motion.div 
+                  className="col-span-12 lg:col-span-5"
+                  whileHover={{ x: 10 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  <span className="text-[48px] font-light text-black/10 leading-none group-hover:text-black/30 transition-colors">
-                    0{idx + 1}
-                  </span>
-                  <div className="pt-4">
-                    <h3 className="text-[20px] font-light">{step}</h3>
-                    <motion.div 
-                      className="h-[1px] bg-black/20 mt-4 origin-left"
-                      initial={{ scaleX: 0 }}
-                      whileInView={{ scaleX: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.8, delay: 0.3 + idx * 0.1 }}
-                    />
-                  </div>
+                  <h3 className="text-[clamp(22px,2.5vw,32px)] font-light tracking-[-0.02em] group-hover:text-white/70 transition-colors">
+                    {cap.title}
+                  </h3>
                 </motion.div>
-              ))}
+                <div className="col-span-10 lg:col-span-5 text-[14px] text-white/30 group-hover:text-white/50 transition-colors">
+                  {cap.desc}
+                </div>
+                <div className="col-span-2 lg:col-span-1 flex justify-end">
+                  <motion.div
+                    initial={{ opacity: 0, rotate: 0 }}
+                    whileHover={{ opacity: 1, rotate: 45 }}
+                    className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center group-hover:border-white/30 transition-colors"
+                  >
+                    <ArrowUpRight className="w-4 h-4 text-white/40" />
+                  </motion.div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* Stats Row */}
+      <section className="py-24 lg:py-32 bg-white text-black">
+        <div className="px-6 lg:px-12 max-w-7xl mx-auto">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
+            {[
+              { value: '47', label: 'Emotion markers', suffix: '' },
+              { value: '10', label: 'Hour turnaround', suffix: 'hr' },
+              { value: '4K', label: 'Resolution', suffix: '' },
+              { value: '99', label: 'Satisfaction rate', suffix: '%' },
+            ].map((stat, idx) => (
+              <Reveal key={stat.label} delay={idx * 0.1}>
+                <div className="relative">
+                  <div className="text-[clamp(40px,7vw,80px)] font-light tracking-[-0.03em] leading-none">
+                    {stat.value}
+                    <span className="text-black/20">{stat.suffix}</span>
+                  </div>
+                  <div className="text-[12px] tracking-[0.1em] text-black/40 mt-3 uppercase">
+                    {stat.label}
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* About Section - Asymmetric layout */}
+      <section id="about" className="py-24 lg:py-40 px-6 lg:px-12">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-12 gap-12 lg:gap-8">
+            {/* Image/Visual */}
+            <div className="lg:col-span-5 lg:col-start-1">
+              <Reveal>
+                <div className="aspect-[4/5] bg-white/[0.02] rounded-2xl overflow-hidden relative">
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center opacity-60"
+                    style={{
+                      backgroundImage: 'url(https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2071&auto=format&fit=crop)'
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent" />
+                </div>
+              </Reveal>
+            </div>
+            
+            {/* Text content */}
+            <div className="lg:col-span-6 lg:col-start-7 flex flex-col justify-center">
+              <Reveal>
+                <p className="text-[10px] tracking-[0.3em] text-white/30 mb-6">ABOUT VELLUM</p>
+                <h2 className="text-[clamp(28px,4vw,48px)] font-light leading-[1.15] tracking-[-0.02em]">
+                  We believe editing should feel like{' '}
+                  <span className="italic text-white/40">creating</span>, not labor.
+                </h2>
+              </Reveal>
+              <Reveal delay={0.2}>
+                <p className="mt-8 text-[15px] leading-[1.9] text-white/40">
+                  Our AI engine analyzes 47 emotional markers per frame. It understands context, 
+                  anticipates narrative beats, and crafts films that feel intentionally human—because 
+                  the best technology is invisible.
+                </p>
+                <a
+                  href="#"
+                  className="inline-flex items-center gap-3 mt-10 text-[11px] tracking-[0.15em] group"
+                >
+                  <span className="text-white/60 group-hover:text-white transition-colors">OUR STORY</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-white/40 group-hover:translate-x-1 transition-transform" />
+                </a>
+              </Reveal>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section className="py-32 px-8 lg:px-16 bg-[#050505]">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-24"
-          >
-            <h2 className="text-[clamp(36px,5vw,56px)] font-light tracking-[-0.02em]">
-              One-time purchase. Yours forever.
+      {/* Pricing Preview */}
+      <section className="py-24 lg:py-32 px-6 lg:px-12 bg-white/[0.02]">
+        <div className="max-w-5xl mx-auto text-center">
+          <Reveal>
+            <h2 className="text-[clamp(32px,5vw,56px)] font-light tracking-[-0.02em]">
+              One-time purchase.<br />
+              <span className="text-white/30">Yours forever.</span>
             </h2>
-            <p className="mt-4 text-[14px] text-white/40 max-w-md mx-auto">
-              No subscriptions, no hidden fees. Buy once, own it for life.
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* Lite */}
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="group relative border border-white/10 p-8 lg:p-10 hover:border-white/30 transition-colors duration-500"
-            >
-              <div className="mb-8">
-                <span className="text-[10px] tracking-[0.3em] text-white/40">LITE</span>
-                <p className="text-[11px] text-white/30 mt-2">Essential editing tools</p>
-              </div>
-              <div className="mb-8">
-                <span className="text-[56px] font-light leading-none">$79</span>
-                <span className="text-white/30 text-[14px] ml-2">one-time</span>
-              </div>
-              
-              <div className="space-y-4 text-[14px] text-white/50">
-                {['Multi-cam sync', 'Basic speech extraction', 'Auto-sorting', 'Rough-cut generation', 'XML export'].map((item) => (
-                  <div key={item} className="flex items-center gap-3">
-                    <span className="w-1 h-1 bg-white/30 rounded-full" />
-                    <span>{item}</span>
-                  </div>
-                ))}
+          </Reveal>
+          
+          <Reveal delay={0.2}>
+            <div className="grid md:grid-cols-2 gap-6 mt-16">
+              {/* Lite */}
+              <div className="text-left p-8 lg:p-10 border border-white/[0.08] rounded-2xl hover:border-white/20 transition-colors group">
+                <span className="text-[10px] tracking-[0.3em] text-white/30">LITE</span>
+                <div className="mt-6 mb-8">
+                  <span className="text-[48px] font-light">$79</span>
+                  <span className="text-white/30 text-[14px] ml-2">one-time</span>
+                </div>
+                <p className="text-[14px] text-white/40 mb-8">Essential editing tools for getting started.</p>
+                <button className="w-full py-4 border border-white/20 rounded-lg text-[11px] tracking-[0.15em] hover:bg-white hover:text-black transition-all">
+                  BUY LITE
+                </button>
               </div>
 
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="mt-10 w-full py-4 border border-white/20 text-[11px] tracking-[0.2em] hover:bg-white hover:text-black transition-all duration-500"
-              >
-                BUY LITE
-              </motion.button>
-            </motion.div>
-
-            {/* Max */}
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="group relative bg-white text-black p-8 lg:p-10"
-            >
-              <div className="absolute top-0 right-0 px-4 py-2 bg-black text-white text-[9px] tracking-[0.3em]">
-                POPULAR
-              </div>
-              
-              <div className="mb-8">
+              {/* Max */}
+              <div className="text-left p-8 lg:p-10 bg-white text-black rounded-2xl relative overflow-hidden">
+                <span className="absolute top-4 right-4 px-3 py-1 bg-black text-white text-[9px] tracking-[0.2em] rounded-full">POPULAR</span>
                 <span className="text-[10px] tracking-[0.3em] text-black/40">MAX</span>
-                <p className="text-[11px] text-black/30 mt-2">Full professional suite</p>
+                <div className="mt-6 mb-8">
+                  <span className="text-[48px] font-light">$149</span>
+                  <span className="text-black/30 text-[14px] ml-2">one-time</span>
+                </div>
+                <p className="text-[14px] text-black/50 mb-8">Full professional suite with all features.</p>
+                <button className="w-full py-4 bg-black text-white rounded-lg text-[11px] tracking-[0.15em] hover:bg-black/80 transition-all">
+                  BUY MAX
+                </button>
               </div>
-              <div className="mb-8">
-                <span className="text-[56px] font-light leading-none">$149</span>
-                <span className="text-black/30 text-[14px] ml-2">one-time</span>
-              </div>
-              
-              <div className="space-y-4 text-[14px] text-black/60">
-                {['Everything in Lite', 'Full timeline assembly', 'AI story building', 'AI shot rating & selection', 'Music beat sync', 'Advanced color match'].map((item) => (
-                  <div key={item} className="flex items-center gap-3">
-                    <span className="w-1 h-1 bg-black/40 rounded-full" />
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
+            </div>
+          </Reveal>
 
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="mt-10 w-full py-4 bg-black text-white text-[11px] tracking-[0.2em] hover:bg-black/80 transition-all duration-500"
-              >
-                BUY MAX
-              </motion.button>
-            </motion.div>
-
-            {/* Max+ */}
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.3 }}
-              className="group relative border border-white/10 p-8 lg:p-10 hover:border-white/30 transition-colors duration-500 bg-gradient-to-b from-white/[0.03] to-transparent"
+          <Reveal delay={0.3}>
+            <Link 
+              href="/pricing" 
+              className="inline-flex items-center gap-2 mt-10 text-[11px] tracking-[0.15em] text-white/40 hover:text-white transition-colors"
             >
-              <div className="absolute top-0 right-0 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[9px] tracking-[0.3em]">
-                ADD-ON
-              </div>
-              
-              <div className="mb-8">
-                <span className="text-[10px] tracking-[0.3em] text-white/40">MAX+</span>
-                <p className="text-[11px] text-white/30 mt-2">Requires Max license</p>
-              </div>
-              <div className="mb-8">
-                <span className="text-[56px] font-light leading-none">$29</span>
-                <span className="text-white/30 text-[14px] ml-2">/month</span>
-              </div>
-              
-              <div className="space-y-4 text-[14px] text-white/50">
-                {['Priority GPU processing', 'Cloud rendering', 'Early access features', 'Premium support', 'Team collaboration', 'Custom LUT profiles'].map((item) => (
-                  <div key={item} className="flex items-center gap-3">
-                    <span className="w-1 h-1 bg-amber-500/50 rounded-full" />
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="mt-10 w-full py-4 border border-amber-500/30 text-[11px] tracking-[0.2em] hover:bg-amber-500 hover:text-black hover:border-amber-500 transition-all duration-500"
-              >
-                ADD MAX+
-              </motion.button>
-            </motion.div>
-        </div>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mt-12 text-[12px] text-white/30"
-          >
-            Instant download. Lifetime updates for major versions. 30-day money-back guarantee.
-          </motion.p>
+              VIEW ALL OPTIONS
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </Reveal>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-32 px-8 lg:px-16 relative overflow-hidden">
-        <div 
-          className="absolute inset-0 opacity-5"
-          style={{
-            backgroundImage: `radial-gradient(circle at center, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-            backgroundSize: '32px 32px'
-          }}
-        />
+      <section className="py-32 lg:py-48 px-6 lg:px-12 relative overflow-hidden">
+        <div className="absolute inset-0">
+          <div 
+            className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage: `radial-gradient(circle at center, rgba(255,255,255,0.3) 1px, transparent 1px)`,
+              backgroundSize: '40px 40px'
+            }}
+          />
+        </div>
         
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 60 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1 }}
-          >
-            <h2 className="text-[clamp(36px,6vw,72px)] font-light leading-[1.05] tracking-[-0.02em]">
-              Ready to transform
-              <br />
+          <Reveal>
+            <h2 className="text-[clamp(32px,6vw,72px)] font-light leading-[1.05] tracking-[-0.03em]">
+              Ready to transform<br />
               <span className="text-white/30">your workflow?</span>
             </h2>
-            
-            <motion.div className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-6">
-              <MagneticButton
-                className="px-12 py-5 bg-white text-black text-[11px] tracking-[0.2em] hover:bg-white/90 transition-colors"
-                onMouseEnter={() => setCursorVariant('button')}
-                onMouseLeave={() => setCursorVariant('default')}
-              >
+          </Reveal>
+          
+          <Reveal delay={0.2}>
+            <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <button className="px-10 py-4 bg-white text-black rounded-full text-[11px] tracking-[0.15em] hover:bg-white/90 transition-colors">
                 START FREE TRIAL
-              </MagneticButton>
-              
-              <motion.a
+              </button>
+              <a
                 href="#"
-                className="flex items-center gap-3 text-[11px] tracking-[0.2em] text-white/50 hover:text-white transition-colors"
-                whileHover={{ gap: '16px' }}
+                className="flex items-center gap-2 px-8 py-4 text-[11px] tracking-[0.15em] text-white/50 hover:text-white transition-colors"
               >
                 SCHEDULE DEMO
-                <ArrowRight className="w-4 h-4" />
-              </motion.a>
-            </motion.div>
-          </motion.div>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </Reveal>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/10">
-        <div className="px-8 lg:px-16 py-16">
+      <footer className="border-t border-white/[0.06]">
+        <div className="px-6 lg:px-12 py-16 lg:py-20">
           <div className="max-w-7xl mx-auto">
-            <div className="grid lg:grid-cols-4 gap-16 lg:gap-8">
-              <div className="lg:col-span-2">
-                <span className="text-[13px] tracking-[0.5em]">VELLUM</span>
-                <p className="mt-4 text-[14px] text-white/40 max-w-sm">
+            <div className="grid lg:grid-cols-12 gap-12 lg:gap-8">
+              <div className="lg:col-span-6">
+                <span className="text-[13px] tracking-[0.4em]">VELLUM</span>
+                <p className="mt-4 text-[14px] text-white/30 max-w-sm leading-relaxed">
                   AI-powered video editing engineered for wedding filmmakers. Edit less. Create more.
                 </p>
               </div>
               
-              <div>
-                <span className="text-[10px] tracking-[0.3em] text-white/30">PRODUCT</span>
-                <div className="mt-6 space-y-4 text-[13px] text-white/50">
+              <div className="lg:col-span-2">
+                <span className="text-[10px] tracking-[0.2em] text-white/20">PRODUCT</span>
+                <div className="mt-5 space-y-3 text-[13px] text-white/40">
                   <a href="#" className="block hover:text-white transition-colors">Features</a>
                   <Link href="/pricing" className="block hover:text-white transition-colors">Pricing</Link>
                   <a href="#" className="block hover:text-white transition-colors">Changelog</a>
                 </div>
               </div>
               
-              <div>
-                <span className="text-[10px] tracking-[0.3em] text-white/30">COMPANY</span>
-                <div className="mt-6 space-y-4 text-[13px] text-white/50">
+              <div className="lg:col-span-2">
+                <span className="text-[10px] tracking-[0.2em] text-white/20">COMPANY</span>
+                <div className="mt-5 space-y-3 text-[13px] text-white/40">
                   <a href="#" className="block hover:text-white transition-colors">About</a>
                   <a href="#" className="block hover:text-white transition-colors">Contact</a>
                   <a href="#" className="block hover:text-white transition-colors">Twitter</a>
                 </div>
               </div>
+              
+              <div className="lg:col-span-2">
+                <span className="text-[10px] tracking-[0.2em] text-white/20">LEGAL</span>
+                <div className="mt-5 space-y-3 text-[13px] text-white/40">
+                  <a href="#" className="block hover:text-white transition-colors">Privacy</a>
+                  <a href="#" className="block hover:text-white transition-colors">Terms</a>
+                </div>
+              </div>
             </div>
             
-            <div className="mt-24 pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between gap-4 text-[11px] text-white/30">
-              <span>© 2024 Vellum. All rights reserved.</span>
-              <div className="flex gap-8">
-                <a href="#" className="hover:text-white transition-colors">Privacy</a>
-                <a href="#" className="hover:text-white transition-colors">Terms</a>
-              </div>
+            <div className="mt-20 pt-8 border-t border-white/[0.06] text-[11px] text-white/20">
+              © 2024 Vellum. All rights reserved.
             </div>
           </div>
         </div>
