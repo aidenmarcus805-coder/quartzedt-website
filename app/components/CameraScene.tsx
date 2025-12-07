@@ -2,31 +2,37 @@
 
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useScroll, motion } from 'framer-motion';
-import { useRef, Suspense, useEffect, useState } from 'react';
+import { useRef, Suspense, useEffect, useState, useCallback } from 'react';
 import * as THREE from 'three';
 
 // Stylized 3D Camera component
 function Camera({ scrollProgress, videoElement }: { scrollProgress: number; videoElement: HTMLVideoElement | null }) {
   const groupRef = useRef<THREE.Group>(null);
   const sdCardRef = useRef<THREE.Mesh>(null);
-  const [videoTexture, setVideoTexture] = useState<THREE.VideoTexture | null>(null);
+  const textureRef = useRef<THREE.VideoTexture | null>(null);
+  const materialRef = useRef<THREE.MeshBasicMaterial>(null);
   
-  // Create video texture in effect (not during render)
-  useEffect(() => {
-    if (videoElement) {
+  // Create and update video texture using useFrame (not in effect)
+  useFrame(() => {
+    // Initialize texture if we have video element but no texture yet
+    if (videoElement && !textureRef.current) {
       const texture = new THREE.VideoTexture(videoElement);
       texture.minFilter = THREE.LinearFilter;
       texture.magFilter = THREE.LinearFilter;
-      setVideoTexture(texture);
+      textureRef.current = texture;
       
-      return () => {
-        texture.dispose();
-      };
+      // Apply texture to material
+      if (materialRef.current) {
+        materialRef.current.map = texture;
+        materialRef.current.needsUpdate = true;
+      }
     }
-  }, [videoElement]);
-
-  // Animate based on scroll
-  useFrame(() => {
+    
+    // Update texture if it exists
+    if (textureRef.current) {
+      textureRef.current.needsUpdate = true;
+    }
+    
     if (groupRef.current) {
       // Camera rotation based on scroll
       groupRef.current.rotation.y = THREE.MathUtils.lerp(
@@ -67,6 +73,15 @@ function Camera({ scrollProgress, videoElement }: { scrollProgress: number; vide
       }
     }
   });
+  
+  // Cleanup texture on unmount
+  useEffect(() => {
+    return () => {
+      if (textureRef.current) {
+        textureRef.current.dispose();
+      }
+    };
+  }, []);
 
   return (
     <group ref={groupRef} position={[0, 0, 0]}>
@@ -115,11 +130,7 @@ function Camera({ scrollProgress, videoElement }: { scrollProgress: number; vide
       {/* Screen (back of camera) */}
       <mesh position={[0, 0, 0.41]}>
         <planeGeometry args={[1.6, 1.1]} />
-        {videoTexture ? (
-          <meshBasicMaterial map={videoTexture} />
-        ) : (
-          <meshBasicMaterial color="#111111" />
-        )}
+        <meshBasicMaterial ref={materialRef} color="#111111" />
       </mesh>
       
       {/* Screen Border */}
@@ -196,10 +207,11 @@ export default function CameraScene() {
     offset: ['start start', 'end start']
   });
 
-  // Set video element after mount
-  useEffect(() => {
-    if (videoRef.current) {
-      setVideoElement(videoRef.current);
+  // Use callback ref to get video element without triggering re-render in effect
+  const handleVideoRef = useCallback((element: HTMLVideoElement | null) => {
+    videoRef.current = element;
+    if (element) {
+      setVideoElement(element);
     }
   }, []);
 
@@ -217,7 +229,7 @@ export default function CameraScene() {
     <div ref={containerRef} className="relative h-[200vh]">
       {/* Hidden video element for texture */}
       <video
-        ref={videoRef}
+        ref={handleVideoRef}
         className="hidden"
         autoPlay
         muted
