@@ -13,14 +13,25 @@ function CameraModel({ scrollProgress, videoElement }: { scrollProgress: number;
   const obj = useLoader(OBJLoader, '/DSLR.obj');
   const videoTextureRef = useRef<THREE.VideoTexture | null>(null);
   
-  // Load textures
+  // Load textures with high quality settings
   const textures = useMemo(() => {
     const textureLoader = new THREE.TextureLoader();
+    
+    const loadTexture = (path: string) => {
+      const tex = textureLoader.load(path);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      tex.anisotropy = 16;
+      tex.generateMipmaps = true;
+      return tex;
+    };
+    
     return {
-      diffuse: textureLoader.load('/TEX/DSLR_DSLR_Diffuse.png'),
-      normal: textureLoader.load('/TEX/DSLR_DSLR_Normal.png'),
-      specular: textureLoader.load('/TEX/DSLR_DSLR_Specular.png'),
-      glossiness: textureLoader.load('/TEX/DSLR_DSLR_Glossiness.png'),
+      diffuse: loadTexture('/TEX/DSLR_DSLR_Diffuse.png'),
+      normal: loadTexture('/TEX/DSLR_DSLR_Normal.png'),
+      specular: loadTexture('/TEX/DSLR_DSLR_Specular.png'),
+      glossiness: loadTexture('/TEX/DSLR_DSLR_Glossiness.png'),
     };
   }, []);
 
@@ -47,21 +58,25 @@ function CameraModel({ scrollProgress, videoElement }: { scrollProgress: number;
 
   // Create and apply video texture for camera screen
   useFrame(() => {
-    if (videoElement && !videoTextureRef.current) {
+    // Create video texture when video element is ready
+    if (videoElement && !videoTextureRef.current && videoElement.readyState >= 2) {
       const texture = new THREE.VideoTexture(videoElement);
       texture.minFilter = THREE.LinearFilter;
       texture.magFilter = THREE.LinearFilter;
       texture.colorSpace = THREE.SRGBColorSpace;
+      texture.flipY = true;
       videoTextureRef.current = texture;
       
       // Apply to screen material
       if (screenMaterialRef.current) {
         screenMaterialRef.current.map = texture;
+        screenMaterialRef.current.color = new THREE.Color(0xffffff);
         screenMaterialRef.current.needsUpdate = true;
       }
     }
     
-    if (videoTextureRef.current) {
+    // Keep updating the video texture
+    if (videoTextureRef.current && videoElement && !videoElement.paused) {
       videoTextureRef.current.needsUpdate = true;
     }
 
@@ -116,10 +131,11 @@ function CameraModel({ scrollProgress, videoElement }: { scrollProgress: number;
     <group ref={groupRef} position={[0, 0, 0]} rotation={[0, 0, 0]}>
       <primitive object={obj} />
       
-      {/* Camera LCD screen with video - positioned on the back of camera body */}
-      <mesh position={[0, 8, 22]}>
-        <planeGeometry args={[48, 34]} />
-        <meshBasicMaterial ref={screenMaterialRef} color="#111111" toneMapped={false} />
+      {/* Camera LCD screen with video - positioned on the back LCD area */}
+      {/* Adjusted position to match the actual LCD screen location */}
+      <mesh position={[-8, 12, 24]} rotation={[0, 0, 0]}>
+        <planeGeometry args={[58, 42]} />
+        <meshBasicMaterial ref={screenMaterialRef} color="#000000" toneMapped={false} />
       </mesh>
     </group>
   );
@@ -188,12 +204,21 @@ export default function CameraScene() {
     offset: ['start start', 'end start']
   });
 
-  // Set video element after mount
+  // Set video element after mount and ensure it plays
   const handleVideoRef = useCallback((element: HTMLVideoElement | null) => {
     videoRef.current = element;
     if (element) {
+      // Ensure video is ready to play
+      element.load();
+      element.addEventListener('loadeddata', () => {
+        setVideoElement(element);
+        element.play().catch(console.error);
+      });
+      // Also try to play immediately
+      element.play().catch(() => {
+        // Autoplay might be blocked, will play when user interacts
+      });
       setVideoElement(element);
-      element.play().catch(() => {});
     }
   }, []);
 
@@ -226,8 +251,10 @@ export default function CameraScene() {
             antialias: true, 
             alpha: true,
             toneMapping: THREE.ACESFilmicToneMapping,
-            toneMappingExposure: 1.3,
+            toneMappingExposure: 1.2,
+            powerPreference: 'high-performance',
           }}
+          dpr={[1, 2]}
           style={{ background: 'transparent' }}
         >
           <Suspense fallback={<LoadingFallback />}>
