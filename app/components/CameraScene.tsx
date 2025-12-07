@@ -1,26 +1,29 @@
 'use client';
 
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useScroll, useTransform, motion } from 'framer-motion';
-import { useRef, useMemo, Suspense, useEffect, useState } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { useScroll, motion } from 'framer-motion';
+import { useRef, Suspense, useEffect, useState } from 'react';
 import * as THREE from 'three';
 
 // Stylized 3D Camera component
-function Camera({ scrollProgress, videoRef }: { scrollProgress: number; videoRef: React.RefObject<HTMLVideoElement | null> }) {
+function Camera({ scrollProgress, videoElement }: { scrollProgress: number; videoElement: HTMLVideoElement | null }) {
   const groupRef = useRef<THREE.Group>(null);
   const sdCardRef = useRef<THREE.Mesh>(null);
-  const screenRef = useRef<THREE.Mesh>(null);
+  const [videoTexture, setVideoTexture] = useState<THREE.VideoTexture | null>(null);
   
-  // Video texture
-  const videoTexture = useMemo(() => {
-    if (videoRef.current) {
-      const texture = new THREE.VideoTexture(videoRef.current);
+  // Create video texture in effect (not during render)
+  useEffect(() => {
+    if (videoElement) {
+      const texture = new THREE.VideoTexture(videoElement);
       texture.minFilter = THREE.LinearFilter;
       texture.magFilter = THREE.LinearFilter;
-      return texture;
+      setVideoTexture(texture);
+      
+      return () => {
+        texture.dispose();
+      };
     }
-    return null;
-  }, [videoRef]);
+  }, [videoElement]);
 
   // Animate based on scroll
   useFrame(() => {
@@ -110,7 +113,7 @@ function Camera({ scrollProgress, videoRef }: { scrollProgress: number; videoRef
       </mesh>
       
       {/* Screen (back of camera) */}
-      <mesh ref={screenRef} position={[0, 0, 0.41]}>
+      <mesh position={[0, 0, 0.41]}>
         <planeGeometry args={[1.6, 1.1]} />
         {videoTexture ? (
           <meshBasicMaterial map={videoTexture} />
@@ -186,11 +189,19 @@ export default function CameraScene() {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null);
   
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ['start start', 'end start']
   });
+
+  // Set video element after mount
+  useEffect(() => {
+    if (videoRef.current) {
+      setVideoElement(videoRef.current);
+    }
+  }, []);
 
   useEffect(() => {
     const unsubscribe = scrollYProgress.on('change', (v) => {
@@ -227,7 +238,7 @@ export default function CameraScene() {
         >
           <Suspense fallback={null}>
             <Lighting />
-            <Camera scrollProgress={scrollProgress} videoRef={videoRef} />
+            <Camera scrollProgress={scrollProgress} videoElement={videoElement} />
           </Suspense>
         </Canvas>
         
@@ -252,4 +263,3 @@ export default function CameraScene() {
     </div>
   );
 }
-

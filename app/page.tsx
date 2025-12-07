@@ -275,8 +275,8 @@ export default function Home() {
               <p className="text-[15px] leading-[1.8] text-white/40 lg:pt-2 max-w-md">
                 Our AI engine analyzes 47 emotional markers per frame. It understands context, 
                 anticipates narrative beats, and crafts films that feel intentionally human.
-              </p>
-            </div>
+          </p>
+        </div>
           </motion.div>
 
           {/* Bento grid with glow effect */}
