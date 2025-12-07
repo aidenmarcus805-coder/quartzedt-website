@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
-import { ArrowRight, ArrowUpRight, Play, Zap, Layers, Wand2, Volume2 } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Zap, Layers, Wand2, Volume2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 
@@ -83,7 +83,7 @@ export default function Home() {
         transition={{ duration: 1, delay: 0.5 }}
         className="fixed top-0 left-0 right-0 z-50"
       >
-        <div className="flex items-center justify-between h-20 px-6 lg:px-12">
+        <div className="flex items-center justify-between h-20 px-4 lg:px-8">
           <Link href="/" className="text-[13px] tracking-[0.4em] font-medium">
             VELLUM
           </Link>
@@ -110,86 +110,99 @@ export default function Home() {
         style={{ opacity: heroOpacity, scale: heroScale }}
         className="relative h-screen"
       >
-        {/* Video container */}
-        <motion.div 
-          style={{ scale: videoScale }}
-          className="absolute inset-6 lg:inset-10 top-24 rounded-2xl overflow-hidden"
-        >
-          {/* Video background with gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
-          <div className="absolute inset-0 bg-[#0a0a0a]" />
-          
-          {/* Placeholder for video - replace with actual video */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={isLoaded ? { scale: 1 } : {}}
-              transition={{ delay: 1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="w-24 h-24 rounded-full border border-white/20 flex items-center justify-center cursor-pointer hover:bg-white/5 transition-colors group"
+        {/* Video container with glassmorphism */}
+        <div className="absolute inset-4 top-20 z-[5]">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={isLoaded ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            style={{ scale: videoScale }}
+            className="relative w-full h-full rounded-2xl overflow-hidden"
+          >
+            {/* Gradient border - glassmorphism effect */}
+            <div
+              className="absolute inset-0 rounded-2xl p-[1px]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.08) 100%)',
+              }}
             >
-              <Play className="w-8 h-8 ml-1 text-white/60 group-hover:text-white transition-colors" />
-            </motion.div>
-          </div>
-          
-          {/* Subtle grid overlay */}
-          <div 
-            className="absolute inset-0 opacity-[0.02]"
-            style={{
-              backgroundImage: `linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px),
-                                linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)`,
-              backgroundSize: '60px 60px'
-            }}
-          />
-        </motion.div>
-
-        {/* Hero text overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-12 z-10">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-8 items-end">
-              <div>
-                <TextReveal delay={0.3}>
-                  <h1 className="text-[clamp(42px,10vw,140px)] font-light leading-[0.9] tracking-[-0.04em]">
-                    Edit less
-                  </h1>
-                </TextReveal>
-                <TextReveal delay={0.4}>
-                  <h1 className="text-[clamp(42px,10vw,140px)] font-light leading-[0.9] tracking-[-0.04em] text-white/25">
-                    Create more
-                  </h1>
-                </TextReveal>
-              </div>
-              
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={isLoaded ? { opacity: 1 } : {}}
-                transition={{ delay: 1.2, duration: 0.8 }}
-                className="lg:text-right lg:pb-4"
-              >
-                <p className="text-[15px] leading-[1.7] text-white/40 max-w-md lg:ml-auto">
-                  AI-powered precision editing that transforms hours of wedding footage into cinematic stories.
-                </p>
-                <div className="flex lg:justify-end gap-6 mt-6">
-                  <a href="#" className="text-[11px] tracking-[0.15em] flex items-center gap-2 group">
-                    <span className="text-white/60 group-hover:text-white transition-colors">WATCH DEMO</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-white/40" />
-                  </a>
-                </div>
-              </motion.div>
+              <div
+                className="w-full h-full rounded-2xl"
+                style={{
+                  background: 'linear-gradient(180deg, #0d0d0f 0%, #0a0a0c 50%, #080809 100%)',
+                }}
+              />
             </div>
-          </div>
+
+            {/* Top highlight */}
+            <div
+              className="absolute top-0 left-[10%] right-[10%] h-[1px] rounded-full"
+              style={{
+                background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)',
+              }}
+            />
+
+            {/* Video placeholder - replace src with actual video */}
+            <div className="absolute inset-[1px] rounded-2xl overflow-hidden bg-[#0a0a0b]">
+              {/* Video will go here */}
+              <video
+                className="w-full h-full object-cover opacity-80"
+                autoPlay
+                muted
+                loop
+                playsInline
+              >
+                {/* <source src="/your-video.mp4" type="video/mp4" /> */}
+              </video>
+              
+              {/* Gradient overlay on video */}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent opacity-60" />
+            </div>
+
+            {/* Inner shadow effect */}
+            <div 
+              className="absolute inset-0 rounded-2xl pointer-events-none"
+              style={{
+                boxShadow: 'inset 0 0 100px rgba(0,0,0,0.5)',
+              }}
+            />
+          </motion.div>
         </div>
 
-        {/* Corner decorative element */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={isLoaded ? { opacity: 1 } : {}}
-          transition={{ delay: 1.5, duration: 1 }}
-          className="absolute top-28 right-12 lg:right-16 hidden lg:block"
-        >
-          <div className="text-[10px] tracking-[0.3em] text-white/20 writing-mode-vertical">
-            SCROLL TO EXPLORE
+        {/* Hero text overlay */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-8 z-10">
+          <div className="grid lg:grid-cols-2 gap-8 items-end">
+            <div>
+              <TextReveal delay={0.3}>
+                <h1 className="text-[clamp(48px,12vw,160px)] font-light leading-[0.85] tracking-[-0.04em]">
+                  Edit less
+                </h1>
+              </TextReveal>
+              <TextReveal delay={0.4}>
+                <h1 className="text-[clamp(48px,12vw,160px)] font-light leading-[0.85] tracking-[-0.04em] text-white/20">
+                  Create more
+                </h1>
+              </TextReveal>
+            </div>
+            
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={isLoaded ? { opacity: 1 } : {}}
+              transition={{ delay: 1.2, duration: 0.8 }}
+              className="lg:text-right lg:pb-6"
+            >
+              <p className="text-[15px] leading-[1.7] text-white/40 max-w-md lg:ml-auto">
+                AI-powered precision editing that transforms hours of wedding footage into cinematic stories.
+              </p>
+              <div className="flex lg:justify-end gap-6 mt-6">
+                <a href="#" className="text-[11px] tracking-[0.15em] flex items-center gap-2 group">
+                  <span className="text-white/60 group-hover:text-white transition-colors">LEARN MORE</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-white/40" />
+                </a>
+              </div>
+            </motion.div>
           </div>
-        </motion.div>
+        </div>
       </motion.section>
 
       {/* Marquee */}
@@ -207,8 +220,8 @@ export default function Home() {
       </section>
 
       {/* Bento Grid Section */}
-      <section className="py-24 lg:py-40 px-6 lg:px-12">
-        <div className="max-w-7xl mx-auto">
+      <section className="py-24 lg:py-40 px-4 lg:px-8">
+        <div className="max-w-none">
           {/* Section header */}
           <Reveal>
             <div className="grid lg:grid-cols-2 gap-6 lg:gap-20 mb-16 lg:mb-24">
@@ -219,8 +232,8 @@ export default function Home() {
               <p className="text-[15px] leading-[1.8] text-white/40 lg:pt-2 max-w-md">
                 Our AI engine analyzes 47 emotional markers per frame. It understands context, 
                 anticipates narrative beats, and crafts films that feel intentionally human.
-              </p>
-            </div>
+          </p>
+        </div>
           </Reveal>
 
           {/* Bento grid */}
@@ -288,7 +301,7 @@ export default function Home() {
 
       {/* Capabilities Section */}
       <section id="capabilities" className="py-24 lg:py-32 border-t border-white/[0.06]">
-        <div className="px-6 lg:px-12 max-w-7xl mx-auto">
+        <div className="px-4 lg:px-8">
           {capabilities.map((cap) => (
             <motion.div
               key={cap.title}
@@ -330,7 +343,7 @@ export default function Home() {
 
       {/* Stats Row */}
       <section className="py-24 lg:py-32 bg-white text-black">
-        <div className="px-6 lg:px-12 max-w-7xl mx-auto">
+        <div className="px-4 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
             {[
               { value: '47', label: 'Emotion markers', suffix: '' },
@@ -355,8 +368,8 @@ export default function Home() {
       </section>
 
       {/* About Section - Asymmetric layout */}
-      <section id="about" className="py-24 lg:py-40 px-6 lg:px-12">
-        <div className="max-w-7xl mx-auto">
+      <section id="about" className="py-24 lg:py-40 px-4 lg:px-8">
+        <div className="max-w-none">
           <div className="grid lg:grid-cols-12 gap-12 lg:gap-8">
             {/* Image/Visual */}
             <div className="lg:col-span-5 lg:col-start-1">
@@ -402,8 +415,8 @@ export default function Home() {
       </section>
 
       {/* Pricing Preview */}
-      <section className="py-24 lg:py-32 px-6 lg:px-12 bg-white/[0.02]">
-        <div className="max-w-5xl mx-auto text-center">
+      <section className="py-24 lg:py-32 px-4 lg:px-8 bg-white/[0.02]">
+        <div className="max-w-6xl mx-auto text-center">
           <Reveal>
             <h2 className="text-[clamp(32px,5vw,56px)] font-light tracking-[-0.02em]">
               One-time purchase.<br />
@@ -455,7 +468,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-32 lg:py-48 px-6 lg:px-12 relative overflow-hidden">
+      <section className="py-32 lg:py-48 px-4 lg:px-8 relative overflow-hidden">
         <div className="absolute inset-0">
           <div 
             className="absolute inset-0 opacity-[0.03]"
@@ -485,16 +498,16 @@ export default function Home() {
               >
                 SCHEDULE DEMO
                 <ArrowRight className="w-3.5 h-3.5" />
-              </a>
-            </div>
+          </a>
+        </div>
           </Reveal>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="border-t border-white/[0.06]">
-        <div className="px-6 lg:px-12 py-16 lg:py-20">
-          <div className="max-w-7xl mx-auto">
+        <div className="px-4 lg:px-8 py-16 lg:py-20">
+          <div className="max-w-none">
             <div className="grid lg:grid-cols-12 gap-12 lg:gap-8">
               <div className="lg:col-span-6">
                 <span className="text-[13px] tracking-[0.4em]">VELLUM</span>
