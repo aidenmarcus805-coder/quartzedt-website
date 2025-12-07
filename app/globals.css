@@ -15,7 +15,6 @@
 
 html {
   scroll-behavior: smooth;
-  cursor: none;
 }
 
 body {
@@ -27,12 +26,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Show default cursor on mobile/touch */
-@media (hover: none) {
-  html {
-    cursor: auto;
-  }
-}
 
 ::selection {
   background: var(--foreground);
