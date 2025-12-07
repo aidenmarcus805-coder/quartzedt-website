@@ -10,8 +10,11 @@ import dynamic from 'next/dynamic';
 const CameraScene = dynamic(() => import('./components/CameraScene'), { 
   ssr: false,
   loading: () => (
-    <div className="h-[200vh] flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+    <div className="h-[200vh] flex items-center justify-center bg-[#050505]">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-10 h-10 border-2 border-white/10 border-t-white/50 rounded-full animate-spin" />
+        <span className="text-[10px] tracking-[0.2em] text-white/30">LOADING</span>
+      </div>
     </div>
   )
 });
@@ -109,63 +112,59 @@ export default function Home() {
         </div>
       </motion.nav>
 
-      {/* Hero Section - Full viewport with 3D Camera */}
+      {/* Hero Section - 3D Camera as main focal point */}
       <section 
         ref={heroRef}
-        className="relative min-h-screen"
+        className="relative"
       >
-        {/* Main hero content */}
-        <div className="relative h-screen">
-          {/* Left side - Text content */}
-          <div className="absolute inset-0 flex flex-col justify-center px-4 lg:px-8 z-10">
-            <div className="max-w-2xl">
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={isLoaded ? { opacity: 1 } : {}}
-                transition={{ delay: 0.5, duration: 0.8 }}
-              >
-                <span className="text-[10px] tracking-[0.3em] text-white/30">AI VIDEO EDITOR</span>
-              </motion.div>
-              
-              <div className="mt-6">
-                <TextReveal delay={0.3}>
-                  <h1 className="text-[clamp(48px,10vw,120px)] font-light leading-[0.9] tracking-[-0.04em]">
-                    Edit less
-                  </h1>
-                </TextReveal>
-                <TextReveal delay={0.4}>
-                  <h1 className="text-[clamp(48px,10vw,120px)] font-light leading-[0.9] tracking-[-0.04em] text-white/20">
-                    Create more
-                  </h1>
-                </TextReveal>
-              </div>
-              
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={isLoaded ? { opacity: 1, y: 0 } : {}}
-                transition={{ delay: 1.2, duration: 0.8 }}
-                className="mt-8"
-              >
-                <p className="text-[15px] leading-[1.7] text-white/40 max-w-md">
-                  AI-powered precision editing that transforms hours of wedding footage into cinematic stories.
-                </p>
-                <div className="flex gap-4 mt-8">
-                  <button className="px-8 py-3 bg-white text-black rounded-full text-[11px] tracking-[0.15em] hover:bg-white/90 transition-colors">
-                    START FREE
-                  </button>
-                  <a href="#features" className="px-8 py-3 border border-white/20 rounded-full text-[11px] tracking-[0.15em] text-white/60 hover:text-white hover:border-white/40 transition-all flex items-center gap-2">
-                    LEARN MORE
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </a>
-                </div>
-              </motion.div>
-            </div>
-          </div>
+        {/* Hero text overlay - appears over the camera */}
+        <div className="absolute top-0 left-0 right-0 h-screen flex flex-col justify-center items-center text-center z-20 pointer-events-none">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={isLoaded ? { opacity: 1 } : {}}
+            transition={{ delay: 0.5, duration: 0.8 }}
+            className="mb-4"
+          >
+            <span className="text-[10px] tracking-[0.3em] text-white/40">AI VIDEO EDITOR</span>
+          </motion.div>
+          
+          <TextReveal delay={0.3}>
+            <h1 className="text-[clamp(36px,8vw,100px)] font-light leading-[0.95] tracking-[-0.03em] text-white/90">
+              VELLUM
+            </h1>
+          </TextReveal>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isLoaded ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 1, duration: 0.8 }}
+            className="mt-6 max-w-lg px-4"
+          >
+            <p className="text-[15px] leading-[1.7] text-white/50">
+              AI-powered precision editing that transforms hours of wedding footage into cinematic stories.
+            </p>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isLoaded ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 1.3, duration: 0.8 }}
+            className="mt-8 flex gap-4 pointer-events-auto"
+          >
+            <button className="px-8 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white rounded-full text-[11px] tracking-[0.15em] hover:bg-white/20 transition-colors flex items-center gap-2">
+              Get Started
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </button>
+            <a href="#features" className="px-8 py-3 text-[11px] tracking-[0.15em] text-white/50 hover:text-white transition-all flex items-center gap-2">
+              Learn More
+              <ArrowRight className="w-3.5 h-3.5" />
+            </a>
+          </motion.div>
+        </div>
 
-          {/* Right side - 3D Camera */}
-          <div className="absolute top-0 right-0 w-full lg:w-[55%] h-full pointer-events-none">
-            <CameraScene />
-          </div>
+        {/* 3D Camera - Full width, scrolls to reveal */}
+        <div className="relative w-full">
+          <CameraScene />
         </div>
 
         {/* Scroll indicator */}
@@ -173,7 +172,7 @@ export default function Home() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 2, duration: 1 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-20"
         >
           <span className="text-[9px] tracking-[0.3em] text-white/30">SCROLL</span>
           <motion.div

@@ -2,14 +2,16 @@
 
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { useScroll, motion } from 'framer-motion';
-import { useRef, Suspense, useEffect, useState, useMemo } from 'react';
+import { useRef, Suspense, useEffect, useState, useMemo, useCallback } from 'react';
 import * as THREE from 'three';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 
-// 3D Camera Model component
-function CameraModel({ scrollProgress }: { scrollProgress: number }) {
+// 3D Camera Model component with scroll-based zoom
+function CameraModel({ scrollProgress, videoElement }: { scrollProgress: number; videoElement: HTMLVideoElement | null }) {
   const groupRef = useRef<THREE.Group>(null);
+  const screenMaterialRef = useRef<THREE.MeshBasicMaterial>(null);
   const obj = useLoader(OBJLoader, '/DSLR.obj');
+  const videoTextureRef = useRef<THREE.VideoTexture | null>(null);
   
   // Load textures
   const textures = useMemo(() => {
@@ -32,9 +34,9 @@ function CameraModel({ scrollProgress }: { scrollProgress: number }) {
             normalMap: textures.normal,
             roughnessMap: textures.glossiness,
             metalnessMap: textures.specular,
-            metalness: 0.3,
-            roughness: 0.4,
-            envMapIntensity: 1,
+            metalness: 0.4,
+            roughness: 0.3,
+            envMapIntensity: 1.5,
           });
           child.castShadow = true;
           child.receiveShadow = true;
@@ -42,144 +44,157 @@ function CameraModel({ scrollProgress }: { scrollProgress: number }) {
       });
     }
   }, [obj, textures]);
-  
+
+  // Create and apply video texture for camera screen
   useFrame(() => {
+    if (videoElement && !videoTextureRef.current) {
+      const texture = new THREE.VideoTexture(videoElement);
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.colorSpace = THREE.SRGBColorSpace;
+      videoTextureRef.current = texture;
+      
+      // Apply to screen material
+      if (screenMaterialRef.current) {
+        screenMaterialRef.current.map = texture;
+        screenMaterialRef.current.needsUpdate = true;
+      }
+    }
+    
+    if (videoTextureRef.current) {
+      videoTextureRef.current.needsUpdate = true;
+    }
+
     if (groupRef.current) {
       // Gentle idle animation
       const time = Date.now() * 0.001;
-      const idleY = Math.sin(time * 0.5) * 0.02;
-      const idleX = Math.cos(time * 0.3) * 0.015;
+      const idleY = Math.sin(time * 0.3) * 0.01;
+      const idleX = Math.cos(time * 0.2) * 0.005;
       
-      // Camera rotation based on scroll
-      groupRef.current.rotation.y = THREE.MathUtils.lerp(
-        groupRef.current.rotation.y,
-        -0.5 + scrollProgress * 0.8 + idleY,
-        0.05
-      );
-      groupRef.current.rotation.x = THREE.MathUtils.lerp(
-        groupRef.current.rotation.x,
-        0.1 - scrollProgress * 0.15 + idleX,
-        0.05
-      );
+      // SCROLL ANIMATION: Start zoomed in, zoom out to reveal camera
+      // Progress 0 = zoomed in on screen, Progress 0.5+ = zoomed out showing full camera
       
-      // Camera moves down as user scrolls
+      // Scale: Start large (zoomed in), shrink to normal size
+      const startScale = 0.12; // Zoomed in - camera fills more of screen
+      const endScale = 0.04;   // Zoomed out - see full camera
+      const currentScale = THREE.MathUtils.lerp(startScale, endScale, Math.min(scrollProgress * 2, 1));
+      groupRef.current.scale.setScalar(currentScale);
+      
+      // Position: Start centered on screen area, move to show full camera
+      const startY = -0.3;
+      const endY = 0.5;
+      const startZ = 1;
+      const endZ = 0;
+      
       groupRef.current.position.y = THREE.MathUtils.lerp(
         groupRef.current.position.y,
-        0 - scrollProgress * 4,
+        THREE.MathUtils.lerp(startY, endY, Math.min(scrollProgress * 2, 1)),
+        0.08
+      );
+      
+      groupRef.current.position.z = THREE.MathUtils.lerp(
+        groupRef.current.position.z,
+        THREE.MathUtils.lerp(startZ, endZ, Math.min(scrollProgress * 2, 1)),
+        0.08
+      );
+      
+      // Rotation: Subtle rotation as you scroll
+      const startRotY = -0.1; // Start showing screen
+      const endRotY = -0.4;   // Rotate to show more of the side
+      
+      groupRef.current.rotation.y = THREE.MathUtils.lerp(
+        groupRef.current.rotation.y,
+        THREE.MathUtils.lerp(startRotY, endRotY, Math.min(scrollProgress * 1.5, 1)) + idleY,
         0.05
       );
       
-      // Camera moves closer as you scroll
-      groupRef.current.position.z = THREE.MathUtils.lerp(
-        groupRef.current.position.z,
-        0 + scrollProgress * 2,
+      groupRef.current.rotation.x = THREE.MathUtils.lerp(
+        groupRef.current.rotation.x,
+        0.1 + scrollProgress * 0.15 + idleX,
         0.05
       );
+      
+      // After 50% scroll, camera starts moving down and away
+      if (scrollProgress > 0.5) {
+        const exitProgress = (scrollProgress - 0.5) * 2;
+        groupRef.current.position.y -= exitProgress * 2;
+        groupRef.current.rotation.x += exitProgress * 0.3;
+      }
     }
   });
 
   return (
-    <group ref={groupRef} position={[0, -0.5, 0]} scale={0.03} rotation={[0, -0.5, 0]}>
+    <group ref={groupRef} position={[0, 0, 0]} scale={0.08} rotation={[0.1, -0.2, 0]}>
       <primitive object={obj} />
+      
+      {/* Camera screen showing video - positioned on back LCD */}
+      <mesh position={[0, 8, 23]} rotation={[0, Math.PI, 0]}>
+        <planeGeometry args={[52, 36]} />
+        <meshBasicMaterial ref={screenMaterialRef} color="#000000" toneMapped={false} />
+      </mesh>
     </group>
   );
 }
 
-// SD Card that ejects from camera
-function SDCard({ scrollProgress }: { scrollProgress: number }) {
-  const sdCardRef = useRef<THREE.Mesh>(null);
-  
-  useFrame(() => {
-    if (sdCardRef.current) {
-      // SD card animation - starts at scroll 0.3, fully out at 0.6
-      const sdProgress = Math.max(0, Math.min(1, (scrollProgress - 0.3) / 0.3));
-      
-      // Start position near the camera
-      const startX = 1.5;
-      const startY = -0.5;
-      const startZ = 0;
-      
-      // SD card slides out and arcs down
-      sdCardRef.current.position.x = startX + sdProgress * 2.5;
-      sdCardRef.current.position.y = startY - sdProgress * 4 + Math.sin(sdProgress * Math.PI) * 1;
-      sdCardRef.current.position.z = startZ + sdProgress * 1;
-      
-      // Rotation
-      sdCardRef.current.rotation.z = sdProgress * Math.PI * 0.4;
-      sdCardRef.current.rotation.x = sdProgress * Math.PI * 0.2;
-      
-      // Scale and opacity based on progress
-      const scale = 1 + sdProgress * 0.5;
-      sdCardRef.current.scale.set(scale, scale, scale);
-    }
-  });
-
-  return (
-    <mesh ref={sdCardRef} position={[1.5, -0.5, 0]}>
-      <boxGeometry args={[0.4, 0.5, 0.08]} />
-      <meshStandardMaterial 
-        color="#2563eb" 
-        metalness={0.7} 
-        roughness={0.3} 
-        emissive="#2563eb" 
-        emissiveIntensity={0.3} 
-      />
-    </mesh>
-  );
-}
-
-// Scene lighting - Strong lighting for visibility
+// Scene lighting - Cinematic studio lighting
 function Lighting() {
   return (
     <>
       {/* Hemisphere light - sky and ground colors */}
-      <hemisphereLight args={['#ffffff', '#444444', 2]} />
+      <hemisphereLight args={['#ffffff', '#333333', 1.5]} />
       
       {/* Strong ambient light for base visibility */}
-      <ambientLight intensity={1.5} />
+      <ambientLight intensity={1} />
       
       {/* Main key light - front right */}
       <directionalLight 
-        position={[5, 5, 5]} 
-        intensity={4}
+        position={[5, 5, 8]} 
+        intensity={3}
         color="#ffffff"
       />
       
       {/* Fill light - front left */}
       <directionalLight 
-        position={[-5, 3, 5]} 
-        intensity={3}
+        position={[-5, 3, 8]} 
+        intensity={2}
         color="#ffffff"
       />
       
       {/* Top light */}
       <directionalLight 
-        position={[0, 10, 2]} 
+        position={[0, 10, 5]} 
         intensity={2}
         color="#ffffff"
       />
       
       {/* Back rim light for edge definition */}
       <directionalLight 
-        position={[0, 2, -5]} 
+        position={[0, 3, -5]} 
         intensity={1.5}
-        color="#8090ff"
+        color="#6080ff"
       />
       
-      {/* Front facing point light */}
-      <pointLight position={[0, 0, 10]} intensity={3} color="#ffffff" />
+      {/* Front facing light - illuminates the screen area */}
+      <pointLight position={[0, 0, 12]} intensity={2} color="#ffffff" />
       
       {/* Side accent lights */}
-      <pointLight position={[10, 0, 2]} intensity={2} color="#ffffff" />
-      <pointLight position={[-10, 0, 2]} intensity={2} color="#ffffff" />
+      <pointLight position={[8, 0, 4]} intensity={1.5} color="#ffffff" />
+      <pointLight position={[-8, 0, 4]} intensity={1.5} color="#ffffff" />
       
-      {/* Bottom fill to prevent dark underside */}
-      <pointLight position={[0, -5, 5]} intensity={1} color="#ffffff" />
+      {/* Subtle light on screen */}
+      <spotLight 
+        position={[0, 2, 8]}
+        angle={0.5}
+        penumbra={0.5}
+        intensity={2}
+        color="#ffffff"
+        target-position={[0, 0, 0]}
+      />
     </>
   );
 }
 
-// Loading fallback
+// Loading fallback - spinning camera silhouette
 function LoadingFallback() {
   const meshRef = useRef<THREE.Mesh>(null);
   
@@ -191,17 +206,33 @@ function LoadingFallback() {
 
   return (
     <mesh ref={meshRef}>
-      <boxGeometry args={[1, 0.7, 0.5]} />
-      <meshStandardMaterial color="#333333" wireframe />
+      <boxGeometry args={[2, 1.4, 0.8]} />
+      <meshStandardMaterial color="#222222" />
     </mesh>
   );
 }
 
 // Main exported component
 export default function CameraScene() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   
-  const { scrollYProgress } = useScroll();
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ['start start', 'end start']
+  });
+
+  // Set video element after mount using callback ref
+  const handleVideoRef = useCallback((element: HTMLVideoElement | null) => {
+    videoRef.current = element;
+    if (element) {
+      setVideoElement(element);
+      // Ensure video plays
+      element.play().catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     const unsubscribe = scrollYProgress.on('change', (v) => {
@@ -210,36 +241,38 @@ export default function CameraScene() {
     return () => unsubscribe();
   }, [scrollYProgress]);
 
-  // Calculate glow intensity for the features section
-  const glowIntensity = Math.max(0, Math.min(1, (scrollProgress - 0.5) / 0.2));
-
   return (
-    <div className="relative w-full h-full">
-      {/* 3D Canvas */}
-      <Canvas
-        camera={{ position: [0, 0, 6], fov: 45 }}
-        gl={{ 
-          antialias: true, 
-          alpha: true,
-          toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.5,
-        }}
-        style={{ background: 'transparent' }}
+    <div ref={containerRef} className="relative w-full h-[200vh]">
+      {/* Hidden video element for texture */}
+      <video
+        ref={handleVideoRef}
+        className="hidden"
+        autoPlay
+        muted
+        loop
+        playsInline
       >
-        <Suspense fallback={<LoadingFallback />}>
-          <Lighting />
-          <CameraModel scrollProgress={scrollProgress} />
-          <SDCard scrollProgress={scrollProgress} />
-        </Suspense>
-      </Canvas>
-      
-      {/* Subtle gradient overlay at bottom connecting to next section */}
-      <motion.div 
-        className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none"
-        style={{
-          background: `linear-gradient(to bottom, transparent, rgba(5,5,5,${0.3 + glowIntensity * 0.7}))`,
-        }}
-      />
+        <source src="/videoplayback.mp4" type="video/mp4" />
+      </video>
+
+      {/* Sticky 3D Canvas */}
+      <div className="sticky top-0 w-full h-screen">
+        <Canvas
+          camera={{ position: [0, 0, 5], fov: 50 }}
+          gl={{ 
+            antialias: true, 
+            alpha: true,
+            toneMapping: THREE.ACESFilmicToneMapping,
+            toneMappingExposure: 1.2,
+          }}
+          style={{ background: 'transparent' }}
+        >
+          <Suspense fallback={<LoadingFallback />}>
+            <Lighting />
+            <CameraModel scrollProgress={scrollProgress} videoElement={videoElement} />
+          </Suspense>
+        </Canvas>
+      </div>
     </div>
   );
 }
