@@ -34,42 +34,54 @@ function Camera({ scrollProgress, videoElement }: { scrollProgress: number; vide
     }
     
     if (groupRef.current) {
+      // Gentle idle animation
+      const time = Date.now() * 0.001;
+      const idleY = Math.sin(time * 0.5) * 0.03;
+      const idleX = Math.cos(time * 0.3) * 0.02;
+      
       // Camera rotation based on scroll
       groupRef.current.rotation.y = THREE.MathUtils.lerp(
         groupRef.current.rotation.y,
-        -0.3 + scrollProgress * 0.8,
+        -0.4 + scrollProgress * 0.6 + idleY,
         0.05
       );
       groupRef.current.rotation.x = THREE.MathUtils.lerp(
         groupRef.current.rotation.x,
-        0.1 - scrollProgress * 0.3,
+        0.15 - scrollProgress * 0.2 + idleX,
         0.05
       );
       
-      // Camera moves down and scales as user scrolls
+      // Camera moves down as user scrolls
       groupRef.current.position.y = THREE.MathUtils.lerp(
         groupRef.current.position.y,
-        -scrollProgress * 2,
+        0.3 - scrollProgress * 3,
+        0.05
+      );
+      
+      // Camera moves forward (towards viewer) slightly
+      groupRef.current.position.z = THREE.MathUtils.lerp(
+        groupRef.current.position.z,
+        0 + scrollProgress * 1,
         0.05
       );
     }
     
     if (sdCardRef.current) {
-      // SD card animation - starts at scroll 0.3, fully out at 0.6
-      const sdProgress = Math.max(0, Math.min(1, (scrollProgress - 0.3) / 0.3));
+      // SD card animation - starts at scroll 0.4, fully out at 0.7
+      const sdProgress = Math.max(0, Math.min(1, (scrollProgress - 0.4) / 0.3));
       
-      // SD card slides out
+      // SD card slides out and moves
       sdCardRef.current.position.x = THREE.MathUtils.lerp(
         sdCardRef.current.position.x,
-        0.8 + sdProgress * 1.5,
+        0.8 + sdProgress * 2,
         0.08
       );
       
-      // SD card rotates and moves around
-      if (sdProgress > 0.5) {
-        const arcProgress = (sdProgress - 0.5) / 0.5;
-        sdCardRef.current.position.y = -Math.sin(arcProgress * Math.PI) * 1.5 - arcProgress * 3;
-        sdCardRef.current.rotation.z = arcProgress * Math.PI * 0.5;
+      // SD card rotates and drops
+      if (sdProgress > 0) {
+        sdCardRef.current.position.y = -0.3 - sdProgress * 2.5;
+        sdCardRef.current.rotation.z = sdProgress * Math.PI * 0.3;
+        sdCardRef.current.rotation.x = sdProgress * Math.PI * 0.2;
       }
     }
   });
@@ -84,7 +96,7 @@ function Camera({ scrollProgress, videoElement }: { scrollProgress: number; vide
   }, []);
 
   return (
-    <group ref={groupRef} position={[0, 0, 0]}>
+    <group ref={groupRef} position={[0.5, 0.3, 0]} scale={1.1}>
       {/* Camera Body */}
       <mesh position={[0, 0, 0]}>
         <boxGeometry args={[2, 1.4, 0.8]} />
@@ -130,7 +142,7 @@ function Camera({ scrollProgress, videoElement }: { scrollProgress: number; vide
       {/* Screen (back of camera) */}
       <mesh position={[0, 0, 0.41]}>
         <planeGeometry args={[1.6, 1.1]} />
-        <meshBasicMaterial ref={materialRef} color="#111111" />
+        <meshBasicMaterial ref={materialRef} color="#222222" />
       </mesh>
       
       {/* Screen Border */}
@@ -148,7 +160,7 @@ function Camera({ scrollProgress, videoElement }: { scrollProgress: number; vide
       {/* SD Card */}
       <mesh ref={sdCardRef} position={[0.8, -0.3, 0]}>
         <boxGeometry args={[0.12, 0.35, 0.05]} />
-        <meshStandardMaterial color="#2563eb" metalness={0.6} roughness={0.3} />
+        <meshStandardMaterial color="#2563eb" metalness={0.6} roughness={0.3} emissive="#2563eb" emissiveIntensity={0.2} />
       </mesh>
       
       {/* Control Dials */}
@@ -162,10 +174,16 @@ function Camera({ scrollProgress, videoElement }: { scrollProgress: number; vide
         <meshStandardMaterial color="#333333" metalness={0.9} roughness={0.15} />
       </mesh>
       
-      {/* Record Button */}
+      {/* Record Button with glow */}
       <mesh position={[0.7, 0.5, 0.35]}>
         <sphereGeometry args={[0.06, 16, 16]} />
-        <meshStandardMaterial color="#ff0000" emissive="#ff0000" emissiveIntensity={0.5} />
+        <meshStandardMaterial color="#ff0000" emissive="#ff0000" emissiveIntensity={0.8} />
+      </mesh>
+      
+      {/* Record button glow ring */}
+      <mesh position={[0.7, 0.5, 0.34]}>
+        <ringGeometry args={[0.08, 0.1, 32]} />
+        <meshBasicMaterial color="#ff0000" transparent opacity={0.3} />
       </mesh>
     </group>
   );
@@ -175,7 +193,7 @@ function Camera({ scrollProgress, videoElement }: { scrollProgress: number; vide
 function Lighting() {
   return (
     <>
-      <ambientLight intensity={0.3} />
+      <ambientLight intensity={0.4} />
       <spotLight 
         position={[5, 5, 5]} 
         angle={0.4} 
@@ -190,22 +208,25 @@ function Lighting() {
         intensity={0.8}
         color="#4060ff"
       />
-      <pointLight position={[0, -3, 2]} intensity={0.3} color="#ffffff" />
+      <spotLight 
+        position={[0, -3, 5]} 
+        angle={0.6} 
+        penumbra={0.8} 
+        intensity={0.5}
+        color="#ffffff"
+      />
+      <pointLight position={[3, 0, 3]} intensity={0.4} color="#ffffff" />
     </>
   );
 }
 
 // Main exported component
 export default function CameraScene() {
-  const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null);
   
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ['start start', 'end start']
-  });
+  const { scrollYProgress } = useScroll();
 
   // Use callback ref to get video element without triggering re-render in effect
   const handleVideoRef = useCallback((element: HTMLVideoElement | null) => {
@@ -223,10 +244,10 @@ export default function CameraScene() {
   }, [scrollYProgress]);
 
   // Calculate glow intensity for the features section
-  const glowIntensity = Math.max(0, Math.min(1, (scrollProgress - 0.6) / 0.2));
+  const glowIntensity = Math.max(0, Math.min(1, (scrollProgress - 0.5) / 0.2));
 
   return (
-    <div ref={containerRef} className="relative h-[200vh]">
+    <div className="relative w-full h-full">
       {/* Hidden video element for texture */}
       <video
         ref={handleVideoRef}
@@ -242,36 +263,24 @@ export default function CameraScene() {
       </video>
       
       {/* 3D Canvas */}
-      <div className="sticky top-0 h-screen w-full">
-        <Canvas
-          camera={{ position: [0, 0, 5], fov: 45 }}
-          gl={{ antialias: true, alpha: true }}
-          style={{ background: 'transparent' }}
-        >
-          <Suspense fallback={null}>
-            <Lighting />
-            <Camera scrollProgress={scrollProgress} videoElement={videoElement} />
-          </Suspense>
-        </Canvas>
-        
-        {/* Energy/Connection Line */}
-        <motion.div 
-          className="absolute left-1/2 bottom-0 w-[2px] -translate-x-1/2 origin-top"
-          style={{
-            height: `${Math.max(0, (scrollProgress - 0.5) * 200)}%`,
-            background: `linear-gradient(to bottom, transparent, rgba(255,255,255,${glowIntensity}), rgba(59, 130, 246, ${glowIntensity}))`,
-            boxShadow: glowIntensity > 0 ? `0 0 20px rgba(59, 130, 246, ${glowIntensity}), 0 0 40px rgba(255,255,255, ${glowIntensity * 0.5})` : 'none',
-          }}
-        />
-        
-        {/* Glow overlay at bottom */}
-        <motion.div 
-          className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
-          style={{
-            background: `radial-gradient(ellipse at center bottom, rgba(255,255,255,${glowIntensity * 0.15}) 0%, transparent 70%)`,
-          }}
-        />
-      </div>
+      <Canvas
+        camera={{ position: [0, 0, 5], fov: 45 }}
+        gl={{ antialias: true, alpha: true }}
+        style={{ background: 'transparent' }}
+      >
+        <Suspense fallback={null}>
+          <Lighting />
+          <Camera scrollProgress={scrollProgress} videoElement={videoElement} />
+        </Suspense>
+      </Canvas>
+      
+      {/* Subtle gradient overlay at bottom connecting to next section */}
+      <motion.div 
+        className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none"
+        style={{
+          background: `linear-gradient(to bottom, transparent, rgba(5,5,5,${0.3 + glowIntensity * 0.7}))`,
+        }}
+      />
     </div>
   );
 }

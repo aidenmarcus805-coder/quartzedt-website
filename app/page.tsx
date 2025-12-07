@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
 import { ArrowRight, ArrowUpRight, Zap, Layers, Wand2, Volume2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
@@ -64,13 +64,7 @@ const Marquee = ({ children, speed = 30 }: { children: React.ReactNode; speed?: 
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll();
   const [isLoaded, setIsLoaded] = useState(false);
-  
-  // Parallax values
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 0.2], [1, 0.9]);
-  const videoScale = useTransform(scrollYProgress, [0, 0.3], [1, 1.1]);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 100);
@@ -115,106 +109,80 @@ export default function Home() {
         </div>
       </motion.nav>
 
-      {/* Hero Section - Full viewport with video */}
-      <motion.section 
+      {/* Hero Section - Full viewport with 3D Camera */}
+      <section 
         ref={heroRef}
-        style={{ opacity: heroOpacity, scale: heroScale }}
-        className="relative h-screen"
+        className="relative min-h-screen"
       >
-        {/* Video container with glassmorphism */}
-        <div className="absolute inset-4 top-20 z-[5]">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={isLoaded ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            style={{ scale: videoScale }}
-            className="relative w-full h-full rounded-2xl overflow-hidden"
-          >
-            {/* Gradient border - glassmorphism effect */}
-            <div
-              className="absolute inset-0 rounded-2xl p-[1px]"
-              style={{
-                background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.08) 100%)',
-              }}
-            >
-              <div
-                className="w-full h-full rounded-2xl"
-                style={{
-                  background: 'linear-gradient(180deg, #0d0d0f 0%, #0a0a0c 50%, #080809 100%)',
-                }}
-              />
-            </div>
-
-            {/* Top highlight */}
-            <div
-              className="absolute top-0 left-[10%] right-[10%] h-[1px] rounded-full"
-              style={{
-                background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)',
-              }}
-            />
-
-            {/* Video placeholder - replace src with actual video */}
-            <div className="absolute inset-[1px] rounded-2xl overflow-hidden bg-[#0a0a0b]">
-              {/* Video will go here */}
-              <video
-                className="w-full h-full object-cover opacity-80"
-                autoPlay
-                muted
-                loop
-                playsInline
+        {/* Main hero content */}
+        <div className="relative h-screen">
+          {/* Left side - Text content */}
+          <div className="absolute inset-0 flex flex-col justify-center px-4 lg:px-8 z-10">
+            <div className="max-w-2xl">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={isLoaded ? { opacity: 1 } : {}}
+                transition={{ delay: 0.5, duration: 0.8 }}
               >
-                {/* <source src="/your-video.mp4" type="video/mp4" /> */}
-              </video>
+                <span className="text-[10px] tracking-[0.3em] text-white/30">AI VIDEO EDITOR</span>
+              </motion.div>
               
-              {/* Gradient overlay on video */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent opacity-60" />
-            </div>
-
-            {/* Inner shadow effect */}
-            <div 
-              className="absolute inset-0 rounded-2xl pointer-events-none"
-              style={{
-                boxShadow: 'inset 0 0 100px rgba(0,0,0,0.5)',
-              }}
-            />
-          </motion.div>
-        </div>
-
-        {/* Hero text overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-8 z-10">
-          <div className="grid lg:grid-cols-2 gap-8 items-end">
-            <div>
-              <TextReveal delay={0.3}>
-                <h1 className="text-[clamp(48px,12vw,160px)] font-light leading-[0.85] tracking-[-0.04em]">
-                  Edit less
-                </h1>
-              </TextReveal>
-              <TextReveal delay={0.4}>
-                <h1 className="text-[clamp(48px,12vw,160px)] font-light leading-[0.85] tracking-[-0.04em] text-white/20">
-                  Create more
-          </h1>
-              </TextReveal>
-            </div>
-            
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={isLoaded ? { opacity: 1 } : {}}
-              transition={{ delay: 1.2, duration: 0.8 }}
-              className="lg:text-right lg:pb-6"
-            >
-              <p className="text-[15px] leading-[1.7] text-white/40 max-w-md lg:ml-auto">
-                AI-powered precision editing that transforms hours of wedding footage into cinematic stories.
-              </p>
-              <div className="flex lg:justify-end gap-6 mt-6">
-                <a href="#" className="text-[11px] tracking-[0.15em] flex items-center gap-2 group">
-                  <span className="text-white/60 group-hover:text-white transition-colors">LEARN MORE</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-white/40" />
-                </a>
+              <div className="mt-6">
+                <TextReveal delay={0.3}>
+                  <h1 className="text-[clamp(48px,10vw,120px)] font-light leading-[0.9] tracking-[-0.04em]">
+                    Edit less
+                  </h1>
+                </TextReveal>
+                <TextReveal delay={0.4}>
+                  <h1 className="text-[clamp(48px,10vw,120px)] font-light leading-[0.9] tracking-[-0.04em] text-white/20">
+                    Create more
+                  </h1>
+                </TextReveal>
               </div>
-            </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={isLoaded ? { opacity: 1, y: 0 } : {}}
+                transition={{ delay: 1.2, duration: 0.8 }}
+                className="mt-8"
+              >
+                <p className="text-[15px] leading-[1.7] text-white/40 max-w-md">
+                  AI-powered precision editing that transforms hours of wedding footage into cinematic stories.
+                </p>
+                <div className="flex gap-4 mt-8">
+                  <button className="px-8 py-3 bg-white text-black rounded-full text-[11px] tracking-[0.15em] hover:bg-white/90 transition-colors">
+                    START FREE
+                  </button>
+                  <a href="#features" className="px-8 py-3 border border-white/20 rounded-full text-[11px] tracking-[0.15em] text-white/60 hover:text-white hover:border-white/40 transition-all flex items-center gap-2">
+                    LEARN MORE
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+
+          {/* Right side - 3D Camera */}
+          <div className="absolute top-0 right-0 w-full lg:w-[55%] h-full pointer-events-none">
+            <CameraScene />
           </div>
         </div>
-      </motion.section>
+
+        {/* Scroll indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2, duration: 1 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        >
+          <span className="text-[9px] tracking-[0.3em] text-white/30">SCROLL</span>
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            className="w-[1px] h-8 bg-gradient-to-b from-white/30 to-transparent"
+          />
+        </motion.div>
+      </section>
 
       {/* Marquee */}
       <section className="py-6 border-y border-white/[0.06]">
@@ -229,9 +197,6 @@ export default function Home() {
           </div>
         </Marquee>
       </section>
-
-      {/* 3D Camera Scene with SD Card Animation */}
-      <CameraScene />
 
       {/* Features Section - Lights up when SD card connects */}
       <section id="features" className="relative py-24 lg:py-40 px-4 lg:px-8 overflow-hidden">
