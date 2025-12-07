@@ -4,6 +4,17 @@ import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { ArrowRight, ArrowUpRight, Zap, Layers, Wand2, Volume2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+
+// Dynamic import for 3D scene (client-side only)
+const CameraScene = dynamic(() => import('./components/CameraScene'), { 
+  ssr: false,
+  loading: () => (
+    <div className="h-[200vh] flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+    </div>
+  )
+});
 
 // Reveal animation wrapper
 const Reveal = ({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) => {
@@ -219,11 +230,43 @@ export default function Home() {
         </Marquee>
       </section>
 
-      {/* Bento Grid Section */}
-      <section className="py-24 lg:py-40 px-4 lg:px-8">
-        <div className="max-w-none">
+      {/* 3D Camera Scene with SD Card Animation */}
+      <CameraScene />
+
+      {/* Features Section - Lights up when SD card connects */}
+      <section id="features" className="relative py-24 lg:py-40 px-4 lg:px-8 overflow-hidden">
+        {/* Animated glow background */}
+        <motion.div 
+          className="absolute inset-0 pointer-events-none"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: '-200px' }}
+          transition={{ duration: 1.5 }}
+        >
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[150px]" />
+          <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-white/5 rounded-full blur-[100px]" />
+        </motion.div>
+        
+        {/* Connection point indicator */}
+        <motion.div
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-4"
+          initial={{ scale: 0, opacity: 0 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="w-full h-full bg-white rounded-full animate-ping" />
+          <div className="absolute inset-0 w-full h-full bg-white rounded-full" />
+        </motion.div>
+
+        <div className="max-w-none relative z-10">
           {/* Section header */}
-          <Reveal>
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
             <div className="grid lg:grid-cols-2 gap-6 lg:gap-20 mb-16 lg:mb-24">
               <h2 className="text-[clamp(28px,4vw,48px)] font-light leading-[1.1] tracking-[-0.02em]">
                 From camera to timeline<br />
@@ -232,21 +275,35 @@ export default function Home() {
               <p className="text-[15px] leading-[1.8] text-white/40 lg:pt-2 max-w-md">
                 Our AI engine analyzes 47 emotional markers per frame. It understands context, 
                 anticipates narrative beats, and crafts films that feel intentionally human.
-          </p>
-        </div>
-          </Reveal>
+              </p>
+            </div>
+          </motion.div>
 
-          {/* Bento grid */}
+          {/* Bento grid with glow effect */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Large feature card */}
             <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 40, borderColor: 'rgba(255,255,255,0.06)' }}
+              whileInView={{ 
+                opacity: 1, 
+                y: 0,
+                borderColor: ['rgba(255,255,255,0.06)', 'rgba(255,255,255,0.2)', 'rgba(255,255,255,0.06)']
+              }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="lg:col-span-2 lg:row-span-2 group relative bg-white/[0.02] rounded-2xl p-8 lg:p-12 border border-white/[0.06] hover:border-white/10 transition-colors overflow-hidden"
+              transition={{ 
+                duration: 0.6,
+                borderColor: { duration: 2, delay: 0.5 }
+              }}
+              className="lg:col-span-2 lg:row-span-2 group relative bg-white/[0.02] rounded-2xl p-8 lg:p-12 border hover:border-white/10 transition-colors overflow-hidden"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              {/* Animated shine effect */}
+              <motion.div 
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full"
+                initial={{ x: '-100%' }}
+                whileInView={{ x: '200%' }}
+                viewport={{ once: true }}
+                transition={{ duration: 1.5, delay: 0.3 }}
+              />
               
               <div className="relative z-10 h-full flex flex-col">
                 <span className="text-[10px] tracking-[0.3em] text-white/30">01</span>
@@ -258,16 +315,18 @@ export default function Home() {
                   timestamp, and content type. No manual organization needed.
                 </p>
                 
-                {/* Visual element */}
+                {/* Visual element - animated bars */}
                 <div className="mt-auto pt-12">
                   <div className="flex gap-3">
                     {[80, 110, 70, 100, 90].map((height, i) => (
                       <motion.div
                         key={i}
-                        className="bg-white/[0.03] rounded-lg flex-1"
-                        initial={{ height }}
-                        whileHover={{ height: height + 20 }}
-                        style={{ height }}
+                        className="bg-white/[0.05] rounded-lg flex-1"
+                        initial={{ height: 0, opacity: 0 }}
+                        whileInView={{ height, opacity: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.5 + i * 0.1, duration: 0.5 }}
+                        whileHover={{ height: height + 20, backgroundColor: 'rgba(255,255,255,0.1)' }}
                       />
                     ))}
                   </div>
@@ -275,7 +334,7 @@ export default function Home() {
               </div>
             </motion.div>
 
-            {/* Smaller feature cards */}
+            {/* Smaller feature cards with staggered glow */}
             {[
               { num: '02', title: 'AI Analysis', desc: 'Our engine analyzes audio peaks, facial expressions, and scene composition.' },
               { num: '03', title: 'Smart Assembly', desc: 'Receive a rough-cut timeline built around emotional beats.' },
@@ -287,12 +346,23 @@ export default function Home() {
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: idx * 0.1, duration: 0.6 }}
-                className="group relative bg-white/[0.02] rounded-2xl p-6 lg:p-8 border border-white/[0.06] hover:border-white/10 transition-colors"
+                transition={{ delay: 0.2 + idx * 0.15, duration: 0.6 }}
+                className="group relative bg-white/[0.02] rounded-2xl p-6 lg:p-8 border border-white/[0.06] hover:border-white/20 transition-all duration-500 overflow-hidden"
               >
-                <span className="text-[10px] tracking-[0.3em] text-white/30">{feature.num}</span>
-                <h3 className="text-[18px] font-light mt-3 mb-2">{feature.title}</h3>
-                <p className="text-[13px] text-white/40 leading-relaxed">{feature.desc}</p>
+                {/* Shine effect */}
+                <motion.div 
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"
+                  initial={{ x: '-100%' }}
+                  whileInView={{ x: '200%' }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1, delay: 0.5 + idx * 0.15 }}
+                />
+                
+                <div className="relative z-10">
+                  <span className="text-[10px] tracking-[0.3em] text-white/30">{feature.num}</span>
+                  <h3 className="text-[18px] font-light mt-3 mb-2">{feature.title}</h3>
+                  <p className="text-[13px] text-white/40 leading-relaxed">{feature.desc}</p>
+                </div>
               </motion.div>
             ))}
           </div>
