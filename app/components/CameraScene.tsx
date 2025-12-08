@@ -105,30 +105,34 @@ function MonitorModel({ scrollProgress, groupRef, videoElement }: {
           
           // Apply PBR materials based on mesh name
           if (name.includes('cylinder') || name.includes('cube.017')) {
-            // Stand/base parts
-            child.material = new THREE.MeshStandardMaterial({
+            // Stand/base parts - polished aluminum
+            child.material = new THREE.MeshPhysicalMaterial({
               map: textures.standBase,
               normalMap: textures.standNormal,
               roughnessMap: textures.standRoughness,
               metalnessMap: textures.standMetallic,
-              normalScale: new THREE.Vector2(1, 1),
+              normalScale: new THREE.Vector2(1.2, 1.2),
               metalness: 1.0,
-              roughness: 1.0,
+              roughness: 0.15,
               side: THREE.DoubleSide,
-              envMapIntensity: 1.2,
+              envMapIntensity: 2.0,
+              clearcoat: 0.1,
+              clearcoatRoughness: 0.4,
             });
           } else {
-            // Display/monitor body parts
-            child.material = new THREE.MeshStandardMaterial({
+            // Display/monitor body parts - matte aluminum with subtle sheen
+            child.material = new THREE.MeshPhysicalMaterial({
               map: textures.displayBase,
               normalMap: textures.displayNormal,
               roughnessMap: textures.displayRoughness,
               metalnessMap: textures.displayMetallic,
-              normalScale: new THREE.Vector2(1, 1),
+              normalScale: new THREE.Vector2(1.2, 1.2),
               metalness: 1.0,
-              roughness: 1.0,
+              roughness: 0.35,
               side: THREE.DoubleSide,
-              envMapIntensity: 1.2,
+              envMapIntensity: 1.8,
+              clearcoat: 0.05,
+              clearcoatRoughness: 0.5,
             });
           }
           
@@ -264,8 +268,8 @@ function Scene({ scrollProgress, videoElement }: { scrollProgress: number; video
   
   return (
     <group position={[0, 0, 0]}>
-      {/* Environment for monitor reflections - subtle */}
-      <Environment preset="night" environmentIntensity={0.4} />
+      {/* Premium studio environment for rich reflections */}
+      <Environment preset="studio" environmentIntensity={0.6} />
       <Lighting />
       <MonitorModel 
         scrollProgress={scrollProgress} 
@@ -276,48 +280,91 @@ function Scene({ scrollProgress, videoElement }: { scrollProgress: number; video
   );
 }
 
-// Scene lighting for monitor
+// Scene lighting for monitor - Premium studio lighting
 function Lighting() {
   return (
     <>
-      {/* Subtle ambient - low for cinematic contrast */}
-      <ambientLight intensity={0.15} color="#1a1a2e" />
+      {/* Very subtle ambient for deep blacks */}
+      <ambientLight intensity={0.03} color="#0a0a12" />
       
-      {/* Key light - warm, from top-right */}
-      <directionalLight 
-        position={[4, 6, 5]} 
-        intensity={1.2} 
-        color="#fff5e6"
+      {/* HERO KEY LIGHT - Strong from top-right, warm white */}
+      <spotLight 
+        position={[6, 8, 8]} 
+        intensity={80}
+        angle={0.5}
+        penumbra={0.8}
+        color="#fff8f0"
         castShadow
         shadow-mapSize={[2048, 2048]}
+        shadow-bias={-0.0001}
       />
       
-      {/* Fill light - cool, softer from left */}
-      <directionalLight 
-        position={[-5, 3, 4]} 
-        intensity={0.4} 
-        color="#c0d8ff"
-      />
-      
-      {/* Rim light - back edge separation */}
-      <directionalLight 
-        position={[0, 2, -6]} 
-        intensity={0.6} 
+      {/* DRAMATIC RIM LIGHT - Back-left edge, creates aluminum glow */}
+      <spotLight 
+        position={[-8, 4, -4]} 
+        intensity={120}
+        angle={0.4}
+        penumbra={1}
         color="#ffffff"
+        target-position={[0, 0, 0]}
       />
       
-      {/* Soft top light */}
+      {/* SECONDARY RIM - Back-right for symmetry */}
+      <spotLight 
+        position={[8, 3, -5]} 
+        intensity={60}
+        angle={0.5}
+        penumbra={0.9}
+        color="#e8f0ff"
+      />
+      
+      {/* FILL LIGHT - Cool blue from left, subtle */}
       <directionalLight 
-        position={[0, 8, 2]} 
-        intensity={0.5} 
-        color="#f0f0ff"
+        position={[-6, 2, 5]} 
+        intensity={0.4} 
+        color="#b8d4ff"
       />
       
-      {/* Subtle front accent */}
-      <pointLight position={[0, 1, 6]} intensity={0.5} color="#ffffff" distance={15} />
+      {/* TOP SOFTBOX - Even illumination from above */}
+      <rectAreaLight
+        position={[0, 10, 3]}
+        width={12}
+        height={12}
+        intensity={2}
+        color="#ffffff"
+        rotation={[-Math.PI / 2, 0, 0]}
+      />
       
-      {/* Environment hemisphere - subtle */}
-      <hemisphereLight args={['#2a2a3a', '#0a0a0f', 0.3]} />
+      {/* BOTTOM BOUNCE - Subtle reflection from below (like studio floor) */}
+      <rectAreaLight
+        position={[0, -4, 2]}
+        width={10}
+        height={6}
+        intensity={0.3}
+        color="#1a1a20"
+        rotation={[Math.PI / 2, 0, 0]}
+      />
+      
+      {/* ACCENT LIGHT - Subtle warm glow on stand */}
+      <pointLight 
+        position={[0, -1, 4]} 
+        intensity={15} 
+        color="#ffede0" 
+        distance={8}
+        decay={2}
+      />
+      
+      {/* FRONT FACE LIGHT - Very subtle to see screen bezel */}
+      <pointLight 
+        position={[0, 2, 10]} 
+        intensity={8} 
+        color="#ffffff" 
+        distance={20}
+        decay={2}
+      />
+      
+      {/* Environment gradient */}
+      <hemisphereLight args={['#1a1a2e', '#050508', 0.15]} />
     </>
   );
 }
@@ -458,12 +505,12 @@ export default function CameraScene() {
             antialias: true, 
             alpha: true,
             toneMapping: THREE.ACESFilmicToneMapping,
-            toneMappingExposure: 1.2,
+            toneMappingExposure: 1.0,
             powerPreference: 'high-performance',
             outputColorSpace: THREE.SRGBColorSpace,
           }}
           dpr={[2, 3]}
-          shadows
+          shadows="soft"
           style={{ background: 'transparent' }}
         >
           <Suspense fallback={<LoadingFallback />}>
