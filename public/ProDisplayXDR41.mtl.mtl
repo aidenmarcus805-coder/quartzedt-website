@@ -1,0 +1,26 @@
+# Blender 4.2.1 LTS MTL File: 'ProDisplayXDR41.blend'
+# www.blender.org
+
+newmtl Display
+Ka 1.000000 1.000000 1.000000
+Kd 0.100000 0.100000 0.100000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd TEX/Display_BaseColor.png
+map_Ns TEX/Display_Roughness.png
+map_Bump TEX/Display_Normal.png
+
+newmtl Stand
+Ka 1.000000 1.000000 1.000000
+Kd 0.300000 0.300000 0.300000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd TEX/Stand_BaseColor.png
+map_Ns TEX/Stand_Roughness.png
+map_Bump TEX/Stand_Normal.png

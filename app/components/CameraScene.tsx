@@ -1,73 +1,156 @@
 'use client';
 
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { useScroll, motion } from 'framer-motion';
+import { Environment } from '@react-three/drei';
 import { useRef, Suspense, useEffect, useState, useMemo, useCallback } from 'react';
 import * as THREE from 'three';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 
-// 3D Camera Model component with scroll-based zoom
-function CameraModel({ scrollProgress, videoElement }: { scrollProgress: number; videoElement: HTMLVideoElement | null }) {
-  const groupRef = useRef<THREE.Group>(null);
+// Create rounded rectangle geometry with proper UVs
+function createRoundedRectGeometry(width: number, height: number, radius: number) {
+  const shape = new THREE.Shape();
+  const x = -width / 2;
+  const y = -height / 2;
+  
+  shape.moveTo(x + radius, y);
+  shape.lineTo(x + width - radius, y);
+  shape.quadraticCurveTo(x + width, y, x + width, y + radius);
+  shape.lineTo(x + width, y + height - radius);
+  shape.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  shape.lineTo(x + radius, y + height);
+  shape.quadraticCurveTo(x, y + height, x, y + height - radius);
+  shape.lineTo(x, y + radius);
+  shape.quadraticCurveTo(x, y, x + radius, y);
+  
+  const geometry = new THREE.ShapeGeometry(shape);
+  
+  // Compute proper UVs for texture mapping
+  const pos = geometry.attributes.position;
+  const uvs = new Float32Array(pos.count * 2);
+  
+  for (let i = 0; i < pos.count; i++) {
+    const px = pos.getX(i);
+    const py = pos.getY(i);
+    // Map position to 0-1 UV range
+    uvs[i * 2] = (px + width / 2) / width;
+    uvs[i * 2 + 1] = (py + height / 2) / height;
+  }
+  
+  geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+  
+  return geometry;
+}
+
+// 3D Monitor Model component with attached video screen
+function MonitorModel({ scrollProgress, groupRef, videoElement }: { 
+  scrollProgress: number; 
+  groupRef: React.RefObject<THREE.Group | null>;
+  videoElement: HTMLVideoElement | null;
+}) {
+  // Load OBJ
+  const obj = useLoader(OBJLoader, '/ProDisplayXDR41.mtl.obj');
+  
+  const smoothProgress = useRef(0);
   const screenMaterialRef = useRef<THREE.MeshBasicMaterial>(null);
-  const obj = useLoader(OBJLoader, '/DSLR.obj');
   const videoTextureRef = useRef<THREE.VideoTexture | null>(null);
   
-  // Load textures with high quality settings
+  // Screen geometry for Pro Display XDR (16:9 aspect ratio) - sized to fit display area
+  const screenGeometry = useMemo(() => createRoundedRectGeometry(1.8, 1.0, 0.01), []);
+
+  // Load all PBR textures
   const textures = useMemo(() => {
-    const textureLoader = new THREE.TextureLoader();
+    const loader = new THREE.TextureLoader();
     
-    const loadTexture = (path: string) => {
-      const tex = textureLoader.load(path);
+    const loadColor = (path: string) => {
+      const tex = loader.load(path);
       tex.colorSpace = THREE.SRGBColorSpace;
-      tex.minFilter = THREE.LinearMipmapLinearFilter;
-      tex.magFilter = THREE.LinearFilter;
-      tex.anisotropy = 16;
-      tex.generateMipmaps = true;
+      tex.flipY = true;
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      return tex;
+    };
+    
+    const loadData = (path: string) => {
+      const tex = loader.load(path);
+      tex.colorSpace = THREE.LinearSRGBColorSpace;
+      tex.flipY = true;
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
       return tex;
     };
     
     return {
-      diffuse: loadTexture('/TEX/DSLR_DSLR_Diffuse.png'),
-      normal: loadTexture('/TEX/DSLR_DSLR_Normal.png'),
-      specular: loadTexture('/TEX/DSLR_DSLR_Specular.png'),
-      glossiness: loadTexture('/TEX/DSLR_DSLR_Glossiness.png'),
+      // Display textures
+      displayBase: loadColor('/TEX/Display_BaseColor.png'),
+      displayNormal: loadData('/TEX/Display_Normal.png'),
+      displayRoughness: loadData('/TEX/Display_Roughness.png'),
+      displayMetallic: loadData('/TEX/Display_Metallic.png'),
+      // Stand textures
+      standBase: loadColor('/TEX/Stand_BaseColor.png'),
+      standNormal: loadData('/TEX/Stand_Normal.png'),
+      standRoughness: loadData('/TEX/Stand_Roughness.png'),
+      standMetallic: loadData('/TEX/Stand_Metallic.png'),
     };
   }, []);
 
-  // Apply textures to the model
   useEffect(() => {
-    if (obj) {
+    if (obj && textures) {
       obj.traverse((child) => {
         if (child instanceof THREE.Mesh) {
-          child.material = new THREE.MeshStandardMaterial({
-            map: textures.diffuse,
-            normalMap: textures.normal,
-            roughnessMap: textures.glossiness,
-            metalnessMap: textures.specular,
-            metalness: 0.5,
-            roughness: 0.3,
-            envMapIntensity: 1.5,
-          });
+          if (child.geometry) {
+            child.geometry.computeVertexNormals();
+          }
+          
+          const name = child.name.toLowerCase();
+          
+          // Apply PBR materials based on mesh name
+          if (name.includes('cylinder') || name.includes('cube.017')) {
+            // Stand/base parts
+            child.material = new THREE.MeshStandardMaterial({
+              map: textures.standBase,
+              normalMap: textures.standNormal,
+              roughnessMap: textures.standRoughness,
+              metalnessMap: textures.standMetallic,
+              normalScale: new THREE.Vector2(1, 1),
+              metalness: 1.0,
+              roughness: 1.0,
+              side: THREE.DoubleSide,
+              envMapIntensity: 1.2,
+            });
+          } else {
+            // Display/monitor body parts
+            child.material = new THREE.MeshStandardMaterial({
+              map: textures.displayBase,
+              normalMap: textures.displayNormal,
+              roughnessMap: textures.displayRoughness,
+              metalnessMap: textures.displayMetallic,
+              normalScale: new THREE.Vector2(1, 1),
+              metalness: 1.0,
+              roughness: 1.0,
+              side: THREE.DoubleSide,
+              envMapIntensity: 1.2,
+            });
+          }
+          
           child.castShadow = true;
           child.receiveShadow = true;
+          child.frustumCulled = false;
         }
       });
     }
   }, [obj, textures]);
 
-  // Create and apply video texture for camera screen
   useFrame(() => {
-    // Create video texture when video element is ready
+    // Create video texture when video is ready
     if (videoElement && !videoTextureRef.current && videoElement.readyState >= 2) {
       const texture = new THREE.VideoTexture(videoElement);
       texture.minFilter = THREE.LinearFilter;
       texture.magFilter = THREE.LinearFilter;
       texture.colorSpace = THREE.SRGBColorSpace;
-      texture.flipY = true;
+      texture.generateMipmaps = false;
+      texture.anisotropy = 16;
       videoTextureRef.current = texture;
       
-      // Apply to screen material
       if (screenMaterialRef.current) {
         screenMaterialRef.current.map = texture;
         screenMaterialRef.current.color = new THREE.Color(0xffffff);
@@ -75,99 +158,166 @@ function CameraModel({ scrollProgress, videoElement }: { scrollProgress: number;
       }
     }
     
-    // Keep updating the video texture
-    if (videoTextureRef.current && videoElement && !videoElement.paused) {
+    // Update video texture
+    if (videoTextureRef.current) {
       videoTextureRef.current.needsUpdate = true;
     }
-
+    
+    // Smooth the scroll progress
+    smoothProgress.current += (scrollProgress - smoothProgress.current) * 0.18;
+    const progress = smoothProgress.current;
+    
     if (groupRef.current) {
-      // Gentle idle animation
       const time = Date.now() * 0.001;
-      const idleY = Math.sin(time * 0.3) * 0.008;
+      const idleY = Math.sin(time * 0.3) * 0.002;
       
-      // SCROLL ANIMATION
-      // Progress 0 = zoomed in on screen, Progress 0.5+ = zoomed out showing full camera
-      const scrollEase = Math.min(scrollProgress * 2, 1);
+      const scrollEase = Math.min(progress * 2, 1);
       
-      // Scale: Start large (zoomed in), shrink to normal size
-      const startScale = 0.055;
-      const endScale = 0.022;
+      // Scale for Pro Display XDR
+      const startScale = 5.72;
+      const endScale = 1.9;
       const currentScale = THREE.MathUtils.lerp(startScale, endScale, scrollEase);
       groupRef.current.scale.setScalar(currentScale);
       
-      // Position Y: Move up as we zoom out
-      const targetY = THREE.MathUtils.lerp(-0.5, 0.3, scrollEase);
+      // Position X - centered then slight right movement  
+      const targetX = THREE.MathUtils.lerp(0.05, 1.0, scrollEase);
+      groupRef.current.position.x = THREE.MathUtils.lerp(
+        groupRef.current.position.x,
+        targetX,
+        0.15
+      );
+      
+      // Position Y - centered on screen
+      const targetY = THREE.MathUtils.lerp(-5.85, -1.3, scrollEase);
       groupRef.current.position.y = THREE.MathUtils.lerp(
         groupRef.current.position.y,
         targetY,
-        0.08
+        0.15
       );
       
-      // Rotation: Start showing screen (back), rotate slightly to show angle
-      // No rotation = back of camera, rotate towards Math.PI = front/lens
-      const targetRotY = THREE.MathUtils.lerp(0, 0.4, scrollEase) + idleY;
+      // Rotation - keep -90 degree base + slight animation on scroll
+      const baseRotY = -Math.PI / 2; // -90 degrees to face viewer
+      const targetRotY = baseRotY + THREE.MathUtils.lerp(0, -0.3, scrollEase) + idleY;
       groupRef.current.rotation.y = THREE.MathUtils.lerp(
         groupRef.current.rotation.y,
         targetRotY,
-        0.06
+        0.12
       );
       
-      // Slight tilt
       groupRef.current.rotation.x = THREE.MathUtils.lerp(
         groupRef.current.rotation.x,
-        0.05 + scrollEase * 0.1,
-        0.06
+        0.02 + scrollEase * 0.03,
+        0.12
       );
       
-      // After 60% scroll, camera moves down and away
-      if (scrollProgress > 0.6) {
-        const exitProgress = (scrollProgress - 0.6) * 2.5;
-        groupRef.current.position.y -= exitProgress * 3;
-      }
+      groupRef.current.updateMatrixWorld();
     }
   });
 
+  // Glossy overlay geometry - same size as screen
+  const glossGeometry = useMemo(() => createRoundedRectGeometry(1.8, 1.0, 0.01), []);
+  
   return (
-    <group ref={groupRef} position={[0, 0, 0]} rotation={[0, 0, 0]}>
+    <group ref={groupRef} position={[0, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
       <primitive object={obj} />
       
-      {/* Camera LCD screen with video - positioned on the back LCD area */}
-      {/* Adjusted position to match the actual LCD screen location */}
-      <mesh position={[-8, 12, 24]} rotation={[0, 0, 0]}>
-        <planeGeometry args={[58, 42]} />
-        <meshBasicMaterial ref={screenMaterialRef} color="#000000" toneMapped={false} />
+      {/* Video screen - positioned on the Pro Display XDR panel */}
+      <mesh 
+        position={[-0.0998, 1, 0.008]}
+        rotation={[0, Math.PI / 2, 0]}
+        renderOrder={999}
+        geometry={screenGeometry}
+      >
+        <meshBasicMaterial 
+          ref={screenMaterialRef}
+          color="#111111"
+          toneMapped={false}
+        />
+      </mesh>
+      
+      {/* Glossy screen overlay - Pro Display XDR glass effect */}
+      <mesh 
+        position={[-0.0988, 1, 0.008]}
+        rotation={[0, Math.PI / 2, 0]}
+        renderOrder={1000}
+        geometry={glossGeometry}
+      >
+        <meshPhysicalMaterial 
+          transparent={true}
+          opacity={0.06}
+          roughness={0.02}
+          metalness={0.0}
+          clearcoat={1.0}
+          clearcoatRoughness={0.02}
+          reflectivity={0.98}
+          envMapIntensity={0.4}
+          color="#ffffff"
+        />
       </mesh>
     </group>
   );
 }
 
-// Scene lighting - Cinematic studio lighting
+// Scene
+function Scene({ scrollProgress, videoElement }: { scrollProgress: number; videoElement: HTMLVideoElement | null }) {
+  const monitorGroupRef = useRef<THREE.Group>(null);
+  
+  return (
+    <group position={[0, 0, 0]}>
+      {/* Environment for monitor reflections - subtle */}
+      <Environment preset="night" environmentIntensity={0.4} />
+      <Lighting />
+      <MonitorModel 
+        scrollProgress={scrollProgress} 
+        groupRef={monitorGroupRef} 
+        videoElement={videoElement}
+      />
+    </group>
+  );
+}
+
+// Scene lighting for monitor
 function Lighting() {
   return (
     <>
-      {/* Hemisphere light */}
-      <hemisphereLight args={['#ffffff', '#222222', 2]} />
+      {/* Subtle ambient - low for cinematic contrast */}
+      <ambientLight intensity={0.15} color="#1a1a2e" />
       
-      {/* Ambient */}
-      <ambientLight intensity={1.5} />
+      {/* Key light - warm, from top-right */}
+      <directionalLight 
+        position={[4, 6, 5]} 
+        intensity={1.2} 
+        color="#fff5e6"
+        castShadow
+        shadow-mapSize={[2048, 2048]}
+      />
       
-      {/* Key light - front */}
-      <directionalLight position={[0, 5, 10]} intensity={3} color="#ffffff" />
+      {/* Fill light - cool, softer from left */}
+      <directionalLight 
+        position={[-5, 3, 4]} 
+        intensity={0.4} 
+        color="#c0d8ff"
+      />
       
-      {/* Fill lights */}
-      <directionalLight position={[-5, 3, 5]} intensity={2} color="#ffffff" />
-      <directionalLight position={[5, 3, 5]} intensity={2} color="#ffffff" />
+      {/* Rim light - back edge separation */}
+      <directionalLight 
+        position={[0, 2, -6]} 
+        intensity={0.6} 
+        color="#ffffff"
+      />
       
-      {/* Top light */}
-      <directionalLight position={[0, 10, 0]} intensity={1.5} color="#ffffff" />
+      {/* Soft top light */}
+      <directionalLight 
+        position={[0, 8, 2]} 
+        intensity={0.5} 
+        color="#f0f0ff"
+      />
       
-      {/* Rim light */}
-      <directionalLight position={[0, 2, -10]} intensity={1} color="#4060ff" />
+      {/* Subtle front accent */}
+      <pointLight position={[0, 1, 6]} intensity={0.5} color="#ffffff" distance={15} />
       
-      {/* Point lights for detail */}
-      <pointLight position={[0, 0, 8]} intensity={2} color="#ffffff" />
-      <pointLight position={[-6, 0, 4]} intensity={1} color="#ffffff" />
-      <pointLight position={[6, 0, 4]} intensity={1} color="#ffffff" />
+      {/* Environment hemisphere - subtle */}
+      <hemisphereLight args={['#2a2a3a', '#0a0a0f', 0.3]} />
     </>
   );
 }
@@ -183,86 +333,254 @@ function LoadingFallback() {
   });
 
   return (
-    <group>
-      <mesh ref={meshRef}>
-        <boxGeometry args={[2, 1.4, 0.8]} />
-        <meshStandardMaterial color="#333333" metalness={0.5} roughness={0.5} />
-      </mesh>
-    </group>
+    <mesh ref={meshRef}>
+      <boxGeometry args={[2, 1.4, 0.8]} />
+      <meshStandardMaterial color="#333333" metalness={0.5} roughness={0.5} />
+    </mesh>
   );
 }
 
-// Main exported component
+// Main component with scroll hijacking
 export default function CameraScene() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const [animationProgress, setAnimationProgress] = useState(0);
+  const [isAnimationComplete, setIsAnimationComplete] = useState(false);
   const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ['start start', 'end start']
-  });
+  const targetProgress = useRef(0);
 
-  // Set video element after mount and ensure it plays
   const handleVideoRef = useCallback((element: HTMLVideoElement | null) => {
     videoRef.current = element;
     if (element) {
-      // Ensure video is ready to play
       element.load();
       element.addEventListener('loadeddata', () => {
         setVideoElement(element);
         element.play().catch(console.error);
       });
-      // Also try to play immediately
-      element.play().catch(() => {
-        // Autoplay might be blocked, will play when user interacts
-      });
+      element.play().catch(() => {});
       setVideoElement(element);
     }
   }, []);
 
+  // Smooth animation loop
   useEffect(() => {
-    const unsubscribe = scrollYProgress.on('change', (v) => {
-      setScrollProgress(v);
-    });
-    return () => unsubscribe();
-  }, [scrollYProgress]);
+    let animationFrame: number;
+    
+    const animate = () => {
+      setAnimationProgress(prev => {
+        const diff = targetProgress.current - prev;
+        if (Math.abs(diff) < 0.001) return targetProgress.current;
+        return prev + diff * 0.1;
+      });
+      animationFrame = requestAnimationFrame(animate);
+    };
+    
+    animationFrame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrame);
+  }, []);
+
+  // Wheel event handler
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (!isAnimationComplete) {
+        e.preventDefault();
+        
+        const delta = e.deltaY * 0.0004;
+        targetProgress.current = Math.max(0, Math.min(1, targetProgress.current + delta));
+        
+        if (targetProgress.current >= 0.99) {
+          setIsAnimationComplete(true);
+          targetProgress.current = 1;
+          setAnimationProgress(1);
+        }
+      }
+    };
+
+    const handleScroll = () => {
+      if (isAnimationComplete && window.scrollY <= 10) {
+        setIsAnimationComplete(false);
+        targetProgress.current = 0.99;
+      }
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('scroll', handleScroll);
+    
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [isAnimationComplete]);
+
+  // Lock scroll during animation
+  useEffect(() => {
+    if (!isAnimationComplete) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.height = '100vh';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.height = '';
+    }
+    
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.height = '';
+    };
+  }, [isAnimationComplete]);
 
   return (
-    <div ref={containerRef} className="relative w-full h-[200vh]">
-      {/* Video element for texture */}
-      <video
-        ref={handleVideoRef}
-        className="hidden"
-        autoPlay
-        muted
-        loop
-        playsInline
+    <>
+      {/* Monitor Scene with hero overlay */}
+      <div 
+        className="w-full h-screen bg-[#050505]"
+        style={{ 
+          position: isAnimationComplete ? 'relative' : 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: isAnimationComplete ? 1 : 50,
+        }}
       >
-        <source src="/videoplayback.mp4" type="video/mp4" />
-      </video>
+        <video
+          ref={handleVideoRef}
+          className="hidden"
+          autoPlay
+          muted
+          loop
+          playsInline
+        >
+          <source src="/videoplayback1.mp4" type="video/mp4" />
+        </video>
 
-      {/* Sticky 3D Canvas */}
-      <div className="sticky top-0 w-full h-screen flex items-center justify-center">
+        {/* 3D Canvas with high quality settings */}
         <Canvas
-          camera={{ position: [0, 0, 4], fov: 55 }}
+          camera={{ position: [0, 0, 5], fov: 50 }}
           gl={{ 
             antialias: true, 
             alpha: true,
             toneMapping: THREE.ACESFilmicToneMapping,
             toneMappingExposure: 1.2,
             powerPreference: 'high-performance',
+            outputColorSpace: THREE.SRGBColorSpace,
           }}
-          dpr={[1, 2]}
+          dpr={[2, 3]}
+          shadows
           style={{ background: 'transparent' }}
         >
           <Suspense fallback={<LoadingFallback />}>
-            <Lighting />
-            <CameraModel scrollProgress={scrollProgress} videoElement={videoElement} />
+            <Scene scrollProgress={animationProgress} videoElement={videoElement} />
           </Suspense>
         </Canvas>
+
+        {/* Initial centered text - VELLUM (fades out as you scroll) */}
+        <div 
+          className="absolute inset-0 flex flex-col justify-center items-center text-center pointer-events-none z-10"
+          style={{ 
+            opacity: Math.max(0, 1 - animationProgress * 2.5),
+            transition: 'opacity 0.3s ease',
+            mixBlendMode: 'exclusion',
+          }}
+        >
+          <span className="text-[10px] tracking-[0.3em] mb-4 text-white">
+            AI VIDEO EDITOR
+          </span>
+          <h1 className="text-[clamp(48px,12vw,160px)] font-light leading-[0.95] tracking-[-0.03em] text-white">
+            VELLUM
+          </h1>
+          <p className="mt-6 max-w-md px-4 text-[15px] leading-[1.7] text-white">
+            AI-powered precision editing that transforms hours of wedding footage into cinematic stories.
+          </p>
+          
+          {/* CTA Buttons - Glassmorphism */}
+          <div 
+            className="mt-8 flex gap-4 pointer-events-auto"
+            style={{ mixBlendMode: 'normal' }}
+          >
+            <a 
+              href="#capabilities" 
+              className="px-6 py-3 text-[11px] tracking-[0.15em] text-white backdrop-blur-md bg-white/10 border border-white/30 hover:bg-white/20 transition-all duration-300 rounded-sm"
+            >
+              LEARN MORE
+            </a>
+            <a 
+              href="/pricing" 
+              className="px-6 py-3 text-[11px] tracking-[0.15em] text-black backdrop-blur-md bg-white/90 border border-white/50 hover:bg-white transition-all duration-300 rounded-sm"
+            >
+              PRICING
+            </a>
+          </div>
+        </div>
+
+        {/* Hero text overlay - "Edit less, Create more" layout (fades in as you scroll) */}
+        <div 
+          className="absolute inset-0 flex items-end pb-16 px-12 pointer-events-none z-10"
+          style={{ 
+            opacity: animationProgress > 0.5 ? Math.min((animationProgress - 0.5) * 2, 1) : 0,
+            transition: 'opacity 0.5s ease'
+          }}
+        >
+          <div className="flex justify-between items-end w-full">
+            {/* Left side - Large text */}
+            <div className="flex flex-col">
+              <h1 
+                className="text-[clamp(60px,10vw,140px)] font-light leading-[0.95] tracking-[-0.02em] text-white"
+                style={{
+                  transform: animationProgress > 0.6 ? 'translateY(0)' : 'translateY(40px)',
+                  opacity: animationProgress > 0.6 ? 1 : 0,
+                  transition: 'transform 0.8s ease, opacity 0.8s ease'
+                }}
+              >
+                Edit less
+              </h1>
+              <h1 
+                className="text-[clamp(60px,10vw,140px)] font-light leading-[0.95] tracking-[-0.02em] text-white/30"
+                style={{
+                  transform: animationProgress > 0.7 ? 'translateY(0)' : 'translateY(40px)',
+                  opacity: animationProgress > 0.7 ? 1 : 0,
+                  transition: 'transform 0.8s ease, opacity 0.8s ease',
+                  transitionDelay: '0.1s'
+                }}
+              >
+                Create more
+              </h1>
+            </div>
+            
+            {/* Right side - Description and CTA */}
+            <div 
+              className="flex flex-col items-end text-right max-w-sm pointer-events-auto"
+              style={{
+                opacity: animationProgress > 0.8 ? 1 : 0,
+                transform: animationProgress > 0.8 ? 'translateY(0)' : 'translateY(20px)',
+                transition: 'transform 0.8s ease, opacity 0.8s ease',
+                transitionDelay: '0.2s'
+              }}
+            >
+              <p className="text-[14px] leading-[1.7] text-white/50 mb-6">
+                AI-powered precision editing that transforms hours of wedding footage into cinematic stories.
+              </p>
+              <a 
+                href="#features" 
+                className="text-[11px] tracking-[0.2em] text-white/70 hover:text-white transition-colors flex items-center gap-2"
+              >
+                LEARN MORE
+                <span className="text-lg">→</span>
+              </a>
+            </div>
+          </div>
+        </div>
+        
+        {/* Progress indicator */}
+        {!isAnimationComplete && (
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-20">
+            <div className="w-20 h-1 bg-white/10 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-white/50 rounded-full transition-all duration-100"
+                style={{ width: `${animationProgress * 100}%` }}
+              />
+            </div>
+            <span className="text-[9px] tracking-[0.2em] text-white/30">SCROLL</span>
+          </div>
+        )}
       </div>
-    </div>
+    </>
   );
 }
