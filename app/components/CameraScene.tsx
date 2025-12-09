@@ -113,13 +113,15 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
           
           // Apply PBR materials based on mesh name
           if (name.includes('cube.017')) {
-            // Cube.017 - matte plastic black
-            child.material = new THREE.MeshStandardMaterial({
+            // Cube.017 - textured plastic black
+            child.material = new THREE.MeshPhysicalMaterial({
               color: '#2a2a2a',
               metalness: 0.0,
-              roughness: 0.85,
+              roughness: 0.65, // Reduced for subtle light interaction
               side: THREE.DoubleSide,
-              envMapIntensity: 0.05,
+              envMapIntensity: 0.2, // Increased for plastic-like subtle reflections
+              clearcoat: 0.1, // Very subtle clearcoat for plastic feel
+              clearcoatRoughness: 0.8, // Keep it mostly matte
             });
           } else if (name.includes('cylinder')) {
             // Stand/base parts - brushed aluminum
@@ -196,17 +198,19 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
       const mouseRotY = mousePosition.x * 0.03 * mouseInfluence; // Reduced for slower movement
       const mouseRotX = mousePosition.y * 0.02 * mouseInfluence; // Reduced for slower movement
       
-      // Scale for Pro Display XDR - direct linear interpolation
+      // Scale for Pro Display XDR - Golden ratio progression
+      // Start: Dramatic and immersive | End: Prominent at golden ratio
       const startScale = 5.72;
-      const endScale = 2.5;
+      const endScale = 3.0;
       const currentScale = THREE.MathUtils.lerp(startScale, endScale, scrollEase);
       groupRef.current.scale.setScalar(currentScale);
       
       // Position X - centered with floating (direct assignment)
       groupRef.current.position.x = THREE.MathUtils.lerp(0.05, 0.05, scrollEase) + floatX;
       
-      // Position Y - centered on screen with floating (direct assignment)
-      groupRef.current.position.y = THREE.MathUtils.lerp(-5.85, -2.2, scrollEase) + floatY;
+      // Position Y - Golden ratio vertical placement (adjusted lower)
+      // Start: Centered lower | End: Upper half with breathing room for text
+      groupRef.current.position.y = THREE.MathUtils.lerp(-5.85, -2.5, scrollEase) + floatY;
       
       // Rotation - base + floating + mouse parallax (direct assignment)
       const baseRotY = -Math.PI / 2;
@@ -529,73 +533,27 @@ export default function CameraScene() {
 
   return (
     <>
-      {/* Monitor Scene with hero overlay - always relative, no layout shift */}
+      {/* Monitor Scene with hero overlay - pure black background */}
       <div 
-        className="w-full h-screen bg-[#030303] overflow-hidden"
+        className="w-full h-screen bg-black overflow-hidden"
         style={{ 
           position: 'relative',
           zIndex: 10,
         }}
       >
-        {/* Atmospheric depth layers - dramatic gradients */}
-        <div 
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: 'radial-gradient(ellipse 120% 80% at 80% 20%, rgba(40,20,60,0.4) 0%, transparent 50%)',
-          }}
-        />
-        <div 
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: 'radial-gradient(ellipse 100% 100% at 20% 80%, rgba(20,30,50,0.5) 0%, transparent 50%)',
-          }}
-        />
-        <div 
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: 'radial-gradient(ellipse 80% 60% at 50% 100%, rgba(30,20,40,0.6) 0%, transparent 60%)',
-          }}
-        />
-        
-        {/* Animated glow orb */}
-        <div 
-          className="absolute pointer-events-none"
-          style={{
-            width: '60vw',
-            height: '60vw',
-            top: '10%',
-            right: '-10%',
-            background: 'radial-gradient(circle, rgba(80,60,120,0.15) 0%, transparent 60%)',
-            filter: 'blur(60px)',
-            animation: 'pulse 8s ease-in-out infinite',
-          }}
-        />
-        <div 
-          className="absolute pointer-events-none"
-          style={{
-            width: '50vw',
-            height: '50vw',
-            bottom: '0%',
-            left: '-10%',
-            background: 'radial-gradient(circle, rgba(40,60,100,0.12) 0%, transparent 60%)',
-            filter: 'blur(80px)',
-            animation: 'pulse 10s ease-in-out infinite reverse',
-          }}
-        />
-        
-        {/* Strong vignette */}
+        {/* Minimal vignette for depth */}
         <div 
           className="absolute inset-0 pointer-events-none z-[5]"
           style={{
-            background: 'radial-gradient(ellipse 60% 60% at 50% 50%, transparent 0%, rgba(0,0,0,0.7) 100%)',
+            background: 'radial-gradient(ellipse 70% 70% at 50% 50%, transparent 0%, rgba(0,0,0,0.4) 100%)',
           }}
         />
         
-        {/* Top edge light bloom */}
+        {/* Subtle ground anchor - suggests monitor has weight */}
         <div 
-          className="absolute top-0 left-0 right-0 h-[30vh] pointer-events-none"
+          className="absolute bottom-0 left-0 right-0 h-[40vh] pointer-events-none z-[4]"
           style={{
-            background: 'linear-gradient(to bottom, rgba(60,50,80,0.1) 0%, transparent 100%)',
+            background: 'radial-gradient(ellipse 50% 60% at 50% 100%, rgba(0,0,0,0.3) 0%, transparent 60%)',
           }}
         />
 
@@ -634,107 +592,78 @@ export default function CameraScene() {
         <div 
           className="absolute inset-0 flex flex-col justify-center items-center text-center pointer-events-none z-10"
           style={{ 
-            opacity: Math.max(0, 1 - animationProgress * 2.5),
-            transform: `translateY(${animationProgress * 20}px)`,
-            transition: 'opacity 0.4s ease-out, transform 0.4s ease-out',
-            mixBlendMode: 'exclusion',
+            opacity: Math.max(0, 1 - animationProgress * 2.8),
+            transform: `translateY(${animationProgress * 30}px)`,
+            transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
           }}
         >
-          <span className="text-[11px] tracking-[0.4em] mb-5 text-white/70 font-light">
+          <span className="text-[10px] tracking-[0.5em] mb-8 text-white/30 font-light">
             AI VIDEO EDITOR
           </span>
-          <h1 className="text-[clamp(52px,14vw,180px)] font-extralight leading-[0.9] tracking-[-0.04em] text-white">
+          <h1 className="text-[clamp(64px,16vw,200px)] font-extralight leading-[0.85] tracking-[-0.05em] text-white">
             VELLUM
           </h1>
-          <p className="mt-8 max-w-md px-4 text-[15px] leading-[1.8] text-white/60 font-light">
+          <p className="mt-10 max-w-lg px-6 text-[15px] md:text-[17px] leading-[1.7] text-white/40 font-light">
             Precise edits. Made automatically.
           </p>
           
-          {/* CTA Buttons - Glassmorphism */}
+          {/* Minimal CTA */}
           <div 
-            className="mt-10 flex gap-4 pointer-events-auto"
-            style={{ mixBlendMode: 'normal' }}
+            className="mt-12 pointer-events-auto"
           >
-            <a 
-              href="#capabilities" 
-              className="px-7 py-3.5 text-[10px] tracking-[0.2em] text-white/90 backdrop-blur-xl bg-white/[0.08] border border-white/[0.15] hover:bg-white/[0.15] hover:border-white/25 transition-all duration-500 rounded"
-            >
-              LEARN MORE
-            </a>
-            <a 
-              href="/pricing" 
-              className="px-7 py-3.5 text-[10px] tracking-[0.2em] text-black/90 bg-white hover:bg-white/90 transition-all duration-500 rounded font-medium"
-            >
-              PRICING
-            </a>
+            <button className="px-10 py-4 text-[10px] tracking-[0.4em] text-white border border-white/20 hover:bg-white hover:text-black transition-all duration-300 font-light">
+              START FREE TRIAL
+            </button>
           </div>
         </div>
 
-        {/* Hero text overlay - OVERSIZED typography with strong motion */}
+        {/* Hero text overlay - Lower third positioning */}
         <div 
-          className="absolute inset-0 flex items-end justify-center pb-24 pointer-events-none z-10"
+          className="absolute inset-0 flex items-end pointer-events-none z-10"
           style={{ 
-            opacity: animationProgress > 0.4 ? Math.min((animationProgress - 0.4) * 2.5, 1) : 0,
+            opacity: animationProgress > 0.5 ? Math.min((animationProgress - 0.5) * 2, 1) : 0,
+            paddingBottom: '18vh', // Lower third, balanced with monitor
           }}
         >
-          <div className="flex flex-col items-center text-center">
-            {/* Main title line 1 */}
-            <div className="overflow-hidden">
-              <h1 
-                className="text-[clamp(72px,12vw,180px)] font-light leading-[0.85] tracking-[-0.04em] text-white"
-                style={{
-                  transform: `translateY(${(1 - (animationProgress > 0.5 ? Math.min((animationProgress - 0.5) * 4, 1) : 0)) * 100}%)`,
-                }}
-              >
-                Cinematic.
-              </h1>
-            </div>
-            
-            {/* Main title line 2 - gradient fade */}
-            <div className="overflow-hidden mt-[-0.1em]">
-              <h1 
-                className="text-[clamp(72px,12vw,180px)] font-light leading-[0.85] tracking-[-0.04em]"
-                style={{
-                  transform: `translateY(${(1 - (animationProgress > 0.6 ? Math.min((animationProgress - 0.6) * 4, 1) : 0)) * 100}%)`,
-                  background: 'linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.2) 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                }}
-              >
-                Automatic.
-              </h1>
-            </div>
-            
-            {/* Tagline with line animation */}
-            <div 
-              className="mt-12 flex flex-col items-center gap-6"
-              style={{
-                opacity: animationProgress > 0.75 ? Math.min((animationProgress - 0.75) * 5, 1) : 0,
-                transform: `translateY(${(1 - (animationProgress > 0.75 ? Math.min((animationProgress - 0.75) * 5, 1) : 0)) * 30}px)`,
-              }}
-            >
-              {/* Animated line */}
+          {/* Text with subtle dark gradient for legibility */}
+          <div className="absolute inset-0 pointer-events-none" style={{
+            background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%)',
+          }} />
+          
+          {/* Content aligned to grid */}
+          <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 w-full relative z-10">
+            <div className="max-w-4xl">
+              {/* Main title */}
+              <div className="overflow-hidden">
+                <h1 
+                  className="text-[clamp(56px,10vw,140px)] font-extralight leading-[0.9] tracking-[-0.05em] text-white"
+                  style={{
+                    transform: `translateY(${(1 - (animationProgress > 0.6 ? Math.min((animationProgress - 0.6) * 3, 1) : 0)) * 100}%)`,
+                    textShadow: '0 2px 40px rgba(0,0,0,0.3)',
+                  }}
+                >
+                  Cinematic.<br />
+                  <span className="text-white/60">Automatic.</span>
+                </h1>
+              </div>
+              
+              {/* Tagline */}
               <div 
-                className="h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                className="mt-10 flex items-center gap-6"
                 style={{
-                  width: `${(animationProgress > 0.8 ? Math.min((animationProgress - 0.8) * 6, 1) : 0) * 120}px`,
+                  opacity: animationProgress > 0.8 ? Math.min((animationProgress - 0.8) * 4, 1) : 0,
                 }}
-              />
-              
-              <p className="text-[14px] tracking-[0.15em] text-white/50 font-light uppercase">
-                Precise edits · Made automatically
-              </p>
-              
-              {/* CTA */}
-              <a 
-                href="#features" 
-                className="group mt-4 text-[11px] tracking-[0.3em] text-white/60 hover:text-white transition-all duration-500 flex items-center gap-4 pointer-events-auto"
               >
-                <span className="w-8 h-[1px] bg-white/30 group-hover:w-12 group-hover:bg-white/60 transition-all duration-500" />
-                EXPLORE
-                <span className="w-8 h-[1px] bg-white/30 group-hover:w-12 group-hover:bg-white/60 transition-all duration-500" />
-              </a>
+                <div 
+                  className="h-[1px] bg-white/30"
+                  style={{
+                    width: `${(animationProgress > 0.85 ? Math.min((animationProgress - 0.85) * 5, 1) : 0) * 80}px`,
+                  }}
+                />
+                <p className="text-[11px] tracking-[0.5em] text-white/50 font-light">
+                  PRECISE EDITS
+                </p>
+              </div>
             </div>
           </div>
         </div>

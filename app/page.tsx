@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useInView } from 'framer-motion';
-import { ArrowRight, ArrowUpRight, Zap, Layers, Wand2, Volume2 } from 'lucide-react';
+import { ArrowRight, Minus } from 'lucide-react';
 import { useRef } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -10,26 +10,26 @@ import dynamic from 'next/dynamic';
 const CameraScene = dynamic(() => import('./components/CameraScene'), { 
   ssr: false,
   loading: () => (
-    <div className="h-[200vh] flex items-center justify-center bg-[#050505]">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-10 h-10 border-2 border-white/10 border-t-white/50 rounded-full animate-spin" />
-        <span className="text-[10px] tracking-[0.2em] text-white/30">LOADING</span>
+    <div className="h-screen flex items-center justify-center bg-black">
+      <div className="flex flex-col items-center gap-6">
+        <div className="w-12 h-12 border border-white/10 border-t-white rounded-full animate-spin" />
+        <span className="text-[10px] tracking-[0.5em] text-white/20">LOADING</span>
       </div>
     </div>
   )
 });
 
-// Reveal animation wrapper
+// Reveal animation wrapper - more subtle
 const Reveal = ({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const isInView = useInView(ref, { once: true, margin: '-80px' });
   
   return (
     <div ref={ref}>
       <motion.div
-        initial={{ opacity: 0, y: 60 }}
+        initial={{ opacity: 0, y: 40 }}
         animate={isInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 1.2, delay, ease: [0.16, 1, 0.3, 1] }}
       >
         {children}
       </motion.div>
@@ -37,149 +37,104 @@ const Reveal = ({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
   );
 };
 
-// Horizontal Marquee
-const Marquee = ({ children, speed = 30 }: { children: React.ReactNode; speed?: number }) => (
-  <div className="overflow-hidden whitespace-nowrap">
-    <motion.div
-      animate={{ x: ['0%', '-50%'] }}
-      transition={{ duration: speed, repeat: Infinity, ease: 'linear' }}
-      className="inline-flex"
-    >
-      {children}
-      {children}
-    </motion.div>
-  </div>
-);
-
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
 
   const capabilities = [
-    { icon: Zap, title: 'AUTOSYNC™', desc: 'Multi-camera alignment with sub-frame accuracy' },
-    { icon: Wand2, title: 'AUTOSELECT™', desc: 'AI identifies vows, laughter, and key moments' },
-    { icon: Layers, title: 'AUTOFLOW™', desc: 'Edits shaped around emotional rhythm' },
-    { icon: Volume2, title: 'AUDIO CLEANUP', desc: 'Wind, hum, and noise removed automatically' },
+    { num: '01', title: 'AUTOSYNC', desc: 'Multi-camera alignment with sub-frame accuracy' },
+    { num: '02', title: 'AUTOSELECT', desc: 'AI identifies vows, laughter, and key moments' },
+    { num: '03', title: 'AUTOFLOW', desc: 'Edits shaped around emotional rhythm' },
+    { num: '04', title: 'AUDIO CLEANUP', desc: 'Wind, hum, and noise removed automatically' },
   ];
 
   return (
-    <div ref={containerRef} className="bg-[#050505] text-white min-h-screen selection:bg-white selection:text-black overflow-x-hidden">
+    <div ref={containerRef} className="bg-black text-white min-h-screen selection:bg-white selection:text-black antialiased">
       
-      {/* Navigation - always on top */}
+      {/* Navigation - minimal, aligned to grid */}
       <motion.nav
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 0.5 }}
-        className="fixed top-0 left-0 right-0 z-[100]"
+        transition={{ duration: 1.2, delay: 0.6 }}
+        className="fixed top-0 left-0 right-0 z-[100] mix-blend-difference"
       >
-        <div className="flex items-center justify-between h-20 px-4 lg:px-8">
-          <Link href="/" className="text-[13px] tracking-[0.4em] font-medium">
+        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 h-24 flex items-center justify-between">
+          <Link href="/" className="text-[11px] tracking-[0.5em] font-light">
             VELLUM
           </Link>
           
-          <div className="hidden md:flex items-center gap-10 text-[11px] tracking-[0.15em] text-white/50">
-            <a href="#capabilities" className="hover:text-white transition-colors">CAPABILITIES</a>
-            <a href="#about" className="hover:text-white transition-colors">ABOUT</a>
-            <Link href="/pricing" className="hover:text-white transition-colors">PRICING</Link>
+          <div className="hidden md:flex items-center gap-16 text-[10px] tracking-[0.4em] font-light">
+            <a href="#work" className="hover:opacity-50 transition-opacity">WORK</a>
+            <Link href="/pricing" className="hover:opacity-50 transition-opacity">PRICING</Link>
           </div>
 
-          <a
-            href="#"
-            className="text-[11px] tracking-[0.15em] text-white/50 hover:text-white transition-colors flex items-center gap-2"
-          >
-            START TRIAL
-            <ArrowUpRight className="w-3.5 h-3.5" />
-          </a>
+          <button className="text-[10px] tracking-[0.4em] font-light hover:opacity-50 transition-opacity">
+            CONTACT
+          </button>
         </div>
       </motion.nav>
 
-      {/* Hero Section - 3D Camera with integrated overlay */}
+      {/* Hero Section - 3D Monitor with integrated overlay */}
       <section ref={heroRef}>
         <CameraScene />
       </section>
 
-      {/* Marquee */}
-      <section className="py-6 border-y border-white/[0.06]">
-        <Marquee speed={50}>
-          <div className="flex items-center gap-20 px-10 text-[11px] tracking-[0.25em] text-white/20">
-            {['PREMIERE PRO', 'FINAL CUT', 'DAVINCI RESOLVE', 'CAPCUT PRO', 'PREMIERE PRO', 'FINAL CUT', 'DAVINCI RESOLVE', 'CAPCUT PRO'].map((item, idx) => (
-              <span key={idx} className="flex items-center gap-20">
-                {item}
-                <span className="text-white/10">◆</span>
-              </span>
-            ))}
-          </div>
-        </Marquee>
-      </section>
-
-      {/* Capabilities Section */}
-      <section id="capabilities" className="py-16 lg:py-20 border-t border-white/[0.06]">
-        <div className="px-4 lg:px-8">
-          {capabilities.map((cap) => (
-            <motion.div
-              key={cap.title}
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              className="group border-b border-white/[0.06] py-8 lg:py-12 cursor-pointer"
-            >
-              <div className="flex items-center gap-6 lg:gap-12">
-                {/* Icon */}
-                <div className="hidden lg:flex w-12 shrink-0">
-                  <cap.icon className="w-5 h-5 text-white/20 group-hover:text-white/60 transition-colors" />
+      {/* Capabilities Section - Golden Ratio Grid */}
+      <section id="work" className="border-t border-white/5">
+        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16">
+          {capabilities.map((cap, idx) => (
+            <Reveal key={cap.title} delay={idx * 0.1}>
+              <motion.div
+                className="group border-b border-white/5 py-16 md:py-20 cursor-pointer"
+                whileHover={{ backgroundColor: 'rgba(255,255,255,0.01)' }}
+                transition={{ duration: 0.4 }}
+              >
+                {/* Grid: Number (8.3%) | Title (33.3%) | Description (58.3%) */}
+                <div className="grid grid-cols-12 gap-8 items-start">
+                  {/* Number - rule of thirds alignment */}
+                  <div className="col-span-1">
+                    <span className="text-[10px] tracking-[0.3em] text-white/20 group-hover:text-white/40 transition-colors">
+                      {cap.num}
+                    </span>
+                  </div>
+                  
+                  {/* Title - golden ratio position */}
+                  <div className="col-span-11 md:col-span-4">
+                    <h3 className="text-[24px] md:text-[32px] font-light tracking-[-0.02em] leading-[1.1] group-hover:text-white/70 transition-colors">
+                      {cap.title}
+                    </h3>
+                  </div>
+                  
+                  {/* Description - remaining space */}
+                  <div className="col-span-11 col-start-2 md:col-span-7 md:col-start-6 flex items-start justify-between gap-8">
+                    <p className="text-[15px] md:text-[17px] font-light leading-[1.7] text-white/40 group-hover:text-white/60 transition-colors">
+                      {cap.desc}
+                    </p>
+                    <ArrowRight className="w-5 h-5 mt-1 text-white/0 group-hover:text-white/30 transition-all shrink-0" />
+                  </div>
                 </div>
-                
-                {/* Title */}
-                <motion.div 
-                  className="w-full lg:w-[300px] shrink-0"
-                  whileHover={{ x: 10 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <h3 className="text-[clamp(20px,2vw,28px)] font-light tracking-[-0.02em] group-hover:text-white/70 transition-colors">
-                    {cap.title}
-                  </h3>
-                </motion.div>
-                
-                {/* Description */}
-                <div className="hidden lg:block flex-1 text-[14px] text-white/30 group-hover:text-white/50 transition-colors">
-                  {cap.desc}
-                </div>
-                
-                {/* Arrow */}
-                <div className="shrink-0 ml-auto">
-                  <motion.div
-                    whileHover={{ rotate: 45 }}
-                    className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center group-hover:border-white/30 transition-colors opacity-0 group-hover:opacity-100"
-                  >
-                    <ArrowUpRight className="w-4 h-4 text-white/40" />
-                  </motion.div>
-                </div>
-              </div>
-              
-              {/* Mobile description */}
-              <p className="lg:hidden text-[13px] text-white/30 mt-3">{cap.desc}</p>
-            </motion.div>
+              </motion.div>
+            </Reveal>
           ))}
         </div>
       </section>
 
-      {/* Stats Row */}
-      <section className="py-24 lg:py-32 bg-white text-black">
-        <div className="px-4 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0">
+      {/* Stats Row - High Contrast Inversion */}
+      <section className="bg-white text-black border-y border-black/5">
+        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-32 md:py-48">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-20 md:gap-16 lg:gap-24">
             {[
-              { value: '47', label: 'Emotion markers', suffix: '' },
-              { value: '10', label: 'Hour turnaround', suffix: 'hr' },
-              { value: '4K', label: 'Resolution', suffix: '' },
-              { value: '99', label: 'Satisfaction rate', suffix: '%' },
+              { value: '47', label: 'EMOTION MARKERS', suffix: '' },
+              { value: '<10', label: 'HOUR TURNAROUND', suffix: '' },
+              { value: '99', label: 'SATISFACTION RATE', suffix: '%' },
             ].map((stat, idx) => (
-              <Reveal key={stat.label} delay={idx * 0.1}>
-                <div className="relative lg:text-center">
-                  <div className="text-[clamp(48px,8vw,96px)] font-light tracking-[-0.04em] leading-none">
+              <Reveal key={stat.label} delay={idx * 0.15}>
+                <div className="relative space-y-8">
+                  <div className="text-[80px] md:text-[104px] font-extralight tracking-[-0.05em] leading-[0.85]">
                     {stat.value}
-                    <span className="text-black/15">{stat.suffix}</span>
+                    <span className="text-black/10">{stat.suffix}</span>
                   </div>
-                  <div className="text-[11px] tracking-[0.2em] text-black/40 mt-4 uppercase">
+                  <div className="text-[10px] tracking-[0.5em] text-black/25 font-light">
                     {stat.label}
                   </div>
                 </div>
@@ -189,184 +144,227 @@ export default function Home() {
         </div>
       </section>
 
-      {/* About Section - Asymmetric layout */}
-      <section id="about" className="py-24 lg:py-40 px-4 lg:px-8">
-        <div className="max-w-none">
-          <div className="grid lg:grid-cols-12 gap-12 lg:gap-8">
-            {/* Image/Visual */}
-            <div className="lg:col-span-5 lg:col-start-1">
+      {/* Philosophy Section - Golden Ratio: 38.2% / 61.8% */}
+      <section className="border-t border-white/5">
+        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-32 md:py-48">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-12 items-center">
+            {/* Left: Image (5 cols = 41.6%, close to golden) */}
+            <div className="lg:col-span-5">
               <Reveal>
-                <div className="aspect-[4/5] bg-white/[0.02] rounded-2xl overflow-hidden relative">
+                <div className="relative aspect-[3/4] overflow-hidden">
                   <div 
-                    className="absolute inset-0 bg-cover bg-center opacity-60"
+                    className="absolute inset-0 bg-cover bg-center grayscale"
                     style={{
-                      backgroundImage: 'url(https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2071&auto=format&fit=crop)'
+                      backgroundImage: 'url(https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2071&auto=format&fit=crop)',
+                      filter: 'contrast(1.2) brightness(0.7)'
                     }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent" />
+                  {/* Gradient overlay for depth */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
                 </div>
               </Reveal>
             </div>
             
-            {/* Text content */}
-            <div className="lg:col-span-6 lg:col-start-7 flex flex-col justify-center">
+            {/* Right: Text (7 cols = 58.3%, close to golden) */}
+            <div className="lg:col-span-7 space-y-12">
               <Reveal>
-                <p className="text-[10px] tracking-[0.3em] text-white/30 mb-6">ABOUT VELLUM</p>
-                <h2 className="text-[clamp(28px,4vw,48px)] font-light leading-[1.15] tracking-[-0.02em]">
-                  We believe editing should feel like{' '}
-                  <span className="italic text-white/40">creating</span>, not labor.
-                </h2>
+                <div className="space-y-8">
+                  <p className="text-[10px] tracking-[0.5em] text-white/30 font-light">
+                    PHILOSOPHY
+                  </p>
+                  <h2 className="text-[36px] md:text-[56px] font-extralight leading-[1.1] tracking-[-0.03em] max-w-2xl">
+                    Technology that respects 
+                    <span className="text-white/30"> the artist.</span>
+                  </h2>
+                </div>
               </Reveal>
+              
               <Reveal delay={0.2}>
-                <p className="mt-8 text-[15px] leading-[1.9] text-white/40">
-                  Our AI engine analyzes 47 emotional markers per frame. It understands context, 
-                  anticipates narrative beats, and crafts films that feel intentionally human—because 
-                  the best technology is invisible.
-                </p>
-                <a
-                  href="#"
-                  className="inline-flex items-center gap-3 mt-10 text-[11px] tracking-[0.15em] group"
-                >
-                  <span className="text-white/60 group-hover:text-white transition-colors">OUR STORY</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-white/40 group-hover:translate-x-1 transition-transform" />
-                </a>
+                <div className="space-y-6 max-w-xl">
+                  <p className="text-[15px] md:text-[17px] font-light leading-[1.8] text-white/50">
+                    Our AI analyzes 47 emotional markers per frame. It understands context, 
+                    anticipates narrative beats, and crafts films that feel intentionally human.
+                  </p>
+                  <p className="text-[15px] md:text-[17px] font-light leading-[1.8] text-white/50">
+                    Because the best technology is invisible.
+                  </p>
+                  
+                  {/* Minimal CTA */}
+                  <div className="pt-8">
+                    <button className="group inline-flex items-center gap-4 text-[10px] tracking-[0.4em] text-white/40 hover:text-white transition-colors">
+                      <Minus className="w-8 h-[1px] text-white/20 group-hover:text-white/60 transition-colors" />
+                      LEARN MORE
+                    </button>
+                  </div>
+                </div>
               </Reveal>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Pricing Preview */}
-      <section className="py-24 lg:py-32 px-4 lg:px-8 bg-white/[0.02]">
-        <div className="max-w-6xl mx-auto text-center">
+      {/* Pricing - Minimal Grid */}
+      <section className="bg-white text-black border-y border-black/5">
+        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-32 md:py-40">
           <Reveal>
-            <h2 className="text-[clamp(32px,5vw,56px)] font-light tracking-[-0.02em]">
-              One-time purchase.<br />
-              <span className="text-white/30">Yours forever.</span>
-            </h2>
-          </Reveal>
-          
-          <Reveal delay={0.2}>
-            <div className="grid md:grid-cols-2 gap-6 mt-16">
-              {/* Lite */}
-              <div className="text-left p-8 lg:p-10 border border-white/[0.08] rounded-2xl hover:border-white/20 transition-colors group">
-                <span className="text-[10px] tracking-[0.3em] text-white/30">LITE</span>
-                <div className="mt-6 mb-8">
-                  <span className="text-[48px] font-light">$79</span>
-                  <span className="text-white/30 text-[14px] ml-2">one-time</span>
-                </div>
-                <p className="text-[14px] text-white/40 mb-8">Essential editing tools for getting started.</p>
-                <button className="w-full py-4 border border-white/20 rounded-lg text-[11px] tracking-[0.15em] hover:bg-white hover:text-black transition-all">
-                  BUY LITE
-                </button>
-              </div>
-
-              {/* Max */}
-              <div className="text-left p-8 lg:p-10 bg-white text-black rounded-2xl relative overflow-hidden">
-                <span className="absolute top-4 right-4 px-3 py-1 bg-black text-white text-[9px] tracking-[0.2em] rounded-full">POPULAR</span>
-                <span className="text-[10px] tracking-[0.3em] text-black/40">MAX</span>
-                <div className="mt-6 mb-8">
-                  <span className="text-[48px] font-light">$149</span>
-                  <span className="text-black/30 text-[14px] ml-2">one-time</span>
-                </div>
-                <p className="text-[14px] text-black/50 mb-8">Full professional suite with all features.</p>
-                <button className="w-full py-4 bg-black text-white rounded-lg text-[11px] tracking-[0.15em] hover:bg-black/80 transition-all">
-                  BUY MAX
-                </button>
-              </div>
+            <div className="mb-20">
+              <h2 className="text-[42px] md:text-[64px] font-extralight tracking-[-0.04em] leading-[1.05]">
+                Simple pricing.<br />
+                <span className="text-black/20">No subscriptions.</span>
+              </h2>
             </div>
           </Reveal>
-
-          <Reveal delay={0.3}>
-            <Link 
-              href="/pricing" 
-              className="inline-flex items-center gap-2 mt-10 text-[11px] tracking-[0.15em] text-white/40 hover:text-white transition-colors"
-            >
-              VIEW ALL OPTIONS
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-32 lg:py-48 px-4 lg:px-8 relative overflow-hidden">
-        <div className="absolute inset-0">
-          <div 
-            className="absolute inset-0 opacity-[0.03]"
-            style={{
-              backgroundImage: `radial-gradient(circle at center, rgba(255,255,255,0.3) 1px, transparent 1px)`,
-              backgroundSize: '40px 40px'
-            }}
-          />
-        </div>
-        
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <Reveal>
-            <h2 className="text-[clamp(32px,6vw,72px)] font-light leading-[1.05] tracking-[-0.03em]">
-              Ready to transform<br />
-              <span className="text-white/30">your workflow?</span>
-            </h2>
-          </Reveal>
           
-          <Reveal delay={0.2}>
-            <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button className="px-10 py-4 bg-white text-black rounded-full text-[11px] tracking-[0.15em] hover:bg-white/90 transition-colors">
-                START FREE TRIAL
-              </button>
-              <a
-                href="#"
-                className="flex items-center gap-2 px-8 py-4 text-[11px] tracking-[0.15em] text-white/50 hover:text-white transition-colors"
-              >
-                SCHEDULE DEMO
-                <ArrowRight className="w-3.5 h-3.5" />
-          </a>
+          <div className="grid md:grid-cols-2 gap-px bg-black/5">
+            {/* Lite */}
+            <Reveal delay={0.1}>
+              <div className="bg-white p-12 md:p-16 group hover:bg-black hover:text-white transition-all duration-500">
+                <div className="space-y-12">
+                  <div>
+                    <p className="text-[10px] tracking-[0.4em] text-black/30 group-hover:text-white/30 mb-8">
+                      LITE
+                    </p>
+                    <div className="text-[64px] md:text-[80px] font-extralight tracking-[-0.04em] leading-none">
+                      $79
+                    </div>
+                    <p className="text-[14px] text-black/40 group-hover:text-white/40 mt-4 font-light">
+                      One-time purchase
+                    </p>
+                  </div>
+                  
+                  <p className="text-[15px] font-light leading-[1.7] text-black/60 group-hover:text-white/60">
+                    Essential editing tools for getting started with AI-powered workflows.
+                  </p>
+                  
+                  <button className="w-full border border-black/10 group-hover:border-white/20 py-5 text-[10px] tracking-[0.4em] hover:bg-black hover:text-white group-hover:hover:bg-white group-hover:hover:text-black transition-all">
+                    BUY LITE
+                  </button>
+                </div>
+              </div>
+            </Reveal>
+
+            {/* Max */}
+            <Reveal delay={0.2}>
+              <div className="bg-black text-white p-12 md:p-16 relative group hover:bg-white hover:text-black transition-all duration-500">
+                <div className="absolute top-8 right-8 w-2 h-2 bg-white group-hover:bg-black rounded-full" />
+                
+                <div className="space-y-12">
+                  <div>
+                    <p className="text-[10px] tracking-[0.4em] text-white/30 group-hover:text-black/30 mb-8">
+                      MAX
+                    </p>
+                    <div className="text-[64px] md:text-[80px] font-extralight tracking-[-0.04em] leading-none">
+                      $149
+                    </div>
+                    <p className="text-[14px] text-white/40 group-hover:text-black/40 mt-4 font-light">
+                      One-time purchase
+          </p>
         </div>
+                  
+                  <p className="text-[15px] font-light leading-[1.7] text-white/60 group-hover:text-black/60">
+                    Full professional suite with all features and priority support.
+                  </p>
+                  
+                  <button className="w-full border border-white/20 group-hover:border-black/10 py-5 text-[10px] tracking-[0.4em] hover:bg-white hover:text-black group-hover:hover:bg-black group-hover:hover:text-white transition-all">
+                    BUY MAX
+                  </button>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+          
+          <Reveal delay={0.3}>
+            <div className="mt-16 text-center">
+              <Link 
+                href="/pricing" 
+                className="inline-flex items-center gap-4 text-[10px] tracking-[0.4em] text-black/30 hover:text-black transition-colors group"
+              >
+                <Minus className="w-8 h-[1px] text-black/20 group-hover:text-black/40 transition-colors" />
+                VIEW FULL COMPARISON
+              </Link>
+            </div>
           </Reveal>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-white/[0.06]">
-        <div className="px-4 lg:px-8 py-16 lg:py-20">
-          <div className="max-w-none">
-            <div className="grid lg:grid-cols-12 gap-12 lg:gap-8">
-              <div className="lg:col-span-6">
-                <span className="text-[13px] tracking-[0.4em]">VELLUM</span>
-                <p className="mt-4 text-[14px] text-white/30 max-w-sm leading-relaxed">
-                  AI-powered video editing engineered for wedding filmmakers. Edit less. Create more.
-                </p>
+      {/* CTA Section - Centered, Minimal */}
+      <section className="border-t border-white/5">
+        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-40 md:py-56">
+          <div className="max-w-4xl mx-auto text-center space-y-16">
+            <Reveal>
+              <h2 className="text-[48px] md:text-[80px] font-extralight leading-[1.05] tracking-[-0.04em]">
+                Edit less.
+                <br />
+                <span className="text-white/20">Create more.</span>
+              </h2>
+            </Reveal>
+            
+            <Reveal delay={0.2}>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                <button className="px-12 py-5 bg-white text-black text-[10px] tracking-[0.4em] hover:bg-white/90 transition-colors font-light">
+                  START FREE TRIAL
+                </button>
+                <button className="px-12 py-5 border border-white/10 text-[10px] tracking-[0.4em] text-white/60 hover:text-white hover:border-white/30 transition-colors font-light">
+                  SCHEDULE DEMO
+                </button>
               </div>
-              
-              <div className="lg:col-span-2">
-                <span className="text-[10px] tracking-[0.2em] text-white/20">PRODUCT</span>
-                <div className="mt-5 space-y-3 text-[13px] text-white/40">
-                  <a href="#" className="block hover:text-white transition-colors">Features</a>
-                  <Link href="/pricing" className="block hover:text-white transition-colors">Pricing</Link>
-                  <a href="#" className="block hover:text-white transition-colors">Changelog</a>
-                </div>
-              </div>
-              
-              <div className="lg:col-span-2">
-                <span className="text-[10px] tracking-[0.2em] text-white/20">COMPANY</span>
-                <div className="mt-5 space-y-3 text-[13px] text-white/40">
-                  <a href="#" className="block hover:text-white transition-colors">About</a>
-                  <a href="#" className="block hover:text-white transition-colors">Contact</a>
-                  <a href="#" className="block hover:text-white transition-colors">Twitter</a>
-                </div>
-              </div>
-              
-              <div className="lg:col-span-2">
-                <span className="text-[10px] tracking-[0.2em] text-white/20">LEGAL</span>
-                <div className="mt-5 space-y-3 text-[13px] text-white/40">
-                  <a href="#" className="block hover:text-white transition-colors">Privacy</a>
-                  <a href="#" className="block hover:text-white transition-colors">Terms</a>
-                </div>
-              </div>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer - Minimal Grid */}
+      <footer className="border-t border-white/5">
+        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-20 md:py-24">
+          {/* Main Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-16 md:gap-8">
+            {/* Brand - 5 cols (golden ratio) */}
+            <div className="md:col-span-5 space-y-8">
+              <span className="text-[11px] tracking-[0.5em] font-light">VELLUM</span>
+              <p className="text-[15px] font-light leading-[1.8] text-white/40 max-w-md">
+                AI-powered video editing engineered for filmmakers who value craft.
+              </p>
             </div>
             
-            <div className="mt-20 pt-8 border-t border-white/[0.06] text-[11px] text-white/20">
-              © 2024 Vellum. All rights reserved.
+            {/* Links - 7 cols */}
+            <div className="md:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-12 md:gap-8">
+              <div className="space-y-6">
+                <span className="text-[10px] tracking-[0.4em] text-white/20 font-light">PRODUCT</span>
+                <nav className="space-y-4 text-[13px] font-light">
+                  <a href="#work" className="block text-white/40 hover:text-white transition-colors">Features</a>
+                  <Link href="/pricing" className="block text-white/40 hover:text-white transition-colors">Pricing</Link>
+                  <a href="#" className="block text-white/40 hover:text-white transition-colors">Changelog</a>
+                </nav>
+              </div>
+              
+              <div className="space-y-6">
+                <span className="text-[10px] tracking-[0.4em] text-white/20 font-light">COMPANY</span>
+                <nav className="space-y-4 text-[13px] font-light">
+                  <a href="#" className="block text-white/40 hover:text-white transition-colors">About</a>
+                  <a href="#" className="block text-white/40 hover:text-white transition-colors">Contact</a>
+                  <a href="#" className="block text-white/40 hover:text-white transition-colors">Careers</a>
+                </nav>
+              </div>
+              
+              <div className="space-y-6">
+                <span className="text-[10px] tracking-[0.4em] text-white/20 font-light">LEGAL</span>
+                <nav className="space-y-4 text-[13px] font-light">
+                  <a href="#" className="block text-white/40 hover:text-white transition-colors">Privacy</a>
+                  <a href="#" className="block text-white/40 hover:text-white transition-colors">Terms</a>
+                </nav>
+              </div>
+            </div>
+          </div>
+          
+          {/* Bottom Bar */}
+          <div className="mt-24 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <p className="text-[10px] tracking-[0.3em] text-white/20 font-light">
+              © 2024 VELLUM
+            </p>
+            <div className="flex items-center gap-8 text-[10px] tracking-[0.3em] text-white/20 font-light">
+              <a href="#" className="hover:text-white/40 transition-colors">INSTAGRAM</a>
+              <a href="#" className="hover:text-white/40 transition-colors">TWITTER</a>
+              <a href="#" className="hover:text-white/40 transition-colors">YOUTUBE</a>
             </div>
           </div>
         </div>
