@@ -642,8 +642,8 @@ export default function CameraScene() {
                     textShadow: '0 2px 40px rgba(0,0,0,0.3)',
                   }}
                 >
-                  Cinematic.<br />
-                  <span className="text-white/60">Automatic.</span>
+                  Weeks to<br />
+                  <span className="text-white/60">Hours.</span>
                 </h1>
               </div>
               
@@ -661,7 +661,7 @@ export default function CameraScene() {
                   }}
                 />
                 <p className="text-[11px] tracking-[0.5em] text-white/50 font-light">
-                  PRECISE EDITS
+                  AI WEDDING EDITING
                 </p>
               </div>
             </div>
