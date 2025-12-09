@@ -113,7 +113,7 @@ export default function Home() {
       </section>
 
       {/* Capabilities Section */}
-      <section id="capabilities" className="py-24 lg:py-32 border-t border-white/[0.06]">
+      <section id="capabilities" className="py-16 lg:py-20 border-t border-white/[0.06]">
         <div className="px-4 lg:px-8">
           {capabilities.map((cap) => (
             <motion.div
