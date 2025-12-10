@@ -49,7 +49,7 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
   mousePosition: { x: number; y: number };
 }) {
   // Load OBJ
-  const obj = useLoader(OBJLoader, '/ProDisplayXDR41.mtl.obj');
+  const obj = useLoader(OBJLoader, '/monitor.obj');
   
   const screenMaterialRef = useRef<THREE.MeshBasicMaterial>(null);
   const videoTextureRef = useRef<THREE.VideoTexture | null>(null);
