@@ -468,8 +468,10 @@ export default function CameraScene() {
     return () => cancelAnimationFrame(animationFrame);
   }, [mousePosition]);
 
-  // Wheel event handler
+  // Wheel, Touch, and Keyboard event handlers
   useEffect(() => {
+    let touchStartY = 0;
+    
     const handleWheel = (e: WheelEvent) => {
       // Check ref instead of state for immediate response
       if (!isCompleteRef.current) {
@@ -498,6 +500,79 @@ export default function CameraScene() {
       }
     };
 
+    const handleTouchStart = (e: TouchEvent) => {
+      if (!isCompleteRef.current) {
+        touchStartY = e.touches[0].clientY;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isCompleteRef.current) {
+        const touchY = e.touches[0].clientY;
+        const deltaY = touchStartY - touchY;
+        const delta = deltaY * 0.002; // Touch sensitivity
+        
+        targetProgress.current = Math.max(0, Math.min(1, targetProgress.current + delta));
+        touchStartY = touchY;
+        
+        // Complete when close to end
+        if (targetProgress.current >= 0.9999) {
+          isCompleteRef.current = true;
+          setIsAnimationComplete(true);
+          targetProgress.current = 1;
+          setAnimationProgress(1);
+          document.body.style.overflow = '';
+          document.body.style.paddingRight = '';
+          const navbar = document.querySelector('nav');
+          if (navbar && navbar instanceof HTMLElement) {
+            navbar.style.paddingRight = '';
+          }
+          return;
+        }
+        
+        e.preventDefault();
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isCompleteRef.current) {
+        let delta = 0;
+        
+        switch(e.key) {
+          case 'ArrowDown':
+          case 'PageDown':
+          case ' ': // Space bar
+            delta = 0.05; // Move forward
+            break;
+          case 'ArrowUp':
+          case 'PageUp':
+            delta = -0.05; // Move backward
+            break;
+          default:
+            return; // Don't prevent default for other keys
+        }
+        
+        targetProgress.current = Math.max(0, Math.min(1, targetProgress.current + delta));
+        
+        // Complete when close to end
+        if (targetProgress.current >= 0.9999) {
+          isCompleteRef.current = true;
+          setIsAnimationComplete(true);
+          targetProgress.current = 1;
+          setAnimationProgress(1);
+          document.body.style.overflow = '';
+          document.body.style.paddingRight = '';
+          const navbar = document.querySelector('nav');
+          if (navbar && navbar instanceof HTMLElement) {
+            navbar.style.paddingRight = '';
+          }
+          return;
+        }
+        
+        e.preventDefault();
+      }
+    };
+
     const handleScroll = () => {
       if (isCompleteRef.current && window.scrollY <= 10) {
         isCompleteRef.current = false;
@@ -507,10 +582,16 @@ export default function CameraScene() {
     };
 
     window.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('touchstart', handleTouchStart, { passive: false });
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('keydown', handleKeyDown, { passive: false });
     window.addEventListener('scroll', handleScroll);
     
     return () => {
       window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('scroll', handleScroll);
     };
   }, [isAnimationComplete]);
