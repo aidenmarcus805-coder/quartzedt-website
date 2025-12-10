@@ -122,6 +122,7 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
               envMapIntensity: 0.2, // Increased for plastic-like subtle reflections
               clearcoat: 0.1, // Very subtle clearcoat for plastic feel
               clearcoatRoughness: 0.8, // Keep it mostly matte
+              wireframe: false,
             });
           } else if (name.includes('cylinder')) {
             // Stand/base parts - brushed aluminum
@@ -135,6 +136,7 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
               roughness: 0.45,
               side: THREE.DoubleSide,
               envMapIntensity: 0.8,
+              wireframe: false,
             });
           } else {
             // Display/monitor body parts - matte aluminum
@@ -148,6 +150,7 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
               roughness: 0.55,
               side: THREE.DoubleSide,
               envMapIntensity: 0.6,
+              wireframe: false,
             });
           }
           
