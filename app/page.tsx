@@ -65,6 +65,7 @@ export default function Home() {
           
           <div className="hidden md:flex items-center gap-16 text-[10px] tracking-[0.4em] font-light">
             <a href="#work" className="hover:opacity-50 transition-opacity">WORK</a>
+            <Link href="/about" className="hover:opacity-50 transition-opacity">ABOUT</Link>
             <Link href="/pricing" className="hover:opacity-50 transition-opacity">PRICING</Link>
           </div>
 
@@ -340,7 +341,7 @@ export default function Home() {
               <div className="space-y-6">
                 <span className="text-[10px] tracking-[0.4em] text-white/20 font-light">COMPANY</span>
                 <nav className="space-y-4 text-[13px] font-light">
-                  <a href="#" className="block text-white/40 hover:text-white transition-colors">About</a>
+                  <Link href="/about" className="block text-white/40 hover:text-white transition-colors">About</Link>
                   <a href="#" className="block text-white/40 hover:text-white transition-colors">Contact</a>
                   <a href="#" className="block text-white/40 hover:text-white transition-colors">Careers</a>
                 </nav>
