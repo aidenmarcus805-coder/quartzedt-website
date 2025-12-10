@@ -65,25 +65,43 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
     const loader = new THREE.TextureLoader();
     
     const loadColor = (path: string) => {
-      const tex = loader.load(path);
+      const tex = loader.load(
+        path,
+        (texture) => {
+          console.log('✅ Loaded texture:', path);
+        },
+        undefined,
+        (error) => {
+          console.error('❌ Failed to load texture:', path, error);
+        }
+      );
       tex.colorSpace = THREE.SRGBColorSpace;
-      tex.flipY = true;
-      tex.wrapS = THREE.RepeatWrapping;
-      tex.wrapT = THREE.RepeatWrapping;
+      tex.flipY = false; // Changed for new monitor model
+      tex.wrapS = THREE.ClampToEdgeWrapping;
+      tex.wrapT = THREE.ClampToEdgeWrapping;
       return tex;
     };
     
     const loadData = (path: string) => {
-      const tex = loader.load(path);
+      const tex = loader.load(
+        path,
+        (texture) => {
+          console.log('✅ Loaded texture:', path);
+        },
+        undefined,
+        (error) => {
+          console.error('❌ Failed to load texture:', path, error);
+        }
+      );
       tex.colorSpace = THREE.LinearSRGBColorSpace;
-      tex.flipY = true;
-      tex.wrapS = THREE.RepeatWrapping;
-      tex.wrapT = THREE.RepeatWrapping;
+      tex.flipY = false; // Changed for new monitor model
+      tex.wrapS = THREE.ClampToEdgeWrapping;
+      tex.wrapT = THREE.ClampToEdgeWrapping;
       return tex;
     };
     
     return {
-      // Shared textures for both display and stand
+      // Shared textures for both display and stand (in TEX folder)
       baseColor: loadColor('/TEX/basecolor.png'),
       baseNormal: loadData('/TEX/basenormal.png'),
     };
@@ -91,8 +109,11 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
 
   useEffect(() => {
     if (obj && textures) {
+      console.log('Loading monitor1.obj...');
       obj.traverse((child) => {
         if (child instanceof THREE.Mesh) {
+          console.log('Found mesh:', child.name);
+          
           if (child.geometry) {
             child.geometry.computeVertexNormals();
           }
@@ -102,6 +123,7 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
           // Store reference to display mesh
           if (name.includes('material.001')) {
             displayMeshRef.current = child;
+            console.log('Set display mesh:', name);
           }
           
           // Apply PBR materials based on mesh name
@@ -117,7 +139,8 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
               envMapIntensity: 0.6,
               wireframe: false,
             });
-          } else if (name.includes('macpro_monitor_001-material')) {
+            console.log('✅ Applied display material to:', name);
+          } else if (name.includes('macpro_monitor_001-material') || name.toLowerCase().includes('material')) {
             // Stand - brushed aluminum with shared textures
             child.material = new THREE.MeshStandardMaterial({
               map: textures.baseColor,
@@ -129,6 +152,20 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
               envMapIntensity: 0.8,
               wireframe: false,
             });
+            console.log('✅ Applied stand material to:', name);
+          } else {
+            // Fallback material for any unmatched meshes
+            child.material = new THREE.MeshStandardMaterial({
+              map: textures.baseColor,
+              normalMap: textures.baseNormal,
+              normalScale: new THREE.Vector2(1, 1),
+              metalness: 0.9,
+              roughness: 0.5,
+              side: THREE.DoubleSide,
+              envMapIntensity: 0.7,
+              wireframe: false,
+            });
+            console.log('⚠️ Applied fallback material to:', name);
           }
           
           child.castShadow = true;
@@ -178,22 +215,22 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
       const mouseRotY = mousePosition.x * 0.03 * mouseInfluence; // Reduced for slower movement
       const mouseRotX = mousePosition.y * 0.02 * mouseInfluence; // Reduced for slower movement
       
-      // Scale for Pro Display XDR - Golden ratio progression
+      // Scale for monitor1.obj - may need adjustment
       // Start: Dramatic and immersive | End: Prominent at golden ratio
-      const startScale = 5.72;
-      const endScale = 3.0;
+      const startScale = 0.5; // Temporary - adjust based on model size
+      const endScale = 0.3; // Temporary - adjust based on model size
       const currentScale = THREE.MathUtils.lerp(startScale, endScale, scrollEase);
       groupRef.current.scale.setScalar(currentScale);
       
       // Position X - centered with floating (direct assignment)
-      groupRef.current.position.x = THREE.MathUtils.lerp(0.05, 0.05, scrollEase) + floatX;
+      groupRef.current.position.x = THREE.MathUtils.lerp(0, 0, scrollEase) + floatX;
       
       // Position Y - Golden ratio vertical placement (adjusted lower)
       // Start: Centered lower | End: Upper half with breathing room for text
-      groupRef.current.position.y = THREE.MathUtils.lerp(-5.85, -2.5, scrollEase) + floatY;
+      groupRef.current.position.y = THREE.MathUtils.lerp(-1, 0, scrollEase) + floatY;
       
       // Rotation - base + floating + mouse parallax (direct assignment)
-      const baseRotY = -Math.PI / 2;
+      const baseRotY = 0; // Reset for new model
       groupRef.current.rotation.y = baseRotY + floatRot + mouseRotY;
       groupRef.current.rotation.x = 0.02 + scrollEase * 0.03 + mouseRotX;
       
@@ -211,13 +248,13 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
     // Video screen - use ZYX rotation order so tilt applies correctly
     if (videoScreenRef.current) {
       videoScreenRef.current.rotation.order = 'ZYX';
-      videoScreenRef.current.rotation.set(displayTilt, Math.PI / 2, 0);
+      videoScreenRef.current.rotation.set(displayTilt, 0, 0);
     }
     
     // Gloss overlay - same rotation
     if (glossScreenRef.current) {
       glossScreenRef.current.rotation.order = 'ZYX';
-      glossScreenRef.current.rotation.set(displayTilt, Math.PI / 2, 0);
+      glossScreenRef.current.rotation.set(displayTilt, 0, 0);
     }
   });
 
@@ -225,14 +262,14 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
   const glossGeometry = useMemo(() => createRoundedRectGeometry(1.8, 1.0, 0.01), []);
   
   return (
-    <group ref={groupRef} position={[0, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
+    <group ref={groupRef} position={[0, 0, 0]} rotation={[0, 0, 0]}>
       <primitive object={obj} />
       
-      {/* Video screen - positioned on the Pro Display XDR panel */}
+      {/* Video screen - positioned on the monitor panel (needs adjustment for new model) */}
       <mesh 
         ref={videoScreenRef}
-        position={[-0.099, 1, 0.008]}
-        rotation={[0, Math.PI / 2, 0]}
+        position={[0, 0, 0]}
+        rotation={[0, 0, 0]}
         renderOrder={999}
         geometry={screenGeometry}
       >
@@ -246,8 +283,8 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
       {/* Glossy screen overlay - subtle glass effect */}
       <mesh 
         ref={glossScreenRef}
-        position={[-0.0988, 1, 0.008]}
-        rotation={[0, Math.PI / 2, 0]}
+        position={[0, 0, 0.01]}
+        rotation={[0, 0, 0]}
         renderOrder={1000}
         geometry={glossGeometry}
       >
