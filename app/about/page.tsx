@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useInView } from 'framer-motion';
-import { ArrowRight, Minus, Play } from 'lucide-react';
+import { ArrowRight, Minus } from 'lucide-react';
 import { useRef } from 'react';
 import Link from 'next/link';
 
@@ -157,7 +157,7 @@ export default function About() {
               <Reveal delay={0.3}>
                 <div className="border-l border-white/10 pl-8 py-4">
                   <p className="text-[24px] md:text-[32px] font-extralight leading-[1.3] tracking-[-0.02em]">
-                    "What if 5 weeks could become 3 days?"
+                    &ldquo;What if 5 weeks could become 3 days?&rdquo;
                   </p>
                   <p className="text-[13px] tracking-[0.3em] text-white/30 mt-4 font-light">
                     THE QUESTION THAT STARTED EVERYTHING
@@ -178,7 +178,7 @@ export default function About() {
               <h2 className="text-[36px] md:text-[56px] font-extralight leading-[1.1] tracking-[-0.03em] mt-6">
                 The problem
                 <br />
-                <span className="text-black/30">we couldn't ignore</span>
+                <span className="text-black/30">we couldn&apos;t ignore</span>
               </h2>
             </div>
           </Reveal>
@@ -267,7 +267,7 @@ export default function About() {
                 <div className="bg-[#0a0a0a] p-10 md:p-14 group hover:bg-black transition-all duration-500">
                   {/* Quote */}
                   <p className="text-[19px] md:text-[22px] font-extralight leading-[1.6] tracking-[-0.01em] mb-10">
-                    "{story.quote}"
+                    &ldquo;{story.quote}&rdquo;
                   </p>
                   
                   {/* Attribution */}
@@ -345,7 +345,7 @@ export default function About() {
                 <h2 className="text-[36px] md:text-[48px] font-extralight leading-[1.1] tracking-[-0.03em] mt-6">
                   The future
                   <br />
-                  <span className="text-white/40">we're building</span>
+                  <span className="text-white/40">we&apos;re building</span>
                 </h2>
               </Reveal>
             </div>
