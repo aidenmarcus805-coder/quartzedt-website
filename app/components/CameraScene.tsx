@@ -49,7 +49,7 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
   mousePosition: { x: number; y: number };
 }) {
   // Load OBJ
-  const obj = useLoader(OBJLoader, '/monitor.obj');
+  const obj = useLoader(OBJLoader, '/monitor1.obj');
   
   const screenMaterialRef = useRef<THREE.MeshBasicMaterial>(null);
   const videoTextureRef = useRef<THREE.VideoTexture | null>(null);
@@ -60,7 +60,7 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
   // Screen geometry for Pro Display XDR (16:9 aspect ratio) - sized to fit display area
   const screenGeometry = useMemo(() => createRoundedRectGeometry(1.8, 1.0, 0.01), []);
 
-  // Load all PBR textures
+  // Load shared textures (both display and stand use the same)
   const textures = useMemo(() => {
     const loader = new THREE.TextureLoader();
     
@@ -83,16 +83,9 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
     };
     
     return {
-      // Display textures
-      displayBase: loadColor('/TEX/Display_BaseColor.png'),
-      displayNormal: loadData('/TEX/Display_Normal.png'),
-      displayRoughness: loadData('/TEX/Display_Roughness.png'),
-      displayMetallic: loadData('/TEX/Display_Metallic.png'),
-      // Stand textures
-      standBase: loadColor('/TEX/Stand_BaseColor.png'),
-      standNormal: loadData('/TEX/Stand_Normal.png'),
-      standRoughness: loadData('/TEX/Stand_Roughness.png'),
-      standMetallic: loadData('/TEX/Stand_Metallic.png'),
+      // Shared textures for both display and stand
+      baseColor: loadColor('/TEX/basecolor.png'),
+      baseNormal: loadData('/TEX/basenormal.png'),
     };
   }, []);
 
@@ -104,52 +97,36 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
             child.geometry.computeVertexNormals();
           }
           
-          const name = child.name.toLowerCase();
+          const name = child.name;
           
-          // Store reference to display mesh (Cube.001)
-          if (child.name === 'Cube.001' || child.name === 'Cube001') {
+          // Store reference to display mesh
+          if (name.includes('material.001')) {
             displayMeshRef.current = child;
           }
           
           // Apply PBR materials based on mesh name
-          if (name.includes('cube.017')) {
-            // Cube.017 - textured plastic black
-            child.material = new THREE.MeshPhysicalMaterial({
-              color: '#2a2a2a',
-              metalness: 0.0,
-              roughness: 0.65, // Reduced for subtle light interaction
-              side: THREE.DoubleSide,
-              envMapIntensity: 0.2, // Increased for plastic-like subtle reflections
-              clearcoat: 0.1, // Very subtle clearcoat for plastic feel
-              clearcoatRoughness: 0.8, // Keep it mostly matte
-              wireframe: false,
-            });
-          } else if (name.includes('cylinder')) {
-            // Stand/base parts - brushed aluminum
+          if (name.includes('material.001')) {
+            // Display - matte aluminum with shared textures
             child.material = new THREE.MeshStandardMaterial({
-              map: textures.standBase,
-              normalMap: textures.standNormal,
-              roughnessMap: textures.standRoughness,
-              metalnessMap: textures.standMetallic,
-              normalScale: new THREE.Vector2(1, 1),
-              metalness: 0.95,
-              roughness: 0.45,
-              side: THREE.DoubleSide,
-              envMapIntensity: 0.8,
-              wireframe: false,
-            });
-          } else {
-            // Display/monitor body parts - matte aluminum
-            child.material = new THREE.MeshStandardMaterial({
-              map: textures.displayBase,
-              normalMap: textures.displayNormal,
-              roughnessMap: textures.displayRoughness,
-              metalnessMap: textures.displayMetallic,
+              map: textures.baseColor,
+              normalMap: textures.baseNormal,
               normalScale: new THREE.Vector2(1, 1),
               metalness: 0.9,
               roughness: 0.55,
               side: THREE.DoubleSide,
               envMapIntensity: 0.6,
+              wireframe: false,
+            });
+          } else if (name.includes('macpro_monitor_001-material')) {
+            // Stand - brushed aluminum with shared textures
+            child.material = new THREE.MeshStandardMaterial({
+              map: textures.baseColor,
+              normalMap: textures.baseNormal,
+              normalScale: new THREE.Vector2(1, 1),
+              metalness: 0.95,
+              roughness: 0.45,
+              side: THREE.DoubleSide,
+              envMapIntensity: 0.8,
               wireframe: false,
             });
           }
