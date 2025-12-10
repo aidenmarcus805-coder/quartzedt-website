@@ -67,7 +67,7 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
     const loadColor = (path: string) => {
       const tex = loader.load(
         path,
-        (texture) => {
+        () => {
           console.log('✅ Loaded texture:', path);
         },
         undefined,
@@ -85,7 +85,7 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
     const loadData = (path: string) => {
       const tex = loader.load(
         path,
-        (texture) => {
+        () => {
           console.log('✅ Loaded texture:', path);
         },
         undefined,
@@ -215,22 +215,22 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
       const mouseRotY = mousePosition.x * 0.03 * mouseInfluence; // Reduced for slower movement
       const mouseRotX = mousePosition.y * 0.02 * mouseInfluence; // Reduced for slower movement
       
-      // Scale for monitor1.obj - may need adjustment
+      // Scale for Pro Display XDR - Golden ratio progression
       // Start: Dramatic and immersive | End: Prominent at golden ratio
-      const startScale = 0.5; // Temporary - adjust based on model size
-      const endScale = 0.3; // Temporary - adjust based on model size
+      const startScale = 5.72;
+      const endScale = 3.0;
       const currentScale = THREE.MathUtils.lerp(startScale, endScale, scrollEase);
       groupRef.current.scale.setScalar(currentScale);
       
       // Position X - centered with floating (direct assignment)
-      groupRef.current.position.x = THREE.MathUtils.lerp(0, 0, scrollEase) + floatX;
+      groupRef.current.position.x = THREE.MathUtils.lerp(0.05, 0.05, scrollEase) + floatX;
       
       // Position Y - Golden ratio vertical placement (adjusted lower)
       // Start: Centered lower | End: Upper half with breathing room for text
-      groupRef.current.position.y = THREE.MathUtils.lerp(-1, 0, scrollEase) + floatY;
+      groupRef.current.position.y = THREE.MathUtils.lerp(-5.85, -2.5, scrollEase) + floatY;
       
       // Rotation - base + floating + mouse parallax (direct assignment)
-      const baseRotY = 0; // Reset for new model
+      const baseRotY = -Math.PI / 2;
       groupRef.current.rotation.y = baseRotY + floatRot + mouseRotY;
       groupRef.current.rotation.x = 0.02 + scrollEase * 0.03 + mouseRotX;
       
@@ -248,13 +248,13 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
     // Video screen - use ZYX rotation order so tilt applies correctly
     if (videoScreenRef.current) {
       videoScreenRef.current.rotation.order = 'ZYX';
-      videoScreenRef.current.rotation.set(displayTilt, 0, 0);
+      videoScreenRef.current.rotation.set(displayTilt, Math.PI / 2, 0);
     }
     
     // Gloss overlay - same rotation
     if (glossScreenRef.current) {
       glossScreenRef.current.rotation.order = 'ZYX';
-      glossScreenRef.current.rotation.set(displayTilt, 0, 0);
+      glossScreenRef.current.rotation.set(displayTilt, Math.PI / 2, 0);
     }
   });
 
@@ -262,14 +262,14 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
   const glossGeometry = useMemo(() => createRoundedRectGeometry(1.8, 1.0, 0.01), []);
   
   return (
-    <group ref={groupRef} position={[0, 0, 0]} rotation={[0, 0, 0]}>
+    <group ref={groupRef} position={[0, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
       <primitive object={obj} />
       
-      {/* Video screen - positioned on the monitor panel (needs adjustment for new model) */}
+      {/* Video screen - positioned on the Pro Display XDR panel */}
       <mesh 
         ref={videoScreenRef}
-        position={[0, 0, 0]}
-        rotation={[0, 0, 0]}
+        position={[-0.099, 1, 0.008]}
+        rotation={[0, Math.PI / 2, 0]}
         renderOrder={999}
         geometry={screenGeometry}
       >
@@ -283,8 +283,8 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
       {/* Glossy screen overlay - subtle glass effect */}
       <mesh 
         ref={glossScreenRef}
-        position={[0, 0, 0.01]}
-        rotation={[0, 0, 0]}
+        position={[-0.0988, 1, 0.008]}
+        rotation={[0, Math.PI / 2, 0]}
         renderOrder={1000}
         geometry={glossGeometry}
       >
