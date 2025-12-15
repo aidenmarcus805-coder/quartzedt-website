@@ -5,6 +5,7 @@ import { Environment } from '@react-three/drei';
 import { useRef, Suspense, useEffect, useState, useMemo, useCallback } from 'react';
 import * as THREE from 'three';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
 
 // Create rounded rectangle geometry with proper UVs
 function createRoundedRectGeometry(width: number, height: number, radius: number) {
@@ -48,100 +49,201 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
   videoElement: HTMLVideoElement | null;
   mousePosition: { x: number; y: number };
 }) {
-  // Load OBJ
-  const obj = useLoader(OBJLoader, '/monitor1.obj');
+  // Load MTL first, then OBJ with materials
+  const materials = useLoader(MTLLoader, '/monitor1.mtl');
+  const obj = useLoader(OBJLoader, '/monitor1.obj', (loader) => {
+    materials.preload();
+    loader.setMaterials(materials);
+  });
   
   const screenMaterialRef = useRef<THREE.MeshBasicMaterial>(null);
   const videoTextureRef = useRef<THREE.VideoTexture | null>(null);
   const displayMeshRef = useRef<THREE.Mesh | null>(null);
   const videoScreenRef = useRef<THREE.Mesh>(null);
   const glossScreenRef = useRef<THREE.Mesh>(null);
+  const displayBaseQuatRef = useRef<THREE.Quaternion | null>(null);
+  const displayFitRef = useRef<{
+    min: THREE.Vector3;
+    max: THREE.Vector3;
+    center: THREE.Vector3;
+    size: THREE.Vector3;
+    thicknessAxis: 0 | 1 | 2;
+    widthAxis: 0 | 1 | 2;
+    heightAxis: 0 | 1 | 2;
+    planeNormalPlus: THREE.Vector3;
+    planeCenterPlus: THREE.Vector3;
+    planeNormalMinus: THREE.Vector3;
+    planeCenterMinus: THREE.Vector3;
+  } | null>(null);
+  const tmp = useMemo(() => ({
+    qDisplayWorld: new THREE.Quaternion(),
+    qGroupWorld: new THREE.Quaternion(),
+    qTilt: new THREE.Quaternion(),
+    qWorld: new THREE.Quaternion(),
+    qLocal: new THREE.Quaternion(),
+    mBasis: new THREE.Matrix4(),
+    vDisplayWorldPos: new THREE.Vector3(),
+    vToCam: new THREE.Vector3(),
+    vAxisLocal: new THREE.Vector3(),
+    vAxisWorld: new THREE.Vector3(),
+    vRightLocal: new THREE.Vector3(),
+    vUpLocal: new THREE.Vector3(),
+    vNormalWorld: new THREE.Vector3(),
+    vRightWorld: new THREE.Vector3(),
+    vUpWorld: new THREE.Vector3(),
+    vAnchorLocal: new THREE.Vector3(),
+    vAnchorWorld: new THREE.Vector3(),
+    vAnchorGroup: new THREE.Vector3(),
+    vCross: new THREE.Vector3(),
+    vNormalPlus: new THREE.Vector3(),
+    vNormalMinus: new THREE.Vector3(),
+  }), []);
   
-  // Screen geometry for Pro Display XDR (16:9 aspect ratio) - sized to fit display area
-  const screenGeometry = useMemo(() => createRoundedRectGeometry(1.8, 1.0, 0.01), []);
+  // Screen geometry - sized to match monitor1.obj display dimensions (1% smaller)
+  const screenGeometry = useMemo(() => createRoundedRectGeometry(1.68, 0.96, 0.01), []);
 
-  // Load shared textures (both display and stand use the same)
+  // Load textures for manual material application
   const textures = useMemo(() => {
     const loader = new THREE.TextureLoader();
     
-    const loadColor = (path: string) => {
-      const tex = loader.load(
-        path,
-        () => {
-          console.log('✅ Loaded texture:', path);
-        },
-        undefined,
-        (error) => {
-          console.error('❌ Failed to load texture:', path, error);
-        }
-      );
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.flipY = false; // Changed for new monitor model
-      tex.wrapS = THREE.ClampToEdgeWrapping;
-      tex.wrapT = THREE.ClampToEdgeWrapping;
-      return tex;
-    };
+    const baseColor = loader.load('/TEX/basecolor.png');
+    baseColor.colorSpace = THREE.SRGBColorSpace;
+    baseColor.flipY = false;
     
-    const loadData = (path: string) => {
-      const tex = loader.load(
-        path,
-        () => {
-          console.log('✅ Loaded texture:', path);
-        },
-        undefined,
-        (error) => {
-          console.error('❌ Failed to load texture:', path, error);
-        }
-      );
-      tex.colorSpace = THREE.LinearSRGBColorSpace;
-      tex.flipY = false; // Changed for new monitor model
-      tex.wrapS = THREE.ClampToEdgeWrapping;
-      tex.wrapT = THREE.ClampToEdgeWrapping;
-      return tex;
-    };
+    const baseNormal = loader.load('/TEX/basenormal.png');
+    baseNormal.colorSpace = THREE.LinearSRGBColorSpace;
+    baseNormal.flipY = false;
     
-    return {
-      // Shared textures for both display and stand (in TEX folder)
-      baseColor: loadColor('/TEX/basecolor.png'),
-      baseNormal: loadData('/TEX/basenormal.png'),
-    };
+    return { baseColor, baseNormal };
   }, []);
 
   useEffect(() => {
     if (obj && textures) {
-      console.log('Loading monitor1.obj...');
       obj.traverse((child) => {
         if (child instanceof THREE.Mesh) {
-          console.log('Found mesh:', child.name);
-          
           if (child.geometry) {
             child.geometry.computeVertexNormals();
           }
           
           const name = child.name;
           
-          // Store reference to display mesh
+          // Store reference to display mesh and set rotation order once
           if (name.includes('material.001')) {
             displayMeshRef.current = child;
-            console.log('Set display mesh:', name);
+            if (!displayBaseQuatRef.current) {
+              displayBaseQuatRef.current = child.quaternion.clone();
+            }
+
+            const geom = child.geometry as THREE.BufferGeometry;
+            geom.computeBoundingBox();
+            const bb = geom.boundingBox;
+            if (bb && !displayFitRef.current) {
+              const size = new THREE.Vector3();
+              bb.getSize(size);
+              const center = new THREE.Vector3();
+              bb.getCenter(center);
+
+              let thicknessAxis: 0 | 1 | 2 = 0;
+              if (size.y <= size.x && size.y <= size.z) thicknessAxis = 1;
+              else if (size.z <= size.x && size.z <= size.y) thicknessAxis = 2;
+
+              const remaining: Array<0 | 1 | 2> = [0, 1, 2].filter((a) => a !== thicknessAxis) as Array<0 | 1 | 2>;
+              let widthAxis = remaining[0];
+              let heightAxis = remaining[1];
+              if (size.getComponent(widthAxis) < size.getComponent(heightAxis)) {
+                const t = widthAxis;
+                widthAxis = heightAxis;
+                heightAxis = t;
+              }
+
+              // Approximate the actual front/back display plane by averaging the triangles
+              // whose normals align with the "thickness" axis. This makes the video plane
+              // match the real screen face even if the mesh is slightly slanted.
+              const thicknessAxisVec = new THREE.Vector3(0, 0, 0);
+              thicknessAxisVec.setComponent(thicknessAxis, 1);
+
+              const posAttr = geom.getAttribute('position') as THREE.BufferAttribute;
+              const idxAttr = geom.index;
+              const idxArray = idxAttr ? (idxAttr.array as ArrayLike<number>) : null;
+
+              const a = new THREE.Vector3();
+              const b = new THREE.Vector3();
+              const c = new THREE.Vector3();
+              const ab = new THREE.Vector3();
+              const ac = new THREE.Vector3();
+              const cross = new THREE.Vector3();
+              const centroidTri = new THREE.Vector3();
+
+              const sumNPlus = new THREE.Vector3();
+              const sumCPlus = new THREE.Vector3();
+              let areaPlus = 0;
+              const sumNMinus = new THREE.Vector3();
+              const sumCMinus = new THREE.Vector3();
+              let areaMinus = 0;
+
+              const getV = (i: number, out: THREE.Vector3) => {
+                out.fromBufferAttribute(posAttr, i);
+                return out;
+              };
+
+              const triCount = idxArray ? idxArray.length / 3 : Math.floor(posAttr.count / 3);
+              for (let tIdx = 0; tIdx < triCount; tIdx++) {
+                const ia = idxArray ? Number(idxArray[tIdx * 3]) : tIdx * 3;
+                const ib = idxArray ? Number(idxArray[tIdx * 3 + 1]) : tIdx * 3 + 1;
+                const ic = idxArray ? Number(idxArray[tIdx * 3 + 2]) : tIdx * 3 + 2;
+
+                getV(ia, a);
+                getV(ib, b);
+                getV(ic, c);
+
+                ab.copy(b).sub(a);
+                ac.copy(c).sub(a);
+                cross.copy(ab).cross(ac);
+                const crossLen = cross.length();
+                if (crossLen < 1e-10) continue;
+
+                const area = crossLen * 0.5;
+                const normal = cross.multiplyScalar(1 / crossLen); // normalized
+                const dot = normal.dot(thicknessAxisVec);
+                const absDot = Math.abs(dot);
+                if (absDot < 0.8) continue;
+
+                centroidTri.copy(a).add(b).add(c).multiplyScalar(1 / 3);
+
+                if (dot >= 0) {
+                  sumNPlus.addScaledVector(normal, area);
+                  sumCPlus.addScaledVector(centroidTri, area);
+                  areaPlus += area;
+                } else {
+                  sumNMinus.addScaledVector(normal, area);
+                  sumCMinus.addScaledVector(centroidTri, area);
+                  areaMinus += area;
+                }
+              }
+
+              const planeNormalPlus = areaPlus > 0 ? sumNPlus.normalize() : thicknessAxisVec.clone();
+              const planeCenterPlus = areaPlus > 0 ? sumCPlus.multiplyScalar(1 / areaPlus) : center.clone();
+              const planeNormalMinus = areaMinus > 0 ? sumNMinus.normalize() : thicknessAxisVec.clone().multiplyScalar(-1);
+              const planeCenterMinus = areaMinus > 0 ? sumCMinus.multiplyScalar(1 / areaMinus) : center.clone();
+
+              displayFitRef.current = {
+                min: bb.min.clone(),
+                max: bb.max.clone(),
+                center,
+                size,
+                thicknessAxis,
+                widthAxis,
+                heightAxis,
+                planeNormalPlus,
+                planeCenterPlus,
+                planeNormalMinus,
+                planeCenterMinus,
+              };
+            }
           }
           
-          // Apply PBR materials based on mesh name
-          if (name.includes('material.001')) {
-            // Display - matte aluminum with shared textures
-            child.material = new THREE.MeshStandardMaterial({
-              map: textures.baseColor,
-              normalMap: textures.baseNormal,
-              normalScale: new THREE.Vector2(1, 1),
-              metalness: 0.9,
-              roughness: 0.55,
-              side: THREE.DoubleSide,
-              envMapIntensity: 0.6,
-              wireframe: false,
-            });
-            console.log('✅ Applied display material to:', name);
-          } else if (name.includes('macpro_monitor_001-material') || name.toLowerCase().includes('material')) {
-            // Stand - brushed aluminum with shared textures
+          // Apply materials based on mesh name
+          if (name === 'macpro_monitor_001-material') {
             child.material = new THREE.MeshStandardMaterial({
               map: textures.baseColor,
               normalMap: textures.baseNormal,
@@ -150,116 +252,197 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
               roughness: 0.45,
               side: THREE.DoubleSide,
               envMapIntensity: 0.8,
-              wireframe: false,
             });
-            console.log('✅ Applied stand material to:', name);
-          } else {
-            // Fallback material for any unmatched meshes
-            child.material = new THREE.MeshStandardMaterial({
-              map: textures.baseColor,
-              normalMap: textures.baseNormal,
-              normalScale: new THREE.Vector2(1, 1),
-              metalness: 0.9,
-              roughness: 0.5,
-              side: THREE.DoubleSide,
-              envMapIntensity: 0.7,
-              wireframe: false,
-            });
-            console.log('⚠️ Applied fallback material to:', name);
           }
           
-          child.castShadow = true;
+          child.castShadow = false; // Disable for performance
           child.receiveShadow = true;
-          child.frustumCulled = false;
+          child.frustumCulled = true; // Enable frustum culling
         }
       });
     }
   }, [obj, textures]);
 
-  useFrame(() => {
-    // Create video texture when video is ready
+  useFrame((state) => {
+    // Create video texture when video is ready (only once)
     if (videoElement && !videoTextureRef.current && videoElement.readyState >= 2) {
       const texture = new THREE.VideoTexture(videoElement);
       texture.minFilter = THREE.LinearFilter;
       texture.magFilter = THREE.LinearFilter;
       texture.colorSpace = THREE.SRGBColorSpace;
       texture.generateMipmaps = false;
-      texture.anisotropy = 16;
+      texture.anisotropy = 4; // Reduced from 16 for performance
       videoTextureRef.current = texture;
       
       if (screenMaterialRef.current) {
         screenMaterialRef.current.map = texture;
-        screenMaterialRef.current.color = new THREE.Color(0xffffff);
+        screenMaterialRef.current.color.setHex(0xffffff);
         screenMaterialRef.current.needsUpdate = true;
       }
     }
     
-    // Update video texture
-    if (videoTextureRef.current) {
-      videoTextureRef.current.needsUpdate = true;
-    }
+    // Skip heavy calculations if not needed
+    if (!groupRef.current) return;
     
-    // Direct linear scroll progress - no smoothing
-    const scrollEase = scrollProgress; // Linear interpolation
+    const scrollEase = scrollProgress;
+    const time = performance.now() * 0.001; // Use performance.now() - faster than Date.now()
     
-    if (groupRef.current) {
-      const time = Date.now() * 0.001;
-      
-      // Enhanced floating animation
-      const floatY = Math.sin(time * 0.5) * 0.02;
-      const floatX = Math.cos(time * 0.3) * 0.01;
-      const floatRot = Math.sin(time * 0.4) * 0.003;
-      
-      // Mouse parallax effect (subtle tilt toward cursor)
-      const mouseInfluence = 1 - scrollEase * 0.5; // Reduce effect as we scroll
-      const mouseRotY = mousePosition.x * 0.03 * mouseInfluence; // Reduced for slower movement
-      const mouseRotX = mousePosition.y * 0.02 * mouseInfluence; // Reduced for slower movement
-      
-      // Scale for Pro Display XDR - Golden ratio progression
-      // Start: Dramatic and immersive | End: Prominent at golden ratio
-      const startScale = 5.72;
-      const endScale = 3.0;
-      const currentScale = THREE.MathUtils.lerp(startScale, endScale, scrollEase);
-      groupRef.current.scale.setScalar(currentScale);
-      
-      // Position X - centered with floating (direct assignment)
-      groupRef.current.position.x = THREE.MathUtils.lerp(0.05, 0.05, scrollEase) + floatX;
-      
-      // Position Y - Golden ratio vertical placement (adjusted lower)
-      // Start: Centered lower | End: Upper half with breathing room for text
-      groupRef.current.position.y = THREE.MathUtils.lerp(-5.85, -2.5, scrollEase) + floatY;
-      
-      // Rotation - base + floating + mouse parallax (direct assignment)
-      const baseRotY = -Math.PI / 2;
-      groupRef.current.rotation.y = baseRotY + floatRot + mouseRotY;
-      groupRef.current.rotation.x = 0.02 + scrollEase * 0.03 + mouseRotX;
-      
-      groupRef.current.updateMatrixWorld();
-    }
+    // Simplified floating animation
+    const floatY = Math.sin(time * 0.5) * 0.02;
+    const floatX = Math.cos(time * 0.3) * 0.01;
+    const floatRot = Math.sin(time * 0.4) * 0.003;
+    
+    // Mouse parallax effect
+    const mouseInfluence = 1 - scrollEase * 0.5;
+    const mouseRotY = mousePosition.x * 0.03 * mouseInfluence;
+    const mouseRotX = mousePosition.y * 0.02 * mouseInfluence;
+    
+    // Scale
+    const currentScale = 5.92 + (3.35 - 5.92) * scrollEase; // Inline lerp
+    groupRef.current.scale.setScalar(currentScale);
+    
+    // Position
+    groupRef.current.position.x = -0.05 + floatX;
+    groupRef.current.position.y = -5.2 + (3.35) * scrollEase + floatY;
+    
+    // Rotation
+    groupRef.current.rotation.y = -Math.PI / 2 + floatRot + mouseRotY;
+    // No base tilt at scroll=0
+    groupRef.current.rotation.x = scrollEase * 0.03 + mouseRotX;
     
     // Tilt screens up based on scroll
-    const displayTilt = THREE.MathUtils.lerp(0, 0, scrollEase);
-    
-    // Display mesh (Cube.001) - tilt on Z axis
-    if (displayMeshRef.current) {
-      displayMeshRef.current.rotation.z = displayTilt;
+    // NOTE: The model has a baked-in ~2.5° upward tilt from Blender; we cancel it at scroll=0.
+    const blenderBaseTilt = THREE.MathUtils.degToRad(2.5);
+    const endTilt = 0.09; // ~5° at scroll=1
+    const displayTilt = -blenderBaseTilt + (blenderBaseTilt + endTilt) * scrollEase;
+
+    // If we have the display mesh + its bounds, drive screen placement from it (no more guessed numbers)
+    const display = displayMeshRef.current;
+    const fit = displayFitRef.current;
+    const baseQuat = displayBaseQuatRef.current;
+    const videoMesh = videoScreenRef.current;
+    const glossMesh = glossScreenRef.current;
+
+    if (!display || !fit || !baseQuat || !videoMesh || !glossMesh) return;
+
+    // Ensure matrices are current before we do world/local conversions
+    groupRef.current.updateWorldMatrix(true, true);
+
+    // Reset to base orientation, then apply tilt around the display "width" axis (horizontal)
+    display.quaternion.copy(baseQuat);
+    groupRef.current.updateWorldMatrix(true, true);
+
+    // Compute world axes at base orientation
+    display.getWorldQuaternion(tmp.qDisplayWorld);
+    display.getWorldPosition(tmp.vDisplayWorldPos);
+    tmp.vToCam.copy(state.camera.position).sub(tmp.vDisplayWorldPos).normalize();
+
+    // Pick the display plane (plus/minus) that faces the camera
+    tmp.vNormalPlus.copy(fit.planeNormalPlus).applyQuaternion(tmp.qDisplayWorld).normalize();
+    tmp.vNormalMinus.copy(fit.planeNormalMinus).applyQuaternion(tmp.qDisplayWorld).normalize();
+    const usePlus = tmp.vNormalPlus.dot(tmp.vToCam) >= tmp.vNormalMinus.dot(tmp.vToCam);
+    const planeNormalLocal = usePlus ? fit.planeNormalPlus : fit.planeNormalMinus;
+    tmp.vNormalWorld.copy(usePlus ? tmp.vNormalPlus : tmp.vNormalMinus).normalize();
+
+    // Build a stable local basis on the screen plane:
+    // upCandidate = local "height axis" projected onto the plane
+    tmp.vAxisLocal.set(0, 0, 0);
+    tmp.vAxisLocal.setComponent(fit.heightAxis, 1);
+    tmp.vUpLocal.copy(tmp.vAxisLocal).addScaledVector(planeNormalLocal, -tmp.vAxisLocal.dot(planeNormalLocal));
+    if (tmp.vUpLocal.lengthSq() < 1e-8) {
+      tmp.vAxisLocal.set(0, 0, 0);
+      tmp.vAxisLocal.setComponent(fit.widthAxis, 1);
+      tmp.vUpLocal.copy(tmp.vAxisLocal).addScaledVector(planeNormalLocal, -tmp.vAxisLocal.dot(planeNormalLocal));
     }
-    
-    // Video screen - use ZYX rotation order so tilt applies correctly
-    if (videoScreenRef.current) {
-      videoScreenRef.current.rotation.order = 'ZYX';
-      videoScreenRef.current.rotation.set(displayTilt, Math.PI / 2, 0);
+    tmp.vUpLocal.normalize();
+    tmp.vRightLocal.copy(tmp.vUpLocal).cross(planeNormalLocal).normalize();
+    tmp.vUpLocal.copy(planeNormalLocal).cross(tmp.vRightLocal).normalize();
+
+    // World basis vectors (right/up/normal)
+    tmp.vRightWorld.copy(tmp.vRightLocal).applyQuaternion(tmp.qDisplayWorld).normalize();
+    tmp.vUpWorld.copy(tmp.vUpLocal).applyQuaternion(tmp.qDisplayWorld).normalize();
+
+    // Choose tilt direction so the screen leans "back" (normal gains positive component along the up axis)
+    tmp.qTilt.setFromAxisAngle(tmp.vRightWorld, 0.01);
+    tmp.vNormalPlus.copy(tmp.vNormalWorld).applyQuaternion(tmp.qTilt);
+    tmp.qTilt.setFromAxisAngle(tmp.vRightWorld, -0.01);
+    tmp.vNormalMinus.copy(tmp.vNormalWorld).applyQuaternion(tmp.qTilt);
+    const tiltSign = tmp.vNormalPlus.dot(tmp.vUpWorld) >= tmp.vNormalMinus.dot(tmp.vUpWorld) ? 1 : -1;
+
+    // Apply tilt in DISPLAY-LOCAL space about the screen's right axis
+    tmp.qTilt.setFromAxisAngle(tmp.vRightLocal, tiltSign * displayTilt);
+    display.quaternion.copy(baseQuat).multiply(tmp.qTilt);
+
+    // Update matrices after tilt
+    groupRef.current.updateWorldMatrix(true, true);
+
+    // Recompute world basis vectors after tilt
+    display.getWorldQuaternion(tmp.qDisplayWorld);
+    display.getWorldPosition(tmp.vDisplayWorldPos);
+    tmp.vToCam.copy(state.camera.position).sub(tmp.vDisplayWorldPos).normalize();
+
+    tmp.vNormalPlus.copy(fit.planeNormalPlus).applyQuaternion(tmp.qDisplayWorld).normalize();
+    tmp.vNormalMinus.copy(fit.planeNormalMinus).applyQuaternion(tmp.qDisplayWorld).normalize();
+    const usePlusAfter = tmp.vNormalPlus.dot(tmp.vToCam) >= tmp.vNormalMinus.dot(tmp.vToCam);
+    const planeNormalLocalAfter = usePlusAfter ? fit.planeNormalPlus : fit.planeNormalMinus;
+    const planeCenterLocalAfter = usePlusAfter ? fit.planeCenterPlus : fit.planeCenterMinus;
+    tmp.vNormalWorld.copy(usePlusAfter ? tmp.vNormalPlus : tmp.vNormalMinus).normalize();
+
+    // Rebuild local basis after tilt using the chosen plane normal
+    tmp.vAxisLocal.set(0, 0, 0);
+    tmp.vAxisLocal.setComponent(fit.heightAxis, 1);
+    tmp.vUpLocal.copy(tmp.vAxisLocal).addScaledVector(planeNormalLocalAfter, -tmp.vAxisLocal.dot(planeNormalLocalAfter));
+    if (tmp.vUpLocal.lengthSq() < 1e-8) {
+      tmp.vAxisLocal.set(0, 0, 0);
+      tmp.vAxisLocal.setComponent(fit.widthAxis, 1);
+      tmp.vUpLocal.copy(tmp.vAxisLocal).addScaledVector(planeNormalLocalAfter, -tmp.vAxisLocal.dot(planeNormalLocalAfter));
     }
-    
-    // Gloss overlay - same rotation
-    if (glossScreenRef.current) {
-      glossScreenRef.current.rotation.order = 'ZYX';
-      glossScreenRef.current.rotation.set(displayTilt, Math.PI / 2, 0);
+    tmp.vUpLocal.normalize();
+    tmp.vRightLocal.copy(tmp.vUpLocal).cross(planeNormalLocalAfter).normalize();
+    tmp.vUpLocal.copy(planeNormalLocalAfter).cross(tmp.vRightLocal).normalize();
+
+    tmp.vRightWorld.copy(tmp.vRightLocal).applyQuaternion(tmp.qDisplayWorld).normalize();
+    tmp.vUpWorld.copy(tmp.vUpLocal).applyQuaternion(tmp.qDisplayWorld).normalize();
+
+    // Ensure basis is right-handed (avoid accidental mirroring)
+    tmp.vCross.copy(tmp.vRightWorld).cross(tmp.vUpWorld).normalize();
+    if (tmp.vCross.dot(tmp.vNormalWorld) < 0) {
+      tmp.vRightWorld.multiplyScalar(-1);
     }
+
+    // World quaternion for the screen plane (XY plane -> right/up, +Z -> outward normal)
+    tmp.mBasis.makeBasis(tmp.vRightWorld, tmp.vUpWorld, tmp.vNormalWorld);
+    tmp.qWorld.setFromRotationMatrix(tmp.mBasis);
+
+    // Convert world quaternion into group-local quaternion
+    groupRef.current.getWorldQuaternion(tmp.qGroupWorld);
+    tmp.qLocal.copy(tmp.qGroupWorld).invert().multiply(tmp.qWorld);
+
+    // Place the screen on the real display plane (tiny offset to sit in front)
+    const videoEps = 0.0018;
+    const glossEps = 0.0024;
+
+    tmp.vAnchorLocal.copy(planeCenterLocalAfter).addScaledVector(planeNormalLocalAfter, videoEps);
+    tmp.vAnchorWorld.copy(tmp.vAnchorLocal);
+    display.localToWorld(tmp.vAnchorWorld);
+    tmp.vAnchorGroup.copy(tmp.vAnchorWorld);
+    groupRef.current.worldToLocal(tmp.vAnchorGroup);
+
+    videoMesh.position.copy(tmp.vAnchorGroup);
+    videoMesh.quaternion.copy(tmp.qLocal);
+
+    tmp.vAnchorLocal.copy(planeCenterLocalAfter).addScaledVector(planeNormalLocalAfter, glossEps);
+    tmp.vAnchorWorld.copy(tmp.vAnchorLocal);
+    display.localToWorld(tmp.vAnchorWorld);
+    tmp.vAnchorGroup.copy(tmp.vAnchorWorld);
+    groupRef.current.worldToLocal(tmp.vAnchorGroup);
+
+    glossMesh.position.copy(tmp.vAnchorGroup);
+    glossMesh.quaternion.copy(tmp.qLocal);
   });
 
   // Glossy overlay geometry - same size as screen
-  const glossGeometry = useMemo(() => createRoundedRectGeometry(1.8, 1.0, 0.01), []);
+  const glossGeometry = useMemo(() => createRoundedRectGeometry(1.68, 0.96, 0.01), []);
   
   return (
     <group ref={groupRef} position={[0, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
@@ -268,8 +451,8 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
       {/* Video screen - positioned on the Pro Display XDR panel */}
       <mesh 
         ref={videoScreenRef}
-        position={[-0.099, 1, 0.008]}
-        rotation={[0, Math.PI / 2, 0]}
+        position={[0, 0, 0]}
+        rotation={[0, 0, 0]}
         renderOrder={999}
         geometry={screenGeometry}
       >
@@ -280,23 +463,20 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
         />
       </mesh>
       
-      {/* Glossy screen overlay - subtle glass effect */}
+      {/* Glossy screen overlay - subtle glass effect (optimized) */}
       <mesh 
         ref={glossScreenRef}
-        position={[-0.0988, 1, 0.008]}
-        rotation={[0, Math.PI / 2, 0]}
+        position={[0, 0, 0]}
+        rotation={[0, 0, 0]}
         renderOrder={1000}
         geometry={glossGeometry}
       >
-        <meshPhysicalMaterial 
+        <meshStandardMaterial 
           transparent={true}
-          opacity={0.04}
-          roughness={0.05}
+          opacity={0.03}
+          roughness={0.1}
           metalness={0.0}
-          clearcoat={0.5}
-          clearcoatRoughness={0.1}
-          reflectivity={0.5}
-          envMapIntensity={0.3}
+          envMapIntensity={0.2}
           color="#ffffff"
         />
       </mesh>
@@ -332,49 +512,97 @@ function Lighting() {
   return (
     <>
       {/* Soft ambient for visibility */}
-      <ambientLight intensity={0.1} color="#ffffff" />
+      <ambientLight intensity={0.15} color="#ffffff" />
       
       {/* KEY LIGHT - Main illumination from top-right */}
       <directionalLight 
         position={[5, 6, 6]} 
-        intensity={1.5}
+        intensity={2.0}
         color="#ffffff"
         castShadow
-        shadow-mapSize={[2048, 2048]}
+        shadow-mapSize={[1024, 1024]}
+        shadow-bias={-0.0001}
       />
       
       {/* RIM LIGHT - Subtle edge definition from back-left */}
       <directionalLight 
         position={[-6, 3, -3]} 
-        intensity={0.8}
+        intensity={1.0}
         color="#ffffff"
       />
       
       {/* FILL LIGHT - Soft from left side */}
       <directionalLight 
         position={[-5, 2, 4]} 
-        intensity={0.5} 
+        intensity={0.8} 
         color="#f0f0f0"
       />
       
       {/* TOP LIGHT - Even from above */}
       <directionalLight
         position={[0, 8, 2]}
-        intensity={0.6}
+        intensity={0.9}
         color="#ffffff"
       />
       
       {/* FRONT ACCENT - Subtle face illumination */}
       <pointLight 
         position={[0, 1, 8]} 
-        intensity={20} 
+        intensity={25} 
         color="#ffffff" 
         distance={15}
         decay={2}
       />
       
+      {/* SUBTLE SURROUNDING ACCENT LIGHTS */}
+      
+      {/* Bottom left - warm subtle glow */}
+      <pointLight 
+        position={[-4, -1, 3]} 
+        intensity={6} 
+        color="#fff8f0" 
+        distance={12}
+        decay={2}
+      />
+      
+      {/* Bottom right - cool subtle glow */}
+      <pointLight 
+        position={[4, -1, 3]} 
+        intensity={6} 
+        color="#f0f4ff" 
+        distance={12}
+        decay={2}
+      />
+      
+      {/* Left side - soft accent */}
+      <pointLight 
+        position={[-6, 2, 0]} 
+        intensity={8} 
+        color="#ffffff" 
+        distance={14}
+        decay={2}
+      />
+      
+      {/* Right side - soft accent */}
+      <pointLight 
+        position={[6, 2, 0]} 
+        intensity={8} 
+        color="#ffffff" 
+        distance={14}
+        decay={2}
+      />
+      
+      {/* Back subtle rim - top */}
+      <pointLight 
+        position={[0, 5, -4]} 
+        intensity={5} 
+        color="#e8e8ff" 
+        distance={10}
+        decay={2}
+      />
+      
       {/* Soft gradient environment */}
-      <hemisphereLight args={['#ffffff', '#1a1a1a', 0.3]} />
+      <hemisphereLight args={['#ffffff', '#1a1a1a', 0.25]} />
     </>
   );
 }
@@ -666,7 +894,7 @@ export default function CameraScene() {
           <source src="/videoplayback1.mp4" type="video/mp4" />
         </video>
 
-        {/* 3D Canvas with high quality settings */}
+        {/* 3D Canvas with optimized settings */}
         <Canvas
           camera={{ position: [0, 0, 5], fov: 50 }}
           gl={{ 
@@ -676,9 +904,12 @@ export default function CameraScene() {
             toneMappingExposure: 1.0,
             powerPreference: 'high-performance',
             outputColorSpace: THREE.SRGBColorSpace,
+            stencil: false,
+            depth: true,
           }}
-          dpr={[2, 3]}
-          shadows="soft"
+          dpr={[1, 2]}
+          shadows
+          performance={{ min: 0.5 }}
           style={{ background: 'transparent' }}
         >
           <Suspense fallback={<LoadingFallback />}>

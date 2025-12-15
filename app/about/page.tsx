@@ -112,7 +112,7 @@ export default function About() {
               OUR STORY
             </p>
             <h1 className="text-[clamp(48px,8vw,120px)] font-extralight leading-[0.95] tracking-[-0.04em] max-w-5xl">
-              Built by a filmmaker.
+              Built by filmmakers.
               <br />
               <span className="text-white/40">For filmmakers.</span>
             </h1>
