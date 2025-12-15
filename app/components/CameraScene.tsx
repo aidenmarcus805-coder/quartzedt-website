@@ -304,7 +304,7 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
     // Position
     groupRef.current.position.x = -0.05 + floatX;
     // Drop the whole monitor slightly at the end of the scroll (scrollEase=1)
-    groupRef.current.position.y = -5.2 + (3.35) * scrollEase - 0.2 * scrollEase + floatY;
+    groupRef.current.position.y = -5.2 + (3.35) * scrollEase - 0.3 * scrollEase + floatY;
     
     // Rotation
     groupRef.current.rotation.y = -Math.PI / 2 + floatRot + mouseRotY;
