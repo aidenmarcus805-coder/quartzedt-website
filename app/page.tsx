@@ -202,7 +202,7 @@ export default function Home() {
   useEffect(() => {
     let raf = 0;
     let ticking = false;
-    const SNAP_PX = 320; // tolerance so you can't "miss" the section by scrolling a bit too fast
+    const SNAP_PX = 250; // tolerance so you can't "miss" the section by scrolling a bit too fast
 
     const updateActive = () => {
       ticking = false;
@@ -210,8 +210,12 @@ export default function Home() {
       if (!el) return;
       const rect = el.getBoundingClientRect();
       const vh = window.innerHeight;
-      // Lock when the section is mostly filling the viewport (so the page scroll “stops” here).
-      workflowActiveRef.current = rect.top <= vh * 0.2 && rect.bottom >= vh * 0.8;
+      // Lock ONLY once the section is actually pinned (deterministic stop position).
+      // This prevents "sometimes it stops higher/lower" depending on scroll speed.
+      // Account for 35px snap offset
+      const EPS = 2;
+      const SNAP_OFFSET = 35;
+      workflowActiveRef.current = rect.top <= EPS + SNAP_OFFSET && rect.bottom >= vh - EPS;
     };
 
     const scheduleUpdate = () => {
@@ -244,8 +248,9 @@ export default function Home() {
       if (!el) return;
 
       const rect = el.getBoundingClientRect();
-      // Snap so the workflow becomes a “checkpoint” and can't be skipped by momentum.
-      window.scrollTo({ top: window.scrollY + rect.top, behavior: 'auto' });
+      // Snap so the workflow becomes a "checkpoint" and can't be skipped by momentum.
+      // Offset by 35px to position it slightly lower
+      window.scrollTo({ top: window.scrollY + rect.top + 35, behavior: 'auto' });
       workflowActiveRef.current = true;
       workflowWheelAccumRef.current = 0;
     };
@@ -255,20 +260,23 @@ export default function Home() {
       if (dy === 0) return;
 
       const dir = dy > 0 ? (1 as const) : (-1 as const);
+      const shouldCapture = !canExit(dir);
 
       // If you're entering the section (or just barely overshot it), snap + lock.
-      // This prevents “missing” the checkpoint when scrolling fast.
+      // This prevents “missing” the checkpoint when scrolling fast AND makes the stop position deterministic.
       if (!workflowActiveRef.current) {
         const el = firstWhiteRef.current;
         if (!el) return;
         const rect = el.getBoundingClientRect();
-        const vh = window.innerHeight;
 
-        const intersects = rect.bottom > 0 && rect.top < vh;
-        const nearTop = Math.abs(rect.top) <= SNAP_PX;
-        const justPassed = rect.bottom < 0 && Math.abs(rect.bottom) <= SNAP_PX;
+        // Only snap if this direction still has “work” to do. If you're already at an end tab,
+        // allow the page to scroll through without being pulled back.
+        //
+        // Snap zone: once the section is close enough to "take over", we always snap to its top.
+        // This avoids the inconsistent "stop point" you’re seeing.
+        const inSnapZone = rect.top <= SNAP_PX;
 
-        if (dir > 0 && (intersects || nearTop || justPassed)) {
+        if (shouldCapture && dir > 0 && inSnapZone) {
           e.preventDefault();
           snapToWorkflowTop();
           return;
@@ -313,17 +321,16 @@ export default function Home() {
           return;
       }
 
+      const shouldCapture = !canExit(dir);
+
       // Same checkpoint behavior for keyboard scroll.
       if (!workflowActiveRef.current) {
         const el = firstWhiteRef.current;
         if (!el) return;
         const rect = el.getBoundingClientRect();
-        const vh = window.innerHeight;
-        const intersects = rect.bottom > 0 && rect.top < vh;
-        const nearTop = Math.abs(rect.top) <= SNAP_PX;
-        const justPassed = rect.bottom < 0 && Math.abs(rect.bottom) <= SNAP_PX;
+        const inSnapZone = rect.top <= SNAP_PX;
 
-        if (dir > 0 && (intersects || nearTop || justPassed)) {
+        if (shouldCapture && dir > 0 && inSnapZone) {
           e.preventDefault();
           snapToWorkflowTop();
           return;
