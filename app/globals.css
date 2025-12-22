@@ -42,12 +42,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(248, 246, 243, 0.15);
+  background: rgba(238, 236, 232, 0.15);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(248, 246, 243, 0.25);
+  background: rgba(238, 236, 232, 0.25);
 }
 
 /* Smooth animations for all transitions */
@@ -95,8 +95,8 @@ body {
 .glass {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  background: rgba(248, 246, 243, 0.05);
-  border: 1px solid rgba(248, 246, 243, 0.1);
+  background: rgba(238, 236, 232, 0.05);
+  border: 1px solid rgba(238, 236, 232, 0.1);
 }
 
 /* Noise texture overlay */

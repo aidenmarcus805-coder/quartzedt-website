@@ -140,8 +140,8 @@ export default function PricingPage() {
               transition={{ duration: 0.8, delay: 0.3 + idx * 0.15 }}
               className={`relative p-10 md:p-12 rounded-2xl ${
                 plan.featured
-                  ? 'bg-white text-black'
-                  : 'bg-white/[0.03] border border-white/10'
+                  ? 'bg-paper text-black'
+                  : 'bg-paper/[0.03] border border-white/10'
               }`}
             >
               {plan.featured && (
@@ -193,7 +193,7 @@ export default function PricingPage() {
                 className={`mt-10 w-full py-4 text-[11px] tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${
                   plan.featured
                     ? 'bg-black text-white hover:bg-black/80'
-                    : 'border border-white/20 hover:bg-white hover:text-black'
+                    : 'border border-white/20 hover:bg-paper hover:text-black'
                 }`}
               >
                 START FREE TRIAL
@@ -225,7 +225,7 @@ export default function PricingPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="px-8 py-24 bg-white/[0.02]">
+      <section className="px-8 py-24 bg-paper/[0.02]">
         <div className="max-w-3xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -274,7 +274,7 @@ export default function PricingPage() {
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="mt-8 px-12 py-4 bg-white text-black text-[11px] tracking-[0.2em] hover:bg-white/90 transition-colors flex items-center gap-2 mx-auto"
+            className="mt-8 px-12 py-4 bg-paper text-black text-[11px] tracking-[0.2em] hover:bg-paper/90 transition-colors flex items-center gap-2 mx-auto"
           >
             GET STARTED
             <ArrowRight className="w-4 h-4" />
@@ -283,7 +283,7 @@ export default function PricingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-white/[0.02] py-16 border-t border-white/5">
+      <footer className="bg-paper/[0.02] py-16 border-t border-white/5">
         <div className="max-w-6xl mx-auto px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="text-center md:text-left">

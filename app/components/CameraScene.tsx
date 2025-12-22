@@ -43,12 +43,13 @@ function createRoundedRectGeometry(width: number, height: number, radius: number
 }
 
 // 3D Monitor Model component with attached video screen
-function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition, hasUserScrolledRef }: { 
+function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition, hasUserScrolledRef, lowPowerMode }: { 
   scrollProgress: number; 
   groupRef: React.RefObject<THREE.Group | null>;
   videoElement: HTMLVideoElement | null;
   mousePosition: { x: number; y: number };
   hasUserScrolledRef: React.MutableRefObject<boolean>;
+  lowPowerMode: boolean;
 }) {
   // Load MTL first, then OBJ with materials
   const materials = useLoader(MTLLoader, '/monitor1.mtl');
@@ -102,6 +103,10 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition, h
   
   // Screen geometry - sized to match monitor1.obj display dimensions (1% smaller)
   const screenGeometry = useMemo(() => createRoundedRectGeometry(1.68, 0.96, 0.01), []);
+  const lowPowerBasicMat = useMemo(
+    () => new THREE.MeshBasicMaterial({ color: '#111111' }),
+    []
+  );
 
   // Load textures for manual material application
   const textures = useMemo(() => {
@@ -255,6 +260,11 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition, h
               envMapIntensity: 0.8,
             });
           }
+
+          // Cache the "high quality" material so we can restore after low-power mode.
+          if (!child.userData.__hiMaterial) {
+            child.userData.__hiMaterial = child.material;
+          }
           
           child.castShadow = false; // Disable for performance
           child.receiveShadow = true;
@@ -263,6 +273,25 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition, h
       });
     }
   }, [obj, textures]);
+
+  // Low power mode: unlit, no textures/material complexity. Restores automatically when you scroll back up.
+  useEffect(() => {
+    if (!obj) return;
+
+    obj.traverse((child) => {
+      if (!(child instanceof THREE.Mesh)) return;
+
+      if (!child.userData.__hiMaterial) {
+        child.userData.__hiMaterial = child.material;
+      }
+
+      if (lowPowerMode) {
+        child.material = lowPowerBasicMat;
+      } else if (child.userData.__hiMaterial) {
+        child.material = child.userData.__hiMaterial as THREE.Material | THREE.Material[];
+      }
+    });
+  }, [obj, lowPowerMode, lowPowerBasicMat]);
 
   useFrame((state) => {
     // Create video texture when video is ready (only once)
@@ -284,6 +313,7 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition, h
     
     // Skip heavy calculations if not needed
     if (!groupRef.current) return;
+    if (lowPowerMode) return;
     
     const scrollEase = scrollProgress;
     const time = performance.now() * 0.001; // Use performance.now() - faster than Date.now()
@@ -490,25 +520,27 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition, h
 }
 
 // Scene
-function Scene({ scrollProgress, videoElement, mousePosition, hasUserScrolledRef }: { 
+function Scene({ scrollProgress, videoElement, mousePosition, hasUserScrolledRef, lowPowerMode }: { 
   scrollProgress: number; 
   videoElement: HTMLVideoElement | null;
   mousePosition: { x: number; y: number };
   hasUserScrolledRef: React.MutableRefObject<boolean>;
+  lowPowerMode: boolean;
 }) {
   const monitorGroupRef = useRef<THREE.Group>(null);
   
   return (
     <group position={[0, 0, 0]}>
       {/* Environment for reflections */}
-      <Environment preset="city" environmentIntensity={0.5} />
-      <Lighting />
+      {!lowPowerMode && <Environment preset="city" environmentIntensity={0.5} />}
+      {!lowPowerMode && <Lighting />}
       <MonitorModel 
         scrollProgress={scrollProgress} 
         groupRef={monitorGroupRef} 
         videoElement={videoElement}
         mousePosition={mousePosition}
         hasUserScrolledRef={hasUserScrolledRef}
+        lowPowerMode={lowPowerMode}
       />
     </group>
   );
@@ -633,7 +665,7 @@ function LoadingFallback() {
 }
 
 // Main component with scroll hijacking
-export default function CameraScene() {
+export default function CameraScene({ lowPowerMode = false }: { lowPowerMode?: boolean }) {
   const [animationProgress, setAnimationProgress] = useState(0);
   const [isAnimationComplete, setIsAnimationComplete] = useState(false);
   const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null);
@@ -643,6 +675,11 @@ export default function CameraScene() {
   const targetProgress = useRef(0);
   const isCompleteRef = useRef(false); // Ref for immediate checking
   const hasUserScrolledRef = useRef(false);
+  const lowPowerModeRef = useRef(lowPowerMode);
+
+  useEffect(() => {
+    lowPowerModeRef.current = lowPowerMode;
+  }, [lowPowerMode]);
 
   const handleVideoRef = useCallback((element: HTMLVideoElement | null) => {
     videoRef.current = element;
@@ -660,6 +697,7 @@ export default function CameraScene() {
   // Mouse tracking for parallax effect
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
+      if (lowPowerModeRef.current) return;
       // Normalize mouse position to -1 to 1 range
       const x = (e.clientX / window.innerWidth) * 2 - 1;
       const y = (e.clientY / window.innerHeight) * 2 - 1;
@@ -670,8 +708,9 @@ export default function CameraScene() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // Smooth animation loop with easing
+  // Smooth animation loop with easing (paused in low-power mode)
   useEffect(() => {
+    if (lowPowerMode) return;
     let animationFrame: number;
     
     const animate = () => {
@@ -702,7 +741,21 @@ export default function CameraScene() {
     
     animationFrame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animationFrame);
-  }, [mousePosition]);
+  }, [mousePosition, lowPowerMode]);
+
+  // Pause the hero video when you're far down the page (saves CPU decode).
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (!vid) return;
+
+    if (lowPowerMode) {
+      vid.pause();
+      return;
+    }
+
+    // Muted autoplay should be allowed; ignore any transient errors.
+    vid.play().catch(() => {});
+  }, [lowPowerMode, videoElement]);
 
   // Wheel, Touch, and Keyboard event handlers
   useEffect(() => {
@@ -919,13 +972,20 @@ export default function CameraScene() {
             stencil: false,
             depth: true,
           }}
-          dpr={[1, 2]}
-          shadows
-          performance={{ min: 0.5 }}
+          dpr={lowPowerMode ? 1 : [1, 2]}
+          frameloop={lowPowerMode ? 'demand' : 'always'}
+          shadows={!lowPowerMode}
+          performance={{ min: lowPowerMode ? 0.3 : 0.5 }}
           style={{ background: 'transparent' }}
         >
           <Suspense fallback={<LoadingFallback />}>
-            <Scene scrollProgress={animationProgress} videoElement={videoElement} mousePosition={smoothMousePosition} hasUserScrolledRef={hasUserScrolledRef} />
+            <Scene
+              scrollProgress={animationProgress}
+              videoElement={videoElement}
+              mousePosition={smoothMousePosition}
+              hasUserScrolledRef={hasUserScrolledRef}
+              lowPowerMode={lowPowerMode}
+            />
           </Suspense>
         </Canvas>
 
@@ -952,7 +1012,7 @@ export default function CameraScene() {
           <div 
             className="mt-12 pointer-events-auto"
           >
-            <button className="px-10 py-4 text-[10px] tracking-[0.4em] text-white border border-white/20 hover:bg-white hover:text-black transition-all duration-300 font-light">
+            <button className="px-10 py-4 text-[10px] tracking-[0.4em] text-white border border-white/20 hover:bg-paper hover:text-black transition-all duration-300 font-light">
               START FREE TRIAL
             </button>
           </div>
@@ -996,7 +1056,7 @@ export default function CameraScene() {
                 }}
               >
                 <div 
-                  className="h-[1px] bg-white/30"
+                  className="h-[1px] bg-paper/30"
                   style={{
                     width: `${(animationProgress > 0.85 ? Math.min((animationProgress - 0.85) * 5, 1) : 0) * 80}px`,
                   }}

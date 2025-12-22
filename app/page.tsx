@@ -2,12 +2,12 @@
 
 import { motion, useInView } from 'framer-motion';
 import { ArrowRight, Minus } from 'lucide-react';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 
 // Dynamic import for 3D scene (client-side only)
-const CameraScene = dynamic(() => import('./components/CameraScene'), { 
+const CameraScene = dynamic<{ lowPowerMode?: boolean }>(() => import('./components/CameraScene'), { 
   ssr: false,
   loading: () => (
     <div className="h-screen flex items-center justify-center bg-black">
@@ -40,6 +40,42 @@ const Reveal = ({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
+  const firstWhiteRef = useRef<HTMLElement | null>(null);
+  const [lowPowerMode, setLowPowerMode] = useState(false);
+
+  // Switch the 3D scene into low-power mode once the first white block starts entering view.
+  // This keeps the hero silky when you're up top, and saves GPU/CPU when you're scrolling content.
+  useEffect(() => {
+    let raf = 0;
+    let ticking = false;
+
+    const update = () => {
+      ticking = false;
+      const el = firstWhiteRef.current;
+      if (!el) return;
+
+      const rect = el.getBoundingClientRect();
+      // Only kick in once the hero is fully off-screen, and the first white block is entering view.
+      const next = window.scrollY >= window.innerHeight && rect.top <= window.innerHeight;
+      setLowPowerMode(next);
+    };
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      raf = window.requestAnimationFrame(update);
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', update);
+      if (raf) window.cancelAnimationFrame(raf);
+    };
+  }, []);
 
   const capabilities = [
     { num: '01', title: 'AUTOSYNC', desc: 'Multi-camera alignment with sub-frame accuracy' },
@@ -77,7 +113,7 @@ export default function Home() {
 
       {/* Hero Section - 3D Monitor with integrated overlay */}
       <section ref={heroRef}>
-        <CameraScene />
+        <CameraScene lowPowerMode={lowPowerMode} />
       </section>
 
       {/* Capabilities Section - Golden Ratio Grid */}
@@ -87,7 +123,7 @@ export default function Home() {
             <Reveal key={cap.title} delay={idx * 0.1}>
               <motion.div
                 className="group border-b border-white/5 py-16 md:py-20 cursor-pointer"
-                whileHover={{ backgroundColor: 'rgba(248,246,243,0.01)' }}
+                whileHover={{ backgroundColor: 'rgba(238,236,232,0.01)' }}
                 transition={{ duration: 0.4 }}
               >
                 {/* Grid: Number (8.3%) | Title (33.3%) | Description (58.3%) */}
@@ -121,7 +157,7 @@ export default function Home() {
       </section>
 
       {/* Stats Row - High Contrast Inversion */}
-      <section className="bg-white text-black border-y border-black/5">
+      <section ref={firstWhiteRef} className="bg-paper text-black border-y border-black/5">
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-32 md:py-48">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-20 md:gap-16 lg:gap-24">
             {[
@@ -205,7 +241,7 @@ export default function Home() {
       </section>
 
       {/* Pricing - Minimal Grid */}
-      <section className="bg-white text-black border-y border-black/5">
+      <section className="bg-paper text-black border-y border-black/5">
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-32 md:py-40">
           <Reveal>
             <div className="mb-20">
@@ -219,7 +255,7 @@ export default function Home() {
           <div className="grid md:grid-cols-2 gap-px bg-black/5">
             {/* Lite */}
             <Reveal delay={0.1}>
-              <div className="bg-white p-12 md:p-16 group hover:bg-black hover:text-white transition-all duration-500">
+              <div className="bg-paper p-12 md:p-16 group hover:bg-black hover:text-white transition-all duration-500">
                 <div className="space-y-12">
                   <div>
                     <p className="text-[10px] tracking-[0.4em] text-black/30 group-hover:text-white/30 mb-8">
@@ -237,7 +273,7 @@ export default function Home() {
                     Essential editing tools for getting started with AI-powered workflows.
                   </p>
                   
-                  <button className="w-full border border-black/10 group-hover:border-white/20 py-5 text-[10px] tracking-[0.4em] hover:bg-black hover:text-white group-hover:hover:bg-white group-hover:hover:text-black transition-all">
+                  <button className="w-full border border-black/10 group-hover:border-white/20 py-5 text-[10px] tracking-[0.4em] hover:bg-black hover:text-white group-hover:hover:bg-paper group-hover:hover:text-black transition-all">
                     BUY LITE
                   </button>
                 </div>
@@ -246,8 +282,8 @@ export default function Home() {
 
             {/* Max */}
             <Reveal delay={0.2}>
-              <div className="bg-black text-white p-12 md:p-16 relative group hover:bg-white hover:text-black transition-all duration-500">
-                <div className="absolute top-8 right-8 w-2 h-2 bg-white group-hover:bg-black rounded-full" />
+              <div className="bg-black text-white p-12 md:p-16 relative group hover:bg-paper hover:text-black transition-all duration-500">
+                <div className="absolute top-8 right-8 w-2 h-2 bg-paper group-hover:bg-black rounded-full" />
                 
                 <div className="space-y-12">
                   <div>
@@ -266,7 +302,7 @@ export default function Home() {
                     Full professional suite with all features and priority support.
                   </p>
                   
-                  <button className="w-full border border-white/20 group-hover:border-black/10 py-5 text-[10px] tracking-[0.4em] hover:bg-white hover:text-black group-hover:hover:bg-black group-hover:hover:text-white transition-all">
+                  <button className="w-full border border-white/20 group-hover:border-black/10 py-5 text-[10px] tracking-[0.4em] hover:bg-paper hover:text-black group-hover:hover:bg-black group-hover:hover:text-white transition-all">
                     BUY MAX
                   </button>
                 </div>
@@ -302,7 +338,7 @@ export default function Home() {
             
             <Reveal delay={0.2}>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                <button className="px-12 py-5 bg-white text-black text-[10px] tracking-[0.4em] hover:bg-white/90 transition-colors font-light">
+                <button className="px-12 py-5 bg-paper text-black text-[10px] tracking-[0.4em] hover:bg-paper/90 transition-colors font-light">
                   START FREE TRIAL
                 </button>
                 <button className="px-12 py-5 border border-white/10 text-[10px] tracking-[0.4em] text-white/60 hover:text-white hover:border-white/30 transition-colors font-light">

@@ -170,7 +170,7 @@ export default function About() {
       </section>
 
       {/* ② The Problem We Saw */}
-      <section className="bg-white text-black">
+      <section className="bg-paper text-black">
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-32 md:py-48">
           <Reveal>
             <div className="mb-20">
@@ -186,7 +186,7 @@ export default function About() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-px bg-black/5">
             {problems.map((problem, idx) => (
               <Reveal key={problem.title} delay={idx * 0.1}>
-                <div className="bg-white p-8 md:p-10 h-full group hover:bg-black hover:text-white transition-all duration-500">
+                <div className="bg-paper p-8 md:p-10 h-full group hover:bg-black hover:text-white transition-all duration-500">
                   <span className="text-[32px] text-black/10 group-hover:text-white/10 transition-colors">
                     {problem.icon}
                   </span>
@@ -261,7 +261,7 @@ export default function About() {
             </div>
           </Reveal>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-paper/5">
             {videographerStories.map((story, idx) => (
               <Reveal key={story.name} delay={idx * 0.15}>
                 <div className="bg-[#0a0a0a] p-10 md:p-14 group hover:bg-black transition-all duration-500">
@@ -297,7 +297,7 @@ export default function About() {
       </section>
 
       {/* ⑤ Our Mission Today */}
-      <section className="bg-white text-black">
+      <section className="bg-paper text-black">
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-40 md:py-56">
           <div className="max-w-4xl mx-auto text-center">
             <Reveal>
@@ -412,7 +412,7 @@ export default function About() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-white text-black">
+      <section className="bg-paper text-black">
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-40 md:py-56">
           <div className="max-w-4xl mx-auto text-center space-y-12">
             <Reveal>
