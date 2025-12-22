@@ -173,12 +173,163 @@ const ReelOverlay = ({ type }: { type: ReelOverlayType }) => {
   );
 };
 
+const WORKFLOW_STEPS = [
+  { label: 'Import', desc: 'Bring footage in. Auto-organize.', start: 0.0, end: 5.5 },
+  { label: 'Analyze', desc: 'Find beats, scenes, emotion.', start: 5.5, end: 11.0 },
+  { label: 'Timeline', desc: 'Assemble the rough cut.', start: 11.0, end: 16.5 },
+  { label: 'Export', desc: 'Premiere / Resolve ready.', start: 16.5, end: 22.0 },
+] as const;
+
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
   const firstWhiteRef = useRef<HTMLElement | null>(null);
+  const philosophyRef = useRef<HTMLElement | null>(null);
   const [lowPowerMode, setLowPowerMode] = useState(false);
   const [openCapabilityIdx, setOpenCapabilityIdx] = useState<number | null>(null);
+  const [workflowIdx, setWorkflowIdx] = useState(0);
+  const workflowIdxRef = useRef(0);
+  const workflowActiveRef = useRef(false);
+  const workflowLastStepAtRef = useRef(0);
+  const workflowWheelAccumRef = useRef(0);
+  const workflowTouchStartYRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    workflowIdxRef.current = workflowIdx;
+  }, [workflowIdx]);
+
+  // Scroll should not move the page here — it should ONLY advance the workflow left → right.
+  useEffect(() => {
+    let raf = 0;
+    let ticking = false;
+
+    const updateActive = () => {
+      ticking = false;
+      const el = firstWhiteRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const vh = window.innerHeight;
+      // Lock when the section is mostly filling the viewport (so the page scroll “stops” here).
+      workflowActiveRef.current = rect.top <= vh * 0.2 && rect.bottom >= vh * 0.8;
+    };
+
+    const scheduleUpdate = () => {
+      if (ticking) return;
+      ticking = true;
+      raf = window.requestAnimationFrame(updateActive);
+    };
+
+    const canExit = (dir: 1 | -1) => {
+      const idx = workflowIdxRef.current;
+      if (dir > 0 && idx >= WORKFLOW_STEPS.length - 1) return true;
+      if (dir < 0 && idx <= 0) return true;
+      return false;
+    };
+
+    const step = (dir: 1 | -1) => {
+      const now = performance.now();
+      const cooldownMs = 260;
+      if (now - workflowLastStepAtRef.current < cooldownMs) return;
+      workflowLastStepAtRef.current = now;
+
+      setWorkflowIdx((prev) => {
+        const next = Math.max(0, Math.min(WORKFLOW_STEPS.length - 1, prev + dir));
+        return next;
+      });
+    };
+
+    const onWheel = (e: WheelEvent) => {
+      if (!workflowActiveRef.current) return;
+      const dy = e.deltaY;
+      if (dy === 0) return;
+
+      const dir = dy > 0 ? (1 as const) : (-1 as const);
+      if (canExit(dir)) return; // Let the page scroll out at the ends.
+
+      // Always prevent page scroll while active.
+      e.preventDefault();
+
+      // Accumulate deltas so trackpads don’t feel “twitchy”.
+      const acc = workflowWheelAccumRef.current;
+      if (acc !== 0 && Math.sign(acc) !== Math.sign(dy)) {
+        workflowWheelAccumRef.current = 0;
+      }
+      workflowWheelAccumRef.current += dy;
+
+      // ~2x scroll required to advance (per request)
+      const threshold = 160;
+      if (Math.abs(workflowWheelAccumRef.current) < threshold) return;
+
+      workflowWheelAccumRef.current = 0;
+      step(dir);
+    };
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!workflowActiveRef.current) return;
+      let dir: 1 | -1 | 0 = 0;
+
+      switch (e.key) {
+        case 'ArrowDown':
+        case 'PageDown':
+        case ' ':
+          dir = 1;
+          break;
+        case 'ArrowUp':
+        case 'PageUp':
+          dir = -1;
+          break;
+        default:
+          return;
+      }
+
+      if (canExit(dir)) return;
+      e.preventDefault();
+      step(dir);
+    };
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (!workflowActiveRef.current) return;
+      workflowTouchStartYRef.current = e.touches[0]?.clientY ?? null;
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!workflowActiveRef.current) return;
+      const startY = workflowTouchStartYRef.current;
+      const y = e.touches[0]?.clientY;
+      if (startY == null || y == null) return;
+
+      const dy = startY - y;
+      if (Math.abs(dy) < 28) return; // ignore micro movement (2x)
+
+      const dir = dy > 0 ? (1 as const) : (-1 as const);
+      if (canExit(dir)) return;
+
+      e.preventDefault();
+      workflowTouchStartYRef.current = y;
+      step(dir);
+    };
+
+    window.addEventListener('scroll', scheduleUpdate, { passive: true });
+    window.addEventListener('resize', scheduleUpdate);
+    window.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('keydown', onKeyDown, { passive: false });
+    window.addEventListener('touchstart', onTouchStart, { passive: false });
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
+
+    updateActive();
+
+    return () => {
+      window.removeEventListener('scroll', scheduleUpdate);
+      window.removeEventListener('resize', scheduleUpdate);
+      window.removeEventListener('wheel', onWheel);
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
+      if (raf) window.cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  // (Removed useScroll parallax here — it causes noisy dev warnings and isn’t core to the blueprint.)
 
   // Switch the 3D scene into low-power mode once the first white block starts entering view.
   // This keeps the hero silky when you're up top, and saves GPU/CPU when you're scrolling content.
@@ -404,8 +555,8 @@ export default function Home() {
                               <div className="col-span-12 md:col-span-8">
                                 <p className="text-[14px] md:text-[15px] leading-[1.9] text-white/50 font-light max-w-2xl">
                                   {cap.caption}
-                                </p>
-                              </div>
+          </p>
+        </div>
                             </div>
                           </div>
                         </div>
@@ -419,61 +570,148 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Stats Row - High Contrast Inversion */}
+      {/* Workflow */}
       <section ref={firstWhiteRef} className="bg-paper text-black border-y border-black/5">
-        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-24 md:py-32">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-12 items-start">
-            {/* Editorial lead-in (makes the paper block earn its existence) */}
-            <div className="lg:col-span-4 space-y-10">
-              <Reveal>
-                <div className="space-y-8">
-                  <h2 className="text-[clamp(44px,5vw,72px)] font-extralight leading-[0.95] tracking-[-0.05em]">
-                    Weeks.
-                    <br />
-                    <span className="text-black/20">to</span> Hours.
-                  </h2>
-                  <p className="text-[15px] md:text-[16px] leading-[1.9] text-black/55 font-light max-w-sm">
-                    Vellum reads the emotional arc, selects the strongest moments, and hands you a timeline you can finish.
-                  </p>
+        <div className="relative h-[220vh] overflow-hidden">
+          {/* Dotted background (keep) */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: 'radial-gradient(rgba(0,0,0,0.12) 1px, transparent 1px)',
+                backgroundSize: '26px 26px',
+                backgroundPosition: 'center',
+                WebkitMaskImage:
+                  'radial-gradient(circle at 50% 40%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0) 78%)',
+                maskImage:
+                  'radial-gradient(circle at 50% 40%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0) 78%)',
+              }}
+            />
+          </div>
+
+          <div className="sticky top-0 h-screen">
+            <div className="relative max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 h-full pt-24 md:pt-28 pb-16 md:pb-20 flex flex-col">
+              {/* Title must be above everything (per blueprint) */}
+              <div className="flex-none">
+                <h2 className="text-[clamp(64px,6.5vw,110px)] font-light tracking-[-0.06em] leading-[0.92]">
+                  The Workflow
+                </h2>
+                <div className="mt-6 h-px w-40 bg-black/15" />
+              </div>
+
+              {/* Videos */}
+              <div className="flex-1 mt-12 md:mt-14">
+                {/* One “video row”: active expands (main), others stay as shutters on the right.
+                    Advancing tabs expands the next shutter into the main video (per blueprint). */}
+                <div className="relative overflow-hidden border border-black/15 bg-black/[0.02]">
+                  <div className="relative aspect-video">
+                    <motion.div
+                      className="absolute inset-0 flex gap-3 p-3 md:p-4"
+                      style={{
+                        perspective: 1200,
+                        transformStyle: 'preserve-3d',
+                      }}
+                      layout
+                    >
+                      {WORKFLOW_STEPS.map((step, idx) => {
+                        const isActive = idx === workflowIdx;
+                        const rel = (idx - workflowIdx + WORKFLOW_STEPS.length) % WORKFLOW_STEPS.length; // 0..3 (active = 0)
+                        const shutterRot = -18 - rel * 2.2;
+                        const shutterZ = -50 - rel * 14;
+
+                        return (
+                          <motion.button
+                            key={step.label}
+                            layout
+                            type="button"
+                            onClick={() => {
+                              setWorkflowIdx(idx);
+                            }}
+                            className={`relative h-full overflow-hidden border border-black/10 bg-black/[0.02] focus:outline-none ${
+                              isActive ? 'flex-1 min-w-0' : 'w-[44px] md:w-[52px] shrink-0'
+                            }`}
+                            style={{
+                              order: rel,
+                              transformStyle: 'preserve-3d',
+                              transformOrigin: rel === 0 ? 'left center' : 'center center',
+                            }}
+                            animate={{
+                              rotateY: isActive ? 0 : shutterRot,
+                              z: isActive ? 0 : shutterZ,
+                              scale: isActive ? 1 : 0.985,
+                              opacity: isActive ? 1 : 0.88,
+                            }}
+                            transition={{ type: 'spring', stiffness: 260, damping: 30 }}
+                            aria-label={`Select ${step.label}`}
+                          >
+                            <SegmentVideo
+                              src="/videoplayback1.mp4"
+                              start={step.start}
+                              end={step.end}
+                              className="absolute inset-0 w-full h-full object-cover grayscale contrast-125 brightness-95"
+                            />
+
+                            {/* Depth / lighting */}
+                            <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/0 to-black/14" />
+                            <div
+                              aria-hidden="true"
+                              className="absolute inset-0"
+                              style={{
+                                background: isActive
+                                  ? 'linear-gradient(115deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.00) 28%, rgba(0,0,0,0.12) 100%)'
+                                  : 'linear-gradient(115deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.00) 38%, rgba(0,0,0,0.14) 100%)',
+                              }}
+                            />
+                            <div
+                              aria-hidden="true"
+                              className="absolute inset-0"
+                              style={{
+                                boxShadow: isActive
+                                  ? 'inset 0 0 0 1px rgba(0,0,0,0.18), 0 70px 160px rgba(0,0,0,0.12)'
+                                  : 'inset 0 0 0 1px rgba(0,0,0,0.10), 0 30px 90px rgba(0,0,0,0.08)',
+                              }}
+                            />
+                          </motion.button>
+                        );
+                      })}
+                    </motion.div>
+                  </div>
                 </div>
-              </Reveal>
-            </div>
+              </div>
 
-            {/* Metrics (tight, structured, not floating in empty space) */}
-            <div className="lg:col-span-8 lg:col-start-5">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-10 lg:gap-14">
-                <Reveal delay={0.05}>
-                  <div className="pt-6 border-t border-black/10">
-                    <div className="text-[80px] md:text-[96px] font-extralight tracking-[-0.05em] leading-[0.85]">
-                      47
-                    </div>
-                    <div className="mt-8 text-[10px] tracking-[0.5em] text-black/35 font-light">
-                      EMOTION MARKERS
+              {/* Bottom strip: labels only (scroll selects left → right) */}
+              <div className="flex-none mt-12 md:mt-14">
+                <div className="grid grid-cols-12 gap-10">
+                  <div className="col-span-12 lg:col-span-10">
+                    <div className="relative border border-black/10 bg-paper overflow-hidden">
+                      <motion.div
+                        aria-hidden="true"
+                        className="absolute inset-y-0 left-0 w-1/4 bg-black/[0.05]"
+                        animate={{ x: `${workflowIdx * 100}%` }}
+                        transition={{ type: 'spring', stiffness: 260, damping: 30 }}
+                      />
+                      <div className="relative grid grid-cols-4">
+                        {WORKFLOW_STEPS.map((step, idx) => (
+                          <button
+                            key={step.label}
+                            type="button"
+                            onClick={() => {
+                              setWorkflowIdx(idx);
+                            }}
+                            className="px-6 py-5 border-r last:border-r-0 border-black/10 text-left"
+                          >
+                            <div className={`text-[12px] tracking-[0.35em] font-light ${idx === workflowIdx ? 'text-black/70' : 'text-black/45'}`}>
+                              {step.label.toUpperCase()}
+                            </div>
+                            <div className={`mt-2 text-[12px] leading-[1.6] font-light ${idx === workflowIdx ? 'text-black/45' : 'text-black/30'}`}>
+                              {step.desc}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </Reveal>
-
-                <Reveal delay={0.15}>
-                  <div className="pt-6 border-t border-black/10">
-                    <div className="text-[80px] md:text-[96px] font-extralight tracking-[-0.05em] leading-[0.85]">
-                      &lt;10
-                    </div>
-                    <div className="mt-8 text-[10px] tracking-[0.5em] text-black/35 font-light">
-                      HOUR TURNAROUND
-                    </div>
-                  </div>
-                </Reveal>
-
-                <Reveal delay={0.25}>
-                  <div className="pt-6 border-t border-black/10">
-                    <div className="text-[80px] md:text-[96px] font-extralight tracking-[-0.05em] leading-[0.85]">
-                      99<span className="text-black/10">%</span>
-                    </div>
-                    <div className="mt-8 text-[10px] tracking-[0.5em] text-black/35 font-light">
-                      SATISFACTION RATE
-                    </div>
-                  </div>
-                </Reveal>
+                </div>
               </div>
             </div>
           </div>
@@ -481,14 +719,14 @@ export default function Home() {
       </section>
 
       {/* Philosophy Section - Golden Ratio: 38.2% / 61.8% */}
-      <section className="border-t border-white/5">
+      <section ref={philosophyRef} className="relative border-t border-white/5">
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-32 md:py-48">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-12 items-center">
             {/* Left: Image (5 cols = 41.6%, close to golden) */}
             <div className="lg:col-span-5">
               <Reveal>
                 <div className="relative aspect-[3/4] overflow-hidden">
-                  <div 
+                  <motion.div
                     className="absolute inset-0 bg-cover bg-center grayscale"
                     style={{
                       backgroundImage: 'url(https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2071&auto=format&fit=crop)',
