@@ -114,20 +114,6 @@ const ReelOverlay = ({ type }: { type: ReelOverlayType }) => {
     <div className="absolute inset-0 pointer-events-none">
       {/* Track area near the bottom for timelines / meters */}
       <div className="absolute left-6 right-6 bottom-8 h-[84px] md:h-[96px]">
-        {/* Playhead */}
-        <motion.div
-          className="absolute top-0 bottom-0 w-px bg-white/20"
-          initial={{ left: '0%' }}
-          animate={{ left: ['0%', '100%'] }}
-          transition={{ duration: 3.6, ease: 'linear', repeat: Infinity }}
-        />
-        <motion.div
-          className="absolute top-0 bottom-0 w-[2px] bg-white/10 blur-[2px]"
-          initial={{ left: '0%' }}
-          animate={{ left: ['0%', '100%'] }}
-          transition={{ duration: 3.6, ease: 'linear', repeat: Infinity }}
-        />
-
         {type === 'sync' && (
           <div className="absolute inset-0 flex flex-col justify-between py-3">
             {[0, 1, 2].map((i) => (
@@ -180,7 +166,6 @@ const ReelOverlay = ({ type }: { type: ReelOverlayType }) => {
                 transition={{ duration: 2.2, repeat: Infinity, ease: [0.16, 1, 0.3, 1], delay: i * 0.03 }}
               />
             ))}
-            <span className="absolute left-0 right-0 h-px bg-white/6" />
           </div>
         )}
       </div>
@@ -365,9 +350,10 @@ export default function Home() {
                     >
                       <div className="pt-10 md:pt-12 pb-2">
                         <div className="grid grid-cols-12 gap-8 items-start">
-                          <div className="col-span-12 md:col-span-11 md:col-start-2">
+                          {/* 16:9 demo frame */}
+                          <div className="col-span-12 md:col-span-10 md:col-start-2">
                             <div className="relative overflow-hidden border border-white/10 bg-black/35">
-                              <div className="relative h-[170px] md:h-[220px]">
+                              <div className="relative aspect-video">
                                 {/* Grade + crop so it reads as a designed reel */}
                                 <SegmentVideo
                                   src={cap.demo.src}
@@ -381,14 +367,14 @@ export default function Home() {
                                   className="absolute inset-0"
                                   style={{
                                     background:
-                                      'radial-gradient(ellipse 80% 70% at 50% 50%, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.72) 100%)',
+                                      'radial-gradient(ellipse 80% 70% at 50% 50%, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.68) 100%)',
                                   }}
                                 />
                                 <div
                                   className="absolute inset-0"
                                   style={{
                                     background:
-                                      'linear-gradient(to top, rgba(0,0,0,0.70) 0%, rgba(0,0,0,0.15) 55%, rgba(0,0,0,0.45) 100%)',
+                                      'linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.12) 55%, rgba(0,0,0,0.40) 100%)',
                                   }}
                                 />
 
@@ -400,22 +386,26 @@ export default function Home() {
                                   <span className="h-[1px] w-12 bg-white/10" />
                                   <span className="text-[10px] tracking-[0.4em] text-white/25 font-light">{cap.title}</span>
                                 </div>
+                              </div>
+                            </div>
+                          </div>
 
-                                {/* Bottom bar: metric + single caption (no overlap on small screens) */}
-                                <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between gap-6">
-                                  <div className="shrink-0">
-                                    <div className="text-[42px] md:text-[54px] font-extralight tracking-[-0.05em] leading-[0.85] text-white/85">
-                                      {cap.metric.value}
-                                    </div>
-                                    <div className="mt-2 text-[10px] tracking-[0.5em] text-white/30 font-light">
-                                      {cap.metric.label}
-                                    </div>
-                                  </div>
-                                  <p className="flex-1 max-w-none md:max-w-[340px] text-left md:text-right text-[13px] md:text-[14px] leading-[1.7] text-white/45 font-light">
-                                    {cap.caption}
-                                  </p>
+                          {/* Minimal legend below the footage (keeps the frame readable) */}
+                          <div className="col-span-12 md:col-span-10 md:col-start-2 pt-8">
+                            <div className="grid grid-cols-12 gap-8 items-end">
+                              <div className="col-span-12 md:col-span-4">
+                                <div className="text-[52px] md:text-[72px] font-extralight tracking-[-0.06em] leading-[0.85] text-white/90">
+                                  {cap.metric.value}
                                 </div>
-        </div>
+                                <div className="mt-3 text-[10px] tracking-[0.55em] text-white/25 font-light">
+                                  {cap.metric.label}
+                                </div>
+                              </div>
+                              <div className="col-span-12 md:col-span-8">
+                                <p className="text-[14px] md:text-[15px] leading-[1.9] text-white/50 font-light max-w-2xl">
+                                  {cap.caption}
+                                </p>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -431,25 +421,100 @@ export default function Home() {
 
       {/* Stats Row - High Contrast Inversion */}
       <section ref={firstWhiteRef} className="bg-paper text-black border-y border-black/5">
-        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-32 md:py-48">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-20 md:gap-16 lg:gap-24">
-            {[
-              { value: '47', label: 'EMOTION MARKERS', suffix: '' },
-              { value: '<10', label: 'HOUR TURNAROUND', suffix: '' },
-              { value: '99', label: 'SATISFACTION RATE', suffix: '%' },
-            ].map((stat, idx) => (
-              <Reveal key={stat.label} delay={idx * 0.15}>
-                <div className="relative space-y-8">
-                  <div className="text-[80px] md:text-[104px] font-extralight tracking-[-0.05em] leading-[0.85]">
-                    {stat.value}
-                    <span className="text-black/10">{stat.suffix}</span>
-                  </div>
-                  <div className="text-[10px] tracking-[0.5em] text-black/25 font-light">
-                    {stat.label}
-                  </div>
+        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-24 md:py-32">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-12 items-start">
+            {/* Editorial lead-in (makes the paper block earn its existence) */}
+            <div className="lg:col-span-4 space-y-10">
+              <Reveal>
+                <div className="space-y-8">
+                  <p className="text-[10px] tracking-[0.5em] text-black/40 font-light">
+                    IMPACT
+                  </p>
+                  <h2 className="text-[clamp(44px,5vw,72px)] font-extralight leading-[0.95] tracking-[-0.05em]">
+                    Weeks.
+                    <br />
+                    <span className="text-black/20">to</span> Hours.
+                  </h2>
+                  <p className="text-[15px] md:text-[16px] leading-[1.9] text-black/55 font-light max-w-sm">
+                    Vellum reads the emotional arc, selects the strongest moments, and hands you a timeline you can finish.
+                  </p>
                 </div>
               </Reveal>
-            ))}
+
+              <Reveal delay={0.1}>
+                <div className="flex items-center gap-6">
+                  <span className="h-[1px] w-16 bg-black/15" />
+                  <Link
+                    href="/pricing"
+                    className="text-[10px] tracking-[0.4em] text-black/40 hover:text-black transition-colors font-light"
+                  >
+                    SEE PRICING
+                  </Link>
+                </div>
+              </Reveal>
+            </div>
+
+            {/* Metrics (tight, structured, not floating in empty space) */}
+            <div className="lg:col-span-8 lg:col-start-5">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-10 lg:gap-14">
+                <Reveal delay={0.05}>
+                  <div className="pt-6 border-t border-black/10">
+                    <div className="text-[80px] md:text-[96px] font-extralight tracking-[-0.05em] leading-[0.85]">
+                      47
+                    </div>
+                    <div className="mt-8 text-[10px] tracking-[0.5em] text-black/35 font-light">
+                      EMOTION MARKERS
+                    </div>
+                    <p className="mt-5 text-[13px] leading-[1.8] text-black/50 font-light">
+                      Tears, laughter, vows, reactions—signals that shape pacing.
+                    </p>
+                  </div>
+                </Reveal>
+
+                <Reveal delay={0.15}>
+                  <div className="pt-6 border-t border-black/10">
+                    <div className="text-[80px] md:text-[96px] font-extralight tracking-[-0.05em] leading-[0.85]">
+                      &lt;10
+                    </div>
+                    <div className="mt-8 text-[10px] tracking-[0.5em] text-black/35 font-light">
+                      HOUR TURNAROUND
+                    </div>
+                    <p className="mt-5 text-[13px] leading-[1.8] text-black/50 font-light">
+                      From ingest to a structured rough-cut—ready for your taste.
+                    </p>
+                  </div>
+                </Reveal>
+
+                <Reveal delay={0.25}>
+                  <div className="pt-6 border-t border-black/10">
+                    <div className="text-[80px] md:text-[96px] font-extralight tracking-[-0.05em] leading-[0.85]">
+                      99<span className="text-black/10">%</span>
+                    </div>
+                    <div className="mt-8 text-[10px] tracking-[0.5em] text-black/35 font-light">
+                      SATISFACTION RATE
+                    </div>
+                    <p className="mt-5 text-[13px] leading-[1.8] text-black/50 font-light">
+                      Cleaner structure, faster delivery, and fewer revision loops.
+          </p>
+        </div>
+                </Reveal>
+              </div>
+
+              <Reveal delay={0.35}>
+                <div className="mt-14 pt-8 border-t border-black/10 flex flex-col md:flex-row gap-6 md:items-center md:justify-between">
+                  <p className="text-[10px] tracking-[0.5em] text-black/30 font-light">
+                    EXPORT-READY FOR PREMIERE / RESOLVE
+                  </p>
+                  <Link
+                    href="/about"
+                    className="inline-flex items-center gap-4 text-[10px] tracking-[0.4em] text-black/35 hover:text-black transition-colors font-light group"
+                  >
+                    <span className="h-[1px] w-10 bg-black/15 group-hover:bg-black/35 transition-colors" />
+                    READ THE STORY
+                  </Link>
+                </div>
+              </Reveal>
+            </div>
           </div>
         </div>
       </section>
