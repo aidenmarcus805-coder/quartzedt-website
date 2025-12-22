@@ -427,9 +427,6 @@ export default function Home() {
             <div className="lg:col-span-4 space-y-10">
               <Reveal>
                 <div className="space-y-8">
-                  <p className="text-[10px] tracking-[0.5em] text-black/40 font-light">
-                    IMPACT
-                  </p>
                   <h2 className="text-[clamp(44px,5vw,72px)] font-extralight leading-[0.95] tracking-[-0.05em]">
                     Weeks.
                     <br />
@@ -438,18 +435,6 @@ export default function Home() {
                   <p className="text-[15px] md:text-[16px] leading-[1.9] text-black/55 font-light max-w-sm">
                     Vellum reads the emotional arc, selects the strongest moments, and hands you a timeline you can finish.
                   </p>
-                </div>
-              </Reveal>
-
-              <Reveal delay={0.1}>
-                <div className="flex items-center gap-6">
-                  <span className="h-[1px] w-16 bg-black/15" />
-                  <Link
-                    href="/pricing"
-                    className="text-[10px] tracking-[0.4em] text-black/40 hover:text-black transition-colors font-light"
-                  >
-                    SEE PRICING
-                  </Link>
                 </div>
               </Reveal>
             </div>
@@ -465,9 +450,6 @@ export default function Home() {
                     <div className="mt-8 text-[10px] tracking-[0.5em] text-black/35 font-light">
                       EMOTION MARKERS
                     </div>
-                    <p className="mt-5 text-[13px] leading-[1.8] text-black/50 font-light">
-                      Tears, laughter, vows, reactions—signals that shape pacing.
-                    </p>
                   </div>
                 </Reveal>
 
@@ -479,9 +461,6 @@ export default function Home() {
                     <div className="mt-8 text-[10px] tracking-[0.5em] text-black/35 font-light">
                       HOUR TURNAROUND
                     </div>
-                    <p className="mt-5 text-[13px] leading-[1.8] text-black/50 font-light">
-                      From ingest to a structured rough-cut—ready for your taste.
-                    </p>
                   </div>
                 </Reveal>
 
@@ -493,27 +472,9 @@ export default function Home() {
                     <div className="mt-8 text-[10px] tracking-[0.5em] text-black/35 font-light">
                       SATISFACTION RATE
                     </div>
-                    <p className="mt-5 text-[13px] leading-[1.8] text-black/50 font-light">
-                      Cleaner structure, faster delivery, and fewer revision loops.
-          </p>
-        </div>
+                  </div>
                 </Reveal>
               </div>
-
-              <Reveal delay={0.35}>
-                <div className="mt-14 pt-8 border-t border-black/10 flex flex-col md:flex-row gap-6 md:items-center md:justify-between">
-                  <p className="text-[10px] tracking-[0.5em] text-black/30 font-light">
-                    EXPORT-READY FOR PREMIERE / RESOLVE
-                  </p>
-                  <Link
-                    href="/about"
-                    className="inline-flex items-center gap-4 text-[10px] tracking-[0.4em] text-black/35 hover:text-black transition-colors font-light group"
-                  >
-                    <span className="h-[1px] w-10 bg-black/15 group-hover:bg-black/35 transition-colors" />
-                    READ THE STORY
-                  </Link>
-                </div>
-              </Reveal>
             </div>
           </div>
         </div>
@@ -544,9 +505,6 @@ export default function Home() {
             <div className="lg:col-span-7 space-y-12">
               <Reveal>
                 <div className="space-y-8">
-                  <p className="text-[10px] tracking-[0.5em] text-white/30 font-light">
-                    PHILOSOPHY
-                  </p>
                   <h2 className="text-[36px] md:text-[56px] font-extralight leading-[1.1] tracking-[-0.03em] max-w-2xl">
                     Technology that respects 
                     <span className="text-white/30"> the artist.</span>

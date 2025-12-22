@@ -998,9 +998,6 @@ export default function CameraScene({ lowPowerMode = false }: { lowPowerMode?: b
             transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
           }}
         >
-          <span className="text-[10px] tracking-[0.5em] mb-8 text-white/30 font-light">
-            AI VIDEO EDITOR
-          </span>
           <h1 className="text-[clamp(64px,16vw,200px)] font-extralight leading-[0.85] tracking-[-0.05em] text-white">
             VELLUM
           </h1>

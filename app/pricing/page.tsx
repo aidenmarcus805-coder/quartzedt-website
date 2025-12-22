@@ -233,7 +233,6 @@ export default function PricingPage() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <p className="text-[10px] tracking-[0.4em] text-white/40">FAQ</p>
             <h2 className="mt-4 text-[36px] font-light tracking-tight">
               Common Questions
             </h2>

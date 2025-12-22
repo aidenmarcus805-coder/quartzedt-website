@@ -108,9 +108,6 @@ export default function About() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
           >
-            <p className="text-[10px] tracking-[0.5em] text-white/30 font-light mb-8">
-              OUR STORY
-            </p>
             <h1 className="text-[clamp(48px,8vw,120px)] font-extralight leading-[0.95] tracking-[-0.04em] max-w-5xl">
               Built by filmmakers.
               <br />
