@@ -91,9 +91,100 @@ const SegmentVideo = ({ src, start, end, className }: { src: string; start: numb
       src={src}
       muted
       playsInline
+      controls={false}
+      disablePictureInPicture
+      disableRemotePlayback
+      controlsList="nodownload noplaybackrate noremoteplayback"
       preload="metadata"
-      className={className}
+      tabIndex={-1}
+      aria-hidden="true"
+      className={`${className ?? ''} pointer-events-none select-none`}
     />
+  );
+};
+
+type ReelOverlayType = 'sync' | 'select' | 'flow' | 'audio';
+
+// Subtle UI overlays so the clip feels like "proof" of the feature, not random stock footage.
+const ReelOverlay = ({ type }: { type: ReelOverlayType }) => {
+  const waveformHeights = [8, 16, 10, 22, 14, 28, 18, 34, 20, 30, 16, 26, 12, 20, 10, 18, 8, 14];
+  const selectHeights = [6, 10, 8, 14, 7, 18, 9, 22, 8, 16, 7, 20, 10, 14, 8, 12, 6, 10];
+
+  return (
+    <div className="absolute inset-0 pointer-events-none">
+      {/* Track area near the bottom for timelines / meters */}
+      <div className="absolute left-6 right-6 bottom-8 h-[84px] md:h-[96px]">
+        {/* Playhead */}
+        <motion.div
+          className="absolute top-0 bottom-0 w-px bg-white/20"
+          initial={{ left: '0%' }}
+          animate={{ left: ['0%', '100%'] }}
+          transition={{ duration: 3.6, ease: 'linear', repeat: Infinity }}
+        />
+        <motion.div
+          className="absolute top-0 bottom-0 w-[2px] bg-white/10 blur-[2px]"
+          initial={{ left: '0%' }}
+          animate={{ left: ['0%', '100%'] }}
+          transition={{ duration: 3.6, ease: 'linear', repeat: Infinity }}
+        />
+
+        {type === 'sync' && (
+          <div className="absolute inset-0 flex flex-col justify-between py-3">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="relative h-px bg-white/10">
+                {/* Shared markers (alignment) */}
+                <span className="absolute -top-[2px] left-[18%] h-[5px] w-px bg-white/18" />
+                <span className="absolute -top-[2px] left-[52%] h-[5px] w-px bg-white/20" />
+                <span className="absolute -top-[2px] left-[78%] h-[5px] w-px bg-white/14" />
+                {/* A faint “waveform” hint on the middle track */}
+                {i === 1 && (
+                  <span className="absolute -top-[6px] left-[30%] h-[13px] w-[40%] border-t border-white/8" />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {type === 'select' && (
+          <div className="absolute inset-0 flex items-end gap-[10px] pb-2">
+            {selectHeights.map((h, i) => (
+              <span
+                key={i}
+                className={`w-px rounded-full ${i % 5 === 0 ? 'bg-white/22' : 'bg-white/10'}`}
+                style={{ height: h }}
+              />
+            ))}
+          </div>
+        )}
+
+        {type === 'flow' && (
+          <div className="absolute inset-0 flex items-end gap-2 pb-2">
+            {[18, 12, 22, 14, 10, 24].map((w, i) => (
+              <span
+                key={i}
+                className={`h-[22px] border ${i === 2 ? 'border-white/18 bg-white/6' : 'border-white/10 bg-white/3'}`}
+                style={{ width: `${w}%` }}
+              />
+            ))}
+          </div>
+        )}
+
+        {type === 'audio' && (
+          <div className="absolute inset-0 flex items-center gap-[10px]">
+            {waveformHeights.map((h, i) => (
+              <motion.span
+                key={i}
+                className="w-[2px] bg-white/14 rounded-full"
+                initial={{ height: h }}
+                animate={{ height: [h * 0.7, h, h * 0.8] }}
+                transition={{ duration: 2.2, repeat: Infinity, ease: [0.16, 1, 0.3, 1], delay: i * 0.03 }}
+              />
+            ))}
+            <span className="absolute left-0 right-0 h-px bg-white/6" />
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
@@ -144,44 +235,40 @@ export default function Home() {
       title: 'AUTOSYNC',
       desc: 'Multi-camera alignment with sub-frame accuracy',
       demo: { src: '/videoplayback1.mp4', start: 0.0, end: 5.5 },
-      bullets: [
-        'Drop in all angles — we detect matching moments instantly.',
-        'Sync by waveform + camera drift correction.',
-        'Exports a clean multicam timeline for Premiere / Resolve.',
-      ],
+      reel: 'REEL 01',
+      overlay: 'sync' as const,
+      metric: { value: '<1', label: 'FRAME OFFSET' },
+      caption: 'Waveform sync + drift correction — everything lands on the same moment.',
     },
     {
       num: '02',
       title: 'AUTOSELECT',
       desc: 'AI identifies vows, laughter, and key moments',
       demo: { src: '/videoplayback1.mp4', start: 5.5, end: 11.0 },
-      bullets: [
-        'Finds vows, speeches, laughter, reactions.',
-        'Ranks shots by emotion + stability + framing.',
-        'Builds a “best takes” reel you can edit from.',
-      ],
+      reel: 'REEL 02',
+      overlay: 'select' as const,
+      metric: { value: '47', label: 'EMOTION MARKERS' },
+      caption: 'Vows, laughter, reactions — surfaced and ranked so selects take minutes.',
     },
     {
       num: '03',
       title: 'AUTOFLOW',
       desc: 'Edits shaped around emotional rhythm',
       demo: { src: '/videoplayback1.mp4', start: 11.0, end: 16.5 },
-      bullets: [
-        'Turns moments into an intentional arc — not a montage.',
-        'Suggests pacing + cut points around the beat.',
-        'Keeps coverage cohesive across cameras.',
-      ],
+      reel: 'REEL 03',
+      overlay: 'flow' as const,
+      metric: { value: '1', label: 'NARRATIVE ARC' },
+      caption: 'Pacing shaped by emotion — cuts that feel authored, not templated.',
     },
     {
       num: '04',
       title: 'AUDIO CLEANUP',
       desc: 'Wind, hum, and noise removed automatically',
       demo: { src: '/videoplayback1.mp4', start: 16.5, end: 22.0 },
-      bullets: [
-        'Dialogue isolation with natural-sounding ambience.',
-        'Removes wind, hum, and room tone inconsistencies.',
-        'Auto-levels for consistent loudness throughout.',
-      ],
+      reel: 'REEL 04',
+      overlay: 'audio' as const,
+      metric: { value: '−18', label: 'dB NOISE' },
+      caption: 'Dialogue-first cleanup that keeps the room alive — no brittle artifacts.',
     },
   ];
 
@@ -256,13 +343,12 @@ export default function Home() {
                         {cap.desc}
                       </p>
                       <motion.div
-                        animate={{ rotate: openCapabilityIdx === idx ? 90 : 0, opacity: openCapabilityIdx === idx ? 1 : 0 }}
-                        className="w-5 h-5 mt-1 text-white/30 shrink-0 hidden md:block"
+                        animate={{ rotate: openCapabilityIdx === idx ? 90 : 0, opacity: openCapabilityIdx === idx ? 0.75 : 0.28 }}
+                        className="w-5 h-5 mt-1 text-white/30 group-hover:text-white/50 transition-colors shrink-0"
                         transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                       >
                         <ArrowRight className="w-5 h-5" />
                       </motion.div>
-                      <ArrowRight className="w-5 h-5 mt-1 text-white/0 group-hover:text-white/30 transition-all shrink-0 md:hidden" />
                     </div>
                   </div>
                 </button>
@@ -277,64 +363,59 @@ export default function Home() {
                       transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
                       className="overflow-hidden"
                     >
-                      <div className="pt-12 pb-4">
+                      <div className="pt-10 md:pt-12 pb-2">
                         <div className="grid grid-cols-12 gap-8 items-start">
-                          {/* Video + framing */}
-                          <div
-                            className={`col-span-12 md:col-span-7 ${
-                              idx % 2 === 0 ? 'md:col-start-6' : 'md:col-start-1'
-                            }`}
-                          >
-                            <div className="relative aspect-[16/9] overflow-hidden border border-white/10 bg-black/40">
-                              {/* Soft vignette */}
-                              <div
-                                className="absolute inset-0 pointer-events-none"
-                                style={{
-                                  background:
-                                    'radial-gradient(ellipse 80% 60% at 50% 50%, transparent 0%, rgba(0,0,0,0.55) 100%)',
-                                }}
-                              />
+                          <div className="col-span-12 md:col-span-11 md:col-start-2">
+                            <div className="relative overflow-hidden border border-white/10 bg-black/35">
+                              <div className="relative h-[170px] md:h-[220px]">
+                                {/* Grade + crop so it reads as a designed reel */}
+                                <SegmentVideo
+                                  src={cap.demo.src}
+                                  start={cap.demo.start}
+                                  end={cap.demo.end}
+                                  className="absolute inset-0 w-full h-full object-cover grayscale contrast-125 brightness-90 scale-[1.02]"
+                                />
 
-                              <SegmentVideo
-                                src={cap.demo.src}
-                                start={cap.demo.start}
-                                end={cap.demo.end}
-                                className="absolute inset-0 w-full h-full object-cover"
-                              />
+                                {/* Editorial overlays */}
+                                <div
+                                  className="absolute inset-0"
+                                  style={{
+                                    background:
+                                      'radial-gradient(ellipse 80% 70% at 50% 50%, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.72) 100%)',
+                                  }}
+                                />
+                                <div
+                                  className="absolute inset-0"
+                                  style={{
+                                    background:
+                                      'linear-gradient(to top, rgba(0,0,0,0.70) 0%, rgba(0,0,0,0.15) 55%, rgba(0,0,0,0.45) 100%)',
+                                  }}
+                                />
 
-                              {/* Minimal label */}
-                              <div className="absolute top-6 left-6 flex items-center gap-3">
-                                <span className="text-[10px] tracking-[0.5em] text-white/50 font-light">DEMO</span>
-                                <span className="h-[1px] w-12 bg-white/10" />
-                              </div>
-                            </div>
-                          </div>
+                                <ReelOverlay type={cap.overlay as ReelOverlayType} />
 
-                          {/* Text story */}
-                          <div
-                            className={`col-span-12 md:col-span-5 ${
-                              idx % 2 === 0 ? 'md:col-start-1' : 'md:col-start-8'
-                            }`}
-                          >
-                            <div className="space-y-10">
-                              <div className="space-y-4">
-                                <p className="text-[10px] tracking-[0.5em] text-white/20 font-light">
-                                  HOW IT WORKS
-                                </p>
-                                <p className="text-[15px] md:text-[16px] leading-[1.9] text-white/50 font-light">
-                                  Click-to-preview, then keep scrolling — the system throttles the hero rendering once you
-                                  hit the paper sections.
-                                </p>
-                              </div>
+                                {/* Top label */}
+                                <div className="absolute top-6 left-6 flex items-center gap-4">
+                                  <span className="text-[10px] tracking-[0.5em] text-white/45 font-light">{cap.reel}</span>
+                                  <span className="h-[1px] w-12 bg-white/10" />
+                                  <span className="text-[10px] tracking-[0.4em] text-white/25 font-light">{cap.title}</span>
+                                </div>
 
-                              <ul className="space-y-4">
-                                {cap.bullets.map((b) => (
-                                  <li key={b} className="flex gap-4 text-[14px] md:text-[15px] leading-[1.8] text-white/55 font-light">
-                                    <span className="mt-[10px] h-[1px] w-6 bg-white/10 shrink-0" />
-                                    <span>{b}</span>
-                                  </li>
-                                ))}
-                              </ul>
+                                {/* Bottom bar: metric + single caption (no overlap on small screens) */}
+                                <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between gap-6">
+                                  <div className="shrink-0">
+                                    <div className="text-[42px] md:text-[54px] font-extralight tracking-[-0.05em] leading-[0.85] text-white/85">
+                                      {cap.metric.value}
+                                    </div>
+                                    <div className="mt-2 text-[10px] tracking-[0.5em] text-white/30 font-light">
+                                      {cap.metric.label}
+                                    </div>
+                                  </div>
+                                  <p className="flex-1 max-w-none md:max-w-[340px] text-left md:text-right text-[13px] md:text-[14px] leading-[1.7] text-white/45 font-light">
+                                    {cap.caption}
+                                  </p>
+                                </div>
+        </div>
                             </div>
                           </div>
                         </div>
