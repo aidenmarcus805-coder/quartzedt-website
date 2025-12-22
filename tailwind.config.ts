@@ -11,6 +11,9 @@ const config: Config = {
       colors: {
         // Keep the `paper` token, but make it true white.
         paper: "#ffffff",
+        // Signature brand accents (used sparingly).
+        ink: "#0b0b0c",
+        accent: "#ff3b30",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],

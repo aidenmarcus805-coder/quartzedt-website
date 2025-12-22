@@ -11,9 +11,42 @@ const CameraScene = dynamic<{ lowPowerMode?: boolean }>(() => import('./componen
   ssr: false,
   loading: () => (
     <div className="h-screen flex items-center justify-center bg-black">
-      <div className="flex flex-col items-center gap-6">
-        <div className="w-12 h-12 border border-white/10 border-t-white rounded-full animate-spin" />
-        <span className="text-[10px] tracking-[0.5em] text-white/20">LOADING</span>
+      <div className="w-[min(760px,92vw)]">
+        <div className="relative aspect-video overflow-hidden border border-white/10 bg-white/[0.02]">
+          <div
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{
+              backgroundImage: 'radial-gradient(rgba(255,255,255,0.10) 1px, transparent 1px)',
+              backgroundSize: '24px 24px',
+              backgroundPosition: 'center',
+              opacity: 0.22,
+            }}
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{
+              background:
+                'radial-gradient(ellipse 70% 55% at 50% 45%, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0.0) 60%), linear-gradient(to bottom, rgba(0,0,0,0.00) 0%, rgba(0,0,0,0.20) 100%)',
+            }}
+          />
+          <div
+            aria-hidden="true"
+            className="absolute -inset-x-40 top-[18%] h-px"
+            style={{
+              background:
+                'linear-gradient(to right, rgba(0,0,0,0), rgba(255,255,255,0.24), rgba(0,0,0,0))',
+              animation: 'shimmer 1.6s linear infinite',
+              backgroundSize: '200% 100%',
+            }}
+          />
+
+          <div className="absolute left-6 bottom-6 flex items-center gap-3">
+            <span className="h-2 w-2 rounded-full bg-accent animate-pulse" aria-hidden="true" />
+            <span className="text-[10px] tracking-[0.5em] text-white/35 font-light">RENDERING</span>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -27,9 +60,9 @@ const Reveal = ({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
   return (
     <div ref={ref}>
       <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={isInView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 1.2, delay, ease: [0.16, 1, 0.3, 1] }}
+        initial={{ opacity: 0, y: 26, filter: 'blur(10px)', scale: 0.985 }}
+        animate={isInView ? { opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 } : {}}
+        transition={{ duration: 1.05, delay, ease: [0.16, 1, 0.3, 1] }}
       >
         {children}
       </motion.div>
@@ -173,6 +206,89 @@ const ReelOverlay = ({ type }: { type: ReelOverlayType }) => {
   );
 };
 
+const VellumPoster = () => {
+  return (
+    <motion.div
+      className="relative aspect-[3/4] overflow-hidden border border-white/10 bg-white/[0.03]"
+      whileHover={{ scale: 1.01 }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+    >
+      {/* Dot grid (signature texture) */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0"
+        style={{
+          backgroundImage: 'radial-gradient(rgba(255,255,255,0.14) 1px, transparent 1px)',
+          backgroundSize: '24px 24px',
+          backgroundPosition: 'center',
+          opacity: 0.22,
+        }}
+      />
+
+      {/* Soft vignette */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 75% 70% at 50% 45%, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.00) 55%), linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.42) 100%)',
+        }}
+      />
+
+      {/* Minimal “timeline” composition */}
+      <div className="absolute inset-0 p-8 md:p-10 flex flex-col">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+            <span className="text-[10px] tracking-[0.5em] text-white/40 font-light">LIVE</span>
+          </div>
+          <span className="text-[10px] tracking-[0.4em] text-white/25 font-light">00:00:00</span>
+        </div>
+
+        <div className="mt-10 space-y-4">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="relative h-7 border border-white/10 bg-black/20 overflow-hidden">
+              <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/6 to-white/0" />
+              <div
+                aria-hidden="true"
+                className="absolute inset-y-0 left-[61.8%] w-px bg-accent/70"
+              />
+              <div
+                aria-hidden="true"
+                className="absolute left-[18%] top-0 bottom-0 w-[18%] bg-white/5"
+              />
+              <div
+                aria-hidden="true"
+                className="absolute left-[42%] top-0 bottom-0 w-[12%] bg-white/7"
+              />
+              <div
+                aria-hidden="true"
+                className="absolute left-[70%] top-0 bottom-0 w-[16%] bg-white/5"
+              />
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-auto pt-10">
+          <div className="flex items-end justify-between gap-8">
+            <div>
+              <div className="text-[46px] md:text-[56px] font-extralight tracking-[-0.06em] leading-none text-white/90">
+                47
+              </div>
+              <div className="mt-2 text-[10px] tracking-[0.5em] text-white/30 font-light">
+                EMOTIONAL MARKERS
+              </div>
+            </div>
+            <div className="text-right text-[10px] tracking-[0.4em] text-white/22 font-light">
+              VELLUM
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
 const WORKFLOW_STEPS = [
   { label: 'Import', desc: 'Bring footage in. Auto-organize.', icon: Upload, start: 0.0, end: 5.5 },
   { label: 'Analyze', desc: 'Find beats, scenes, emotion.', icon: Search, start: 5.5, end: 11.0 },
@@ -188,11 +304,15 @@ export default function Home() {
   const [lowPowerMode, setLowPowerMode] = useState(false);
   const [openCapabilityIdx, setOpenCapabilityIdx] = useState<number | null>(null);
   const [workflowIdx, setWorkflowIdx] = useState(0);
+  const [workflowLocked, setWorkflowLocked] = useState(false);
+  const [workflowHasInteracted, setWorkflowHasInteracted] = useState(false);
   const workflowIdxRef = useRef(0);
   const workflowActiveRef = useRef(false);
+  const workflowLockedRef = useRef(false);
   const workflowLastStepAtRef = useRef(0);
   const workflowWheelAccumRef = useRef(0);
   const workflowTouchStartYRef = useRef<number | null>(null);
+  const workflowSnapAnimatingRef = useRef(false);
 
   useEffect(() => {
     workflowIdxRef.current = workflowIdx;
@@ -201,8 +321,10 @@ export default function Home() {
   // Scroll should not move the page here — it should ONLY advance the workflow left → right.
   useEffect(() => {
     let raf = 0;
+    let snapRaf = 0;
     let ticking = false;
     const SNAP_PX = 250; // tolerance so you can't "miss" the section by scrolling a bit too fast
+    const WORKFLOW_SNAP_OFFSET_PX = 35; // intentional: we snap slightly into the section so the stage feels “framed”
 
     const updateActive = () => {
       ticking = false;
@@ -212,10 +334,15 @@ export default function Home() {
       const vh = window.innerHeight;
       // Lock ONLY once the section is actually pinned (deterministic stop position).
       // This prevents "sometimes it stops higher/lower" depending on scroll speed.
-      // Account for 35px snap offset
       const EPS = 2;
-      const SNAP_OFFSET = 35;
-      workflowActiveRef.current = rect.top <= EPS + SNAP_OFFSET && rect.bottom >= vh - EPS;
+      const nextActive = rect.top <= EPS + WORKFLOW_SNAP_OFFSET_PX && rect.bottom >= vh - EPS;
+      workflowActiveRef.current = nextActive;
+
+      // Drive a small UI “HUD” (avoid state churn by only updating on change).
+      if (workflowLockedRef.current !== nextActive) {
+        workflowLockedRef.current = nextActive;
+        setWorkflowLocked(nextActive);
+      }
     };
 
     const scheduleUpdate = () => {
@@ -236,11 +363,38 @@ export default function Home() {
       const cooldownMs = 260;
       if (now - workflowLastStepAtRef.current < cooldownMs) return;
       workflowLastStepAtRef.current = now;
+      setWorkflowHasInteracted(true);
 
       setWorkflowIdx((prev) => {
         const next = Math.max(0, Math.min(WORKFLOW_STEPS.length - 1, prev + dir));
         return next;
       });
+    };
+
+    const smoothSnapTo = (targetY: number) => {
+      if (workflowSnapAnimatingRef.current) return;
+      workflowSnapAnimatingRef.current = true;
+
+      const startY = window.scrollY;
+      const delta = targetY - startY;
+      const start = performance.now();
+      const durationMs = 220;
+
+      const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+
+      const tick = (now: number) => {
+        const t = Math.min(1, (now - start) / durationMs);
+        const eased = easeOutCubic(t);
+        window.scrollTo(0, startY + delta * eased);
+        if (t < 1) {
+          snapRaf = window.requestAnimationFrame(tick);
+        } else {
+          workflowSnapAnimatingRef.current = false;
+          snapRaf = 0;
+        }
+      };
+
+      snapRaf = window.requestAnimationFrame(tick);
     };
 
     const snapToWorkflowTop = () => {
@@ -249,13 +403,19 @@ export default function Home() {
 
       const rect = el.getBoundingClientRect();
       // Snap so the workflow becomes a "checkpoint" and can't be skipped by momentum.
-      // Offset by 35px to position it slightly lower
-      window.scrollTo({ top: window.scrollY + rect.top + 35, behavior: 'auto' });
+      // Offset is intentional framing (see WORKFLOW_SNAP_OFFSET_PX above).
+      const targetY = window.scrollY + rect.top + WORKFLOW_SNAP_OFFSET_PX;
+      smoothSnapTo(targetY);
       workflowActiveRef.current = true;
       workflowWheelAccumRef.current = 0;
     };
 
     const onWheel = (e: WheelEvent) => {
+      if (workflowSnapAnimatingRef.current) {
+        e.preventDefault();
+        return;
+      }
+
       const dy = e.deltaY;
       if (dy === 0) return;
 
@@ -305,6 +465,11 @@ export default function Home() {
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
+      if (workflowSnapAnimatingRef.current) {
+        e.preventDefault();
+        return;
+      }
+
       let dir: 1 | -1 | 0 = 0;
 
       switch (e.key) {
@@ -349,6 +514,11 @@ export default function Home() {
     };
 
     const onTouchMove = (e: TouchEvent) => {
+      if (workflowSnapAnimatingRef.current) {
+        e.preventDefault();
+        return;
+      }
+
       if (!workflowActiveRef.current) return;
       const startY = workflowTouchStartYRef.current;
       const y = e.touches[0]?.clientY;
@@ -382,6 +552,7 @@ export default function Home() {
       window.removeEventListener('touchstart', onTouchStart);
       window.removeEventListener('touchmove', onTouchMove);
       if (raf) window.cancelAnimationFrame(raf);
+      if (snapRaf) window.cancelAnimationFrame(snapRaf);
     };
   }, []);
 
@@ -475,17 +646,27 @@ export default function Home() {
         className="fixed top-0 left-0 right-0 z-[100] mix-blend-difference"
       >
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 h-24 flex items-center justify-between">
-          <Link href="/" className="text-[11px] tracking-[0.5em] font-light">
-            VELLUM
+          <Link href="/" className="flex items-center gap-2">
+            <span className="text-[11px] tracking-[0.5em] font-light">VELLUM</span>
+            <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
           </Link>
           
           <div className="hidden md:flex items-center gap-16 text-[10px] tracking-[0.4em] font-light">
-            <a href="#work" className="hover:opacity-50 transition-opacity">WORK</a>
-            <Link href="/about" className="hover:opacity-50 transition-opacity">ABOUT</Link>
-            <Link href="/pricing" className="hover:opacity-50 transition-opacity">PRICING</Link>
+            <a
+              href="#work"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById('work')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+              className="link-underline hover:opacity-60 transition-opacity"
+            >
+              WORK
+            </a>
+            <Link href="/about" className="link-underline hover:opacity-60 transition-opacity">ABOUT</Link>
+            <Link href="/pricing" className="link-underline hover:opacity-60 transition-opacity">PRICING</Link>
           </div>
 
-          <button className="text-[10px] tracking-[0.4em] font-light hover:opacity-50 transition-opacity">
+          <button className="link-underline text-[10px] tracking-[0.4em] font-light hover:opacity-60 transition-opacity">
             CONTACT
           </button>
         </div>
@@ -499,14 +680,36 @@ export default function Home() {
       {/* Capabilities Section - Golden Ratio Grid */}
       <section id="work" className="border-t border-white/5">
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16">
+          <div className="py-24 md:py-32 border-b border-white/5">
+            <Reveal>
+              <div className="grid grid-cols-12 gap-10 items-end">
+                <div className="col-span-12 md:col-span-7">
+                  <h2 className="font-display text-[clamp(44px,4.8vw,72px)] font-extralight tracking-[-0.05em] leading-[1.02]">
+                    A wedding edit, distilled
+                    <span className="inline-block align-middle ml-4 h-2.5 w-2.5 rounded-full bg-accent" aria-hidden="true" />
+                  </h2>
+                </div>
+                <div className="col-span-12 md:col-span-5">
+                  <p className="text-[15px] md:text-[17px] leading-[1.9] text-white/50 font-light max-w-xl">
+                    Vellum pulls the vows, reactions, and rhythm out of hours of footage — so the edit stops taking weeks.
+                  </p>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+
           {capabilities.map((cap, idx) => (
             <Reveal key={cap.title} delay={idx * 0.1}>
               <motion.div
                 layout
-                className="group border-b border-white/5 py-16 md:py-20 cursor-pointer"
+                className="group relative border-b border-white/5 py-16 md:py-20 cursor-pointer"
                 whileHover={{ backgroundColor: 'rgba(255,255,255,0.02)' }}
                 transition={{ duration: 0.4 }}
               >
+                <div
+                  aria-hidden="true"
+                  className="absolute left-0 top-0 bottom-0 w-px bg-accent/0 group-hover:bg-accent/35 transition-colors"
+                />
                 <button
                   type="button"
                   onClick={() => setOpenCapabilityIdx((prev) => (prev === idx ? null : idx))}
@@ -623,11 +826,34 @@ export default function Home() {
               </motion.div>
             </Reveal>
           ))}
+
+          <div className="py-20 md:py-24">
+            <Reveal delay={0.05}>
+              <div className="flex items-center justify-between gap-8">
+                <div className="text-[15px] md:text-[17px] leading-[1.9] text-white/45 font-light max-w-2xl">
+                  Then watch it stitch together — the same footage, but with intention.
+                </div>
+                <a
+                  href="#workflow"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.getElementById('workflow')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }}
+                  className="link-underline inline-flex items-center gap-4 text-[10px] tracking-[0.45em] text-white/40 hover:text-white transition-colors font-light shrink-0"
+                >
+                  THE WORKFLOW
+                  <span className="text-white/35" aria-hidden="true">
+                    <ArrowRight className="w-4 h-4" />
+                  </span>
+                </a>
+              </div>
+            </Reveal>
+          </div>
         </div>
       </section>
 
       {/* Workflow */}
-      <section ref={firstWhiteRef} className="bg-paper text-black border-y border-black/5">
+      <section id="workflow" ref={firstWhiteRef} className="bg-paper text-black border-y border-black/5">
         <div className="relative h-[120vh] overflow-hidden">
           {/* Dotted background (keep) */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
@@ -649,7 +875,7 @@ export default function Home() {
             <div className="relative max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 h-full pt-32 md:pt-36 pb-8 md:pb-10 flex flex-col">
               {/* Title must be above everything (per blueprint) */}
               <div className="flex-none">
-                <h2 className="text-[clamp(64px,6.5vw,110px)] font-light tracking-[-0.06em] leading-[0.92]">
+                <h2 className="font-display text-[clamp(64px,6.5vw,110px)] font-light tracking-[-0.06em] leading-[0.92]">
                   The Workflow
                 </h2>
               </div>
@@ -659,6 +885,72 @@ export default function Home() {
                 {/* One “video row”: active expands (main), others stay as shutters on the right.
                     Advancing tabs expands the next shutter into the main video (per blueprint). */}
                 <div className="relative overflow-hidden border border-black/15 bg-white shadow-[0_70px_160px_rgba(0,0,0,0.10)]">
+                  {/* Workflow HUD (makes the scroll hijack feel intentional) */}
+                  <div className="pointer-events-none absolute inset-x-0 top-0 z-10">
+                    <div className="flex items-start justify-between p-4 md:p-5">
+                      <div className="flex items-center gap-3">
+                        <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+                        <span className="text-[10px] tracking-[0.5em] text-black/45 font-light">
+                          {WORKFLOW_STEPS[workflowIdx]?.label.toUpperCase()}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-3 text-[10px] tracking-[0.4em] text-black/40 font-light">
+                        <span>{String(workflowIdx + 1).padStart(2, '0')}</span>
+                        <span className="h-[1px] w-10 bg-black/15" aria-hidden="true" />
+                        <span>{String(WORKFLOW_STEPS.length).padStart(2, '0')}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <AnimatePresence>
+                    {workflowLocked && !workflowHasInteracted && (
+                      <motion.div
+                        key="workflow-hint"
+                        initial={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
+                        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                        exit={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
+                        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                        className="pointer-events-none absolute left-4 bottom-4 z-10"
+                      >
+                        <div className="inline-flex items-center gap-3 rounded-full border border-black/10 bg-white/80 backdrop-blur-sm px-4 py-2">
+                          <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+                          <span className="text-[10px] tracking-[0.45em] text-black/55 font-light">
+                            SCROLL TO ADVANCE
+                          </span>
+                          <motion.span
+                            aria-hidden="true"
+                            animate={{ x: [0, 4, 0] }}
+                            transition={{ duration: 1.6, repeat: Infinity, ease: [0.16, 1, 0.3, 1] }}
+                            className="text-black/35"
+                          >
+                            <ArrowRight className="w-4 h-4" />
+                          </motion.span>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <AnimatePresence>
+                    {workflowLocked && workflowIdx === WORKFLOW_STEPS.length - 1 && (
+                      <motion.div
+                        key="workflow-exit-hint"
+                        initial={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
+                        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                        exit={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
+                        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                        className="pointer-events-none absolute right-4 bottom-4 z-10"
+                      >
+                        <div className="inline-flex items-center gap-3 rounded-full border border-black/10 bg-white/80 backdrop-blur-sm px-4 py-2">
+                          <span className="h-2 w-2 rounded-full bg-black/25" aria-hidden="true" />
+                          <span className="text-[10px] tracking-[0.45em] text-black/55 font-light">
+                            SCROLL TO CONTINUE
+                          </span>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   <div className="relative aspect-[21/10]">
                     <motion.div
                       className="absolute inset-0 flex gap-[6px] p-2 md:p-3"
@@ -681,6 +973,7 @@ export default function Home() {
                             layout
                             type="button"
                             onClick={() => {
+                              setWorkflowHasInteracted(true);
                               setWorkflowIdx(idx);
                             }}
                             className={`relative h-full overflow-hidden border border-black/10 bg-white focus:outline-none ${
@@ -753,7 +1046,7 @@ export default function Home() {
                 <div className="relative border border-black/10 bg-paper overflow-hidden">
                   <motion.div
                     aria-hidden="true"
-                    className="absolute inset-y-0 left-0 w-1/4 bg-black/[0.08]"
+                    className="absolute inset-y-0 left-0 w-1/4 bg-accent/10"
                     animate={{ x: `${workflowIdx * 100}%` }}
                     transition={{ type: 'spring', stiffness: 260, damping: 30 }}
                   />
@@ -766,6 +1059,7 @@ export default function Home() {
                           key={step.label}
                           type="button"
                           onClick={() => {
+                            setWorkflowHasInteracted(true);
                             setWorkflowIdx(idx);
                           }}
                           className="px-7 py-6 md:py-7 border-r last:border-r-0 border-black/10 text-left"
@@ -797,17 +1091,7 @@ export default function Home() {
             {/* Left: Image (5 cols = 41.6%, close to golden) */}
             <div className="lg:col-span-5">
               <Reveal>
-                <div className="relative aspect-[3/4] overflow-hidden">
-                  <motion.div
-                    className="absolute inset-0 bg-cover bg-center grayscale"
-                    style={{
-                      backgroundImage: 'url(https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2071&auto=format&fit=crop)',
-                      filter: 'contrast(1.2) brightness(0.7)'
-                    }}
-                  />
-                  {/* Gradient overlay for depth */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
-                </div>
+                  <VellumPoster />
               </Reveal>
             </div>
             
@@ -815,7 +1099,7 @@ export default function Home() {
             <div className="lg:col-span-7 space-y-12">
               <Reveal>
                 <div className="space-y-8">
-                  <h2 className="text-[36px] md:text-[56px] font-extralight leading-[1.1] tracking-[-0.03em] max-w-2xl">
+                  <h2 className="font-display text-[36px] md:text-[56px] font-extralight leading-[1.1] tracking-[-0.03em] max-w-2xl">
                     Technology that respects 
                     <span className="text-white/30"> the artist.</span>
                   </h2>
@@ -851,7 +1135,7 @@ export default function Home() {
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-32 md:py-40">
           <Reveal>
             <div className="mb-20">
-              <h2 className="text-[42px] md:text-[64px] font-extralight tracking-[-0.04em] leading-[1.05]">
+              <h2 className="font-display text-[42px] md:text-[64px] font-extralight tracking-[-0.04em] leading-[1.05]">
                 Simple pricing.<br />
                 <span className="text-black/20">No subscriptions.</span>
               </h2>
@@ -889,7 +1173,7 @@ export default function Home() {
             {/* Max */}
             <Reveal delay={0.2}>
               <div className="bg-black text-white p-12 md:p-16 relative group hover:bg-paper hover:text-black transition-all duration-500">
-                <div className="absolute top-8 right-8 w-2 h-2 bg-paper group-hover:bg-black rounded-full" />
+                <div className="absolute top-8 right-8 w-2 h-2 bg-accent rounded-full" />
                 
                 <div className="space-y-12">
                   <div>
@@ -935,7 +1219,7 @@ export default function Home() {
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-40 md:py-56">
           <div className="max-w-4xl mx-auto text-center space-y-16">
             <Reveal>
-              <h2 className="text-[48px] md:text-[80px] font-extralight leading-[1.05] tracking-[-0.04em]">
+              <h2 className="font-display text-[48px] md:text-[80px] font-extralight leading-[1.05] tracking-[-0.04em]">
                 Edit less.
                 <br />
                 <span className="text-white/20">Create more.</span>
@@ -944,10 +1228,12 @@ export default function Home() {
             
             <Reveal delay={0.2}>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                <button className="px-12 py-5 bg-paper text-black text-[10px] tracking-[0.4em] hover:bg-paper/90 transition-colors font-light">
+                <button className="group inline-flex items-center justify-center gap-3 px-12 py-5 bg-paper text-black text-[10px] tracking-[0.4em] hover:bg-paper/95 transition-all font-light hover:-translate-y-[1px] active:translate-y-0">
+                  <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
                   START FREE TRIAL
                 </button>
-                <button className="px-12 py-5 border border-white/10 text-[10px] tracking-[0.4em] text-white/60 hover:text-white hover:border-white/30 transition-colors font-light">
+                <button className="group inline-flex items-center justify-center gap-3 px-12 py-5 border border-white/10 text-[10px] tracking-[0.4em] text-white/60 hover:text-white hover:border-accent/50 transition-all font-light hover:-translate-y-[1px] active:translate-y-0">
+                  <span className="h-2 w-2 rounded-full bg-white/20 group-hover:bg-accent/70 transition-colors" aria-hidden="true" />
                   SCHEDULE DEMO
                 </button>
               </div>
@@ -963,7 +1249,10 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-16 md:gap-8">
             {/* Brand - 5 cols (golden ratio) */}
             <div className="md:col-span-5 space-y-8">
-              <span className="text-[11px] tracking-[0.5em] font-light">VELLUM</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] tracking-[0.5em] font-light">VELLUM</span>
+                <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+              </div>
               <p className="text-[15px] font-light leading-[1.8] text-white/40 max-w-md">
                 AI-powered video editing engineered for filmmakers who value craft.
               </p>
