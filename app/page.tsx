@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion, useInView } from 'framer-motion';
-import { ArrowRight, Minus } from 'lucide-react';
+import { ArrowRight, Download, Film, Minus, Search, Upload } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -174,10 +174,10 @@ const ReelOverlay = ({ type }: { type: ReelOverlayType }) => {
 };
 
 const WORKFLOW_STEPS = [
-  { label: 'Import', desc: 'Bring footage in. Auto-organize.', start: 0.0, end: 5.5 },
-  { label: 'Analyze', desc: 'Find beats, scenes, emotion.', start: 5.5, end: 11.0 },
-  { label: 'Timeline', desc: 'Assemble the rough cut.', start: 11.0, end: 16.5 },
-  { label: 'Export', desc: 'Premiere / Resolve ready.', start: 16.5, end: 22.0 },
+  { label: 'Import', desc: 'Bring footage in. Auto-organize.', icon: Upload, start: 0.0, end: 5.5 },
+  { label: 'Analyze', desc: 'Find beats, scenes, emotion.', icon: Search, start: 5.5, end: 11.0 },
+  { label: 'Timeline', desc: 'Assemble the rough cut.', icon: Film, start: 11.0, end: 16.5 },
+  { label: 'Export', desc: 'Premiere / Resolve ready.', icon: Download, start: 16.5, end: 22.0 },
 ] as const;
 
 export default function Home() {
@@ -202,6 +202,7 @@ export default function Home() {
   useEffect(() => {
     let raf = 0;
     let ticking = false;
+    const SNAP_PX = 320; // tolerance so you can't "miss" the section by scrolling a bit too fast
 
     const updateActive = () => {
       ticking = false;
@@ -238,12 +239,43 @@ export default function Home() {
       });
     };
 
+    const snapToWorkflowTop = () => {
+      const el = firstWhiteRef.current;
+      if (!el) return;
+
+      const rect = el.getBoundingClientRect();
+      // Snap so the workflow becomes a “checkpoint” and can't be skipped by momentum.
+      window.scrollTo({ top: window.scrollY + rect.top, behavior: 'auto' });
+      workflowActiveRef.current = true;
+      workflowWheelAccumRef.current = 0;
+    };
+
     const onWheel = (e: WheelEvent) => {
-      if (!workflowActiveRef.current) return;
       const dy = e.deltaY;
       if (dy === 0) return;
 
       const dir = dy > 0 ? (1 as const) : (-1 as const);
+
+      // If you're entering the section (or just barely overshot it), snap + lock.
+      // This prevents “missing” the checkpoint when scrolling fast.
+      if (!workflowActiveRef.current) {
+        const el = firstWhiteRef.current;
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const vh = window.innerHeight;
+
+        const intersects = rect.bottom > 0 && rect.top < vh;
+        const nearTop = Math.abs(rect.top) <= SNAP_PX;
+        const justPassed = rect.bottom < 0 && Math.abs(rect.bottom) <= SNAP_PX;
+
+        if (dir > 0 && (intersects || nearTop || justPassed)) {
+          e.preventDefault();
+          snapToWorkflowTop();
+          return;
+        }
+      }
+
+      if (!workflowActiveRef.current) return;
       if (canExit(dir)) return; // Let the page scroll out at the ends.
 
       // Always prevent page scroll while active.
@@ -265,7 +297,6 @@ export default function Home() {
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (!workflowActiveRef.current) return;
       let dir: 1 | -1 | 0 = 0;
 
       switch (e.key) {
@@ -282,6 +313,24 @@ export default function Home() {
           return;
       }
 
+      // Same checkpoint behavior for keyboard scroll.
+      if (!workflowActiveRef.current) {
+        const el = firstWhiteRef.current;
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const vh = window.innerHeight;
+        const intersects = rect.bottom > 0 && rect.top < vh;
+        const nearTop = Math.abs(rect.top) <= SNAP_PX;
+        const justPassed = rect.bottom < 0 && Math.abs(rect.bottom) <= SNAP_PX;
+
+        if (dir > 0 && (intersects || nearTop || justPassed)) {
+          e.preventDefault();
+          snapToWorkflowTop();
+          return;
+        }
+      }
+
+      if (!workflowActiveRef.current) return;
       if (canExit(dir)) return;
       e.preventDefault();
       step(dir);
@@ -572,7 +621,7 @@ export default function Home() {
 
       {/* Workflow */}
       <section ref={firstWhiteRef} className="bg-paper text-black border-y border-black/5">
-        <div className="relative h-[150vh] overflow-hidden">
+        <div className="relative h-[120vh] overflow-hidden">
           {/* Dotted background (keep) */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
             <div
@@ -590,7 +639,7 @@ export default function Home() {
           </div>
 
           <div className="sticky top-0 h-screen">
-            <div className="relative max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 h-full pt-24 md:pt-28 pb-10 md:pb-14 flex flex-col">
+            <div className="relative max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 h-full pt-32 md:pt-36 pb-8 md:pb-10 flex flex-col">
               {/* Title must be above everything (per blueprint) */}
               <div className="flex-none">
                 <h2 className="text-[clamp(64px,6.5vw,110px)] font-light tracking-[-0.06em] leading-[0.92]">
@@ -602,10 +651,10 @@ export default function Home() {
               <div className="flex-1 mt-10 md:mt-12">
                 {/* One “video row”: active expands (main), others stay as shutters on the right.
                     Advancing tabs expands the next shutter into the main video (per blueprint). */}
-                <div className="relative overflow-hidden border border-black/15 bg-black/[0.02]">
-                  <div className="relative aspect-video">
+                <div className="relative overflow-hidden border border-black/15 bg-white shadow-[0_70px_160px_rgba(0,0,0,0.10)]">
+                  <div className="relative aspect-[21/10]">
                     <motion.div
-                      className="absolute inset-0 flex gap-3 p-3 md:p-4"
+                      className="absolute inset-0 flex gap-[6px] p-2 md:p-3"
                       style={{
                         perspective: 1200,
                         transformStyle: 'preserve-3d',
@@ -615,8 +664,9 @@ export default function Home() {
                       {WORKFLOW_STEPS.map((step, idx) => {
                         const isActive = idx === workflowIdx;
                         const rel = (idx - workflowIdx + WORKFLOW_STEPS.length) % WORKFLOW_STEPS.length; // 0..3 (active = 0)
-                        const shutterRot = -18 - rel * 2.2;
-                        const shutterZ = -50 - rel * 14;
+                        const shutterRot = -28 - rel * 2.8;
+                        const shutterZ = -140 - rel * 26;
+                        const shutterX = 2 + rel * 1.2;
 
                         return (
                           <motion.button
@@ -626,19 +676,22 @@ export default function Home() {
                             onClick={() => {
                               setWorkflowIdx(idx);
                             }}
-                            className={`relative h-full overflow-hidden border border-black/10 bg-black/[0.02] focus:outline-none ${
+                            className={`relative h-full overflow-hidden border border-black/10 bg-white focus:outline-none ${
                               isActive ? 'flex-1 min-w-0' : 'w-[44px] md:w-[52px] shrink-0'
                             }`}
                             style={{
                               order: rel,
                               transformStyle: 'preserve-3d',
-                              transformOrigin: rel === 0 ? 'left center' : 'center center',
+                              transformOrigin: 'left center',
                             }}
                             animate={{
                               rotateY: isActive ? 0 : shutterRot,
+                              rotateZ: isActive ? 0 : -0.25 * rel,
+                              x: isActive ? 0 : shutterX,
                               z: isActive ? 0 : shutterZ,
-                              scale: isActive ? 1 : 0.985,
-                              opacity: isActive ? 1 : 0.88,
+                              scale: isActive ? 1 : 0.975,
+                              opacity: isActive ? 1 : 0.86,
+                              filter: isActive ? 'contrast(1.25) brightness(0.98)' : 'contrast(1.15) brightness(0.92)',
                             }}
                             transition={{ type: 'spring', stiffness: 260, damping: 30 }}
                             aria-label={`Select ${step.label}`}
@@ -652,6 +705,16 @@ export default function Home() {
 
                             {/* Depth / lighting */}
                             <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/0 to-black/14" />
+                            {/* Thickness edge (sells “blind” hinge) */}
+                            <div
+                              aria-hidden="true"
+                              className="absolute inset-y-0 left-0 w-[10px]"
+                              style={{
+                                background: isActive
+                                  ? 'linear-gradient(to right, rgba(0,0,0,0.10), rgba(0,0,0,0.00))'
+                                  : 'linear-gradient(to right, rgba(0,0,0,0.18), rgba(0,0,0,0.00))',
+                              }}
+                            />
                             <div
                               aria-hidden="true"
                               className="absolute inset-0"
@@ -680,35 +743,38 @@ export default function Home() {
 
               {/* Bottom strip: labels only (scroll selects left → right) */}
               <div className="flex-none mt-10 md:mt-12">
-                <div className="grid grid-cols-12 gap-10">
-                  <div className="col-span-12 lg:col-span-10">
-                    <div className="relative border border-black/10 bg-paper overflow-hidden">
-                      <motion.div
-                        aria-hidden="true"
-                        className="absolute inset-y-0 left-0 w-1/4 bg-black/[0.05]"
-                        animate={{ x: `${workflowIdx * 100}%` }}
-                        transition={{ type: 'spring', stiffness: 260, damping: 30 }}
-                      />
-                      <div className="relative grid grid-cols-4">
-                        {WORKFLOW_STEPS.map((step, idx) => (
-                          <button
-                            key={step.label}
-                            type="button"
-                            onClick={() => {
-                              setWorkflowIdx(idx);
-                            }}
-                            className="px-6 py-5 border-r last:border-r-0 border-black/10 text-left"
-                          >
+                <div className="relative border border-black/10 bg-paper overflow-hidden">
+                  <motion.div
+                    aria-hidden="true"
+                    className="absolute inset-y-0 left-0 w-1/4 bg-black/[0.08]"
+                    animate={{ x: `${workflowIdx * 100}%` }}
+                    transition={{ type: 'spring', stiffness: 260, damping: 30 }}
+                  />
+                  <div className="relative grid grid-cols-4">
+                    {WORKFLOW_STEPS.map((step, idx) => {
+                      const Icon = step.icon;
+
+                      return (
+                        <button
+                          key={step.label}
+                          type="button"
+                          onClick={() => {
+                            setWorkflowIdx(idx);
+                          }}
+                          className="px-7 py-6 md:py-7 border-r last:border-r-0 border-black/10 text-left"
+                        >
+                          <div className="flex items-center justify-between gap-6">
                             <div className={`text-[12px] tracking-[0.35em] font-light ${idx === workflowIdx ? 'text-black/70' : 'text-black/45'}`}>
                               {step.label.toUpperCase()}
                             </div>
-                            <div className={`mt-2 text-[12px] leading-[1.6] font-light ${idx === workflowIdx ? 'text-black/45' : 'text-black/30'}`}>
-                              {step.desc}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                            <Icon className={`w-4 h-4 ${idx === workflowIdx ? 'text-black/45' : 'text-black/30'}`} strokeWidth={1.5} />
+                          </div>
+                          <div className={`mt-2 text-[12px] leading-[1.6] font-light ${idx === workflowIdx ? 'text-black/45' : 'text-black/30'}`}>
+                            {step.desc}
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
