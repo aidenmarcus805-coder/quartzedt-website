@@ -87,7 +87,7 @@ export default function Home() {
             <Reveal key={cap.title} delay={idx * 0.1}>
               <motion.div
                 className="group border-b border-white/5 py-16 md:py-20 cursor-pointer"
-                whileHover={{ backgroundColor: 'rgba(255,255,255,0.01)' }}
+                whileHover={{ backgroundColor: 'rgba(248,246,243,0.01)' }}
                 transition={{ duration: 0.4 }}
               >
                 {/* Grid: Number (8.3%) | Title (33.3%) | Description (58.3%) */}

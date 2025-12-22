@@ -43,11 +43,12 @@ function createRoundedRectGeometry(width: number, height: number, radius: number
 }
 
 // 3D Monitor Model component with attached video screen
-function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }: { 
+function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition, hasUserScrolledRef }: { 
   scrollProgress: number; 
   groupRef: React.RefObject<THREE.Group | null>;
   videoElement: HTMLVideoElement | null;
   mousePosition: { x: number; y: number };
+  hasUserScrolledRef: React.MutableRefObject<boolean>;
 }) {
   // Load MTL first, then OBJ with materials
   const materials = useLoader(MTLLoader, '/monitor1.mtl');
@@ -286,19 +287,22 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
     
     const scrollEase = scrollProgress;
     const time = performance.now() * 0.001; // Use performance.now() - faster than Date.now()
+    const isInteractive = hasUserScrolledRef.current;
     
     // Simplified floating animation
     const floatY = Math.sin(time * 0.5) * 0.02;
     const floatX = Math.cos(time * 0.3) * 0.01;
-    const floatRot = Math.sin(time * 0.4) * 0.003;
+    const floatRot = isInteractive ? Math.sin(time * 0.4) * 0.003 : 0;
     
-    // Mouse parallax effect
-    const mouseInfluence = 1 - scrollEase * 0.5;
+    // Mouse parallax effect (disabled until first scroll)
+    const mouseInfluence = isInteractive ? 1 - scrollEase * 0.5 : 0;
     const mouseRotY = mousePosition.x * 0.03 * mouseInfluence;
     const mouseRotX = mousePosition.y * 0.02 * mouseInfluence;
     
-    // Scale
-    const currentScale = 5.92 + (3.35 - 5.92) * scrollEase; // Inline lerp
+    // Scale (+0.1 at scroll=0)
+    const startScale = 6.02;
+    const endScale = 3.35;
+    const currentScale = startScale + (endScale - startScale) * scrollEase; // Inline lerp
     groupRef.current.scale.setScalar(currentScale);
     
     // Position
@@ -478,7 +482,7 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
           roughness={0.1}
           metalness={0.0}
           envMapIntensity={0.2}
-          color="#ffffff"
+          color="#f8f6f3"
         />
       </mesh>
     </group>
@@ -486,10 +490,11 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition }:
 }
 
 // Scene
-function Scene({ scrollProgress, videoElement, mousePosition }: { 
+function Scene({ scrollProgress, videoElement, mousePosition, hasUserScrolledRef }: { 
   scrollProgress: number; 
   videoElement: HTMLVideoElement | null;
   mousePosition: { x: number; y: number };
+  hasUserScrolledRef: React.MutableRefObject<boolean>;
 }) {
   const monitorGroupRef = useRef<THREE.Group>(null);
   
@@ -503,6 +508,7 @@ function Scene({ scrollProgress, videoElement, mousePosition }: {
         groupRef={monitorGroupRef} 
         videoElement={videoElement}
         mousePosition={mousePosition}
+        hasUserScrolledRef={hasUserScrolledRef}
       />
     </group>
   );
@@ -513,13 +519,13 @@ function Lighting() {
   return (
     <>
       {/* Soft ambient for visibility */}
-      <ambientLight intensity={0.15} color="#ffffff" />
+      <ambientLight intensity={0.15} color="#f8f6f3" />
       
       {/* KEY LIGHT - Main illumination from top-right */}
       <directionalLight 
         position={[5, 6, 6]} 
         intensity={2.0}
-        color="#ffffff"
+        color="#f8f6f3"
         castShadow
         shadow-mapSize={[1024, 1024]}
         shadow-bias={-0.0001}
@@ -529,7 +535,7 @@ function Lighting() {
       <directionalLight 
         position={[-6, 3, -3]} 
         intensity={1.0}
-        color="#ffffff"
+        color="#f8f6f3"
       />
       
       {/* FILL LIGHT - Soft from left side */}
@@ -543,14 +549,14 @@ function Lighting() {
       <directionalLight
         position={[0, 8, 2]}
         intensity={0.9}
-        color="#ffffff"
+        color="#f8f6f3"
       />
       
       {/* FRONT ACCENT - Subtle face illumination */}
       <pointLight 
         position={[0, 1, 8]} 
         intensity={25} 
-        color="#ffffff" 
+        color="#f8f6f3" 
         distance={15}
         decay={2}
       />
@@ -579,7 +585,7 @@ function Lighting() {
       <pointLight 
         position={[-6, 2, 0]} 
         intensity={8} 
-        color="#ffffff" 
+        color="#f8f6f3" 
         distance={14}
         decay={2}
       />
@@ -588,7 +594,7 @@ function Lighting() {
       <pointLight 
         position={[6, 2, 0]} 
         intensity={8} 
-        color="#ffffff" 
+        color="#f8f6f3" 
         distance={14}
         decay={2}
       />
@@ -603,7 +609,7 @@ function Lighting() {
       />
       
       {/* Soft gradient environment */}
-      <hemisphereLight args={['#ffffff', '#1a1a1a', 0.25]} />
+      <hemisphereLight args={['#f8f6f3', '#1a1a1a', 0.25]} />
     </>
   );
 }
@@ -636,6 +642,7 @@ export default function CameraScene() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const targetProgress = useRef(0);
   const isCompleteRef = useRef(false); // Ref for immediate checking
+  const hasUserScrolledRef = useRef(false);
 
   const handleVideoRef = useCallback((element: HTMLVideoElement | null) => {
     videoRef.current = element;
@@ -702,6 +709,7 @@ export default function CameraScene() {
     let touchStartY = 0;
     
     const handleWheel = (e: WheelEvent) => {
+      hasUserScrolledRef.current = true;
       // Check ref instead of state for immediate response
       if (!isCompleteRef.current) {
         // Scroll sensitivity - slightly more scrolling required
@@ -736,6 +744,7 @@ export default function CameraScene() {
     };
 
     const handleTouchMove = (e: TouchEvent) => {
+      hasUserScrolledRef.current = true;
       if (!isCompleteRef.current) {
         const touchY = e.touches[0].clientY;
         const deltaY = touchStartY - touchY;
@@ -772,10 +781,12 @@ export default function CameraScene() {
           case 'PageDown':
           case ' ': // Space bar
             delta = 0.05; // Move forward
+            hasUserScrolledRef.current = true;
             break;
           case 'ArrowUp':
           case 'PageUp':
             delta = -0.05; // Move backward
+            hasUserScrolledRef.current = true;
             break;
           default:
             return; // Don't prevent default for other keys
@@ -914,7 +925,7 @@ export default function CameraScene() {
           style={{ background: 'transparent' }}
         >
           <Suspense fallback={<LoadingFallback />}>
-            <Scene scrollProgress={animationProgress} videoElement={videoElement} mousePosition={smoothMousePosition} />
+            <Scene scrollProgress={animationProgress} videoElement={videoElement} mousePosition={smoothMousePosition} hasUserScrolledRef={hasUserScrolledRef} />
           </Suspense>
         </Canvas>
 
