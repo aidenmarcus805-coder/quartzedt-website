@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useInView } from 'framer-motion';
+import { AnimatePresence, motion, useInView } from 'framer-motion';
 import { ArrowRight, Minus } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
@@ -37,11 +37,72 @@ const Reveal = ({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
   );
 };
 
+// Loop a specific segment of a video file (feels like an "edited" clip without needing multiple assets).
+const SegmentVideo = ({ src, start, end, className }: { src: string; start: number; end: number; className?: string }) => {
+  const ref = useRef<HTMLVideoElement | null>(null);
+  const boundsRef = useRef({ start, end });
+
+  useEffect(() => {
+    boundsRef.current = { start, end };
+  }, [start, end]);
+
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+
+    let safeStart = start;
+    let safeEnd = end;
+
+    const applyBoundsAndPlay = () => {
+      const duration = video.duration;
+      if (Number.isFinite(duration) && duration > 0) {
+        safeStart = Math.max(0, Math.min(boundsRef.current.start, Math.max(0, duration - 0.1)));
+        safeEnd = Math.max(safeStart + 0.15, Math.min(boundsRef.current.end, duration));
+      }
+
+      video.currentTime = safeStart;
+      video.play().catch(() => {});
+    };
+
+    const onTimeUpdate = () => {
+      if (video.currentTime >= safeEnd) {
+        video.currentTime = safeStart;
+      }
+    };
+
+    video.addEventListener('loadedmetadata', applyBoundsAndPlay);
+    video.addEventListener('timeupdate', onTimeUpdate);
+
+    // If metadata is already available, start immediately.
+    if (video.readyState >= 1) {
+      applyBoundsAndPlay();
+    }
+
+    return () => {
+      video.removeEventListener('loadedmetadata', applyBoundsAndPlay);
+      video.removeEventListener('timeupdate', onTimeUpdate);
+      video.pause();
+    };
+  }, [src, start, end]);
+
+  return (
+    <video
+      ref={ref}
+      src={src}
+      muted
+      playsInline
+      preload="metadata"
+      className={className}
+    />
+  );
+};
+
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
   const firstWhiteRef = useRef<HTMLElement | null>(null);
   const [lowPowerMode, setLowPowerMode] = useState(false);
+  const [openCapabilityIdx, setOpenCapabilityIdx] = useState<number | null>(null);
 
   // Switch the 3D scene into low-power mode once the first white block starts entering view.
   // This keeps the hero silky when you're up top, and saves GPU/CPU when you're scrolling content.
@@ -78,10 +139,50 @@ export default function Home() {
   }, []);
 
   const capabilities = [
-    { num: '01', title: 'AUTOSYNC', desc: 'Multi-camera alignment with sub-frame accuracy' },
-    { num: '02', title: 'AUTOSELECT', desc: 'AI identifies vows, laughter, and key moments' },
-    { num: '03', title: 'AUTOFLOW', desc: 'Edits shaped around emotional rhythm' },
-    { num: '04', title: 'AUDIO CLEANUP', desc: 'Wind, hum, and noise removed automatically' },
+    {
+      num: '01',
+      title: 'AUTOSYNC',
+      desc: 'Multi-camera alignment with sub-frame accuracy',
+      demo: { src: '/videoplayback1.mp4', start: 0.0, end: 5.5 },
+      bullets: [
+        'Drop in all angles — we detect matching moments instantly.',
+        'Sync by waveform + camera drift correction.',
+        'Exports a clean multicam timeline for Premiere / Resolve.',
+      ],
+    },
+    {
+      num: '02',
+      title: 'AUTOSELECT',
+      desc: 'AI identifies vows, laughter, and key moments',
+      demo: { src: '/videoplayback1.mp4', start: 5.5, end: 11.0 },
+      bullets: [
+        'Finds vows, speeches, laughter, reactions.',
+        'Ranks shots by emotion + stability + framing.',
+        'Builds a “best takes” reel you can edit from.',
+      ],
+    },
+    {
+      num: '03',
+      title: 'AUTOFLOW',
+      desc: 'Edits shaped around emotional rhythm',
+      demo: { src: '/videoplayback1.mp4', start: 11.0, end: 16.5 },
+      bullets: [
+        'Turns moments into an intentional arc — not a montage.',
+        'Suggests pacing + cut points around the beat.',
+        'Keeps coverage cohesive across cameras.',
+      ],
+    },
+    {
+      num: '04',
+      title: 'AUDIO CLEANUP',
+      desc: 'Wind, hum, and noise removed automatically',
+      demo: { src: '/videoplayback1.mp4', start: 16.5, end: 22.0 },
+      bullets: [
+        'Dialogue isolation with natural-sounding ambience.',
+        'Removes wind, hum, and room tone inconsistencies.',
+        'Auto-levels for consistent loudness throughout.',
+      ],
+    },
   ];
 
   return (
@@ -122,34 +223,125 @@ export default function Home() {
           {capabilities.map((cap, idx) => (
             <Reveal key={cap.title} delay={idx * 0.1}>
               <motion.div
+                layout
                 className="group border-b border-white/5 py-16 md:py-20 cursor-pointer"
                 whileHover={{ backgroundColor: 'rgba(238,236,232,0.01)' }}
                 transition={{ duration: 0.4 }}
               >
-                {/* Grid: Number (8.3%) | Title (33.3%) | Description (58.3%) */}
-                <div className="grid grid-cols-12 gap-8 items-start">
-                  {/* Number - rule of thirds alignment */}
-                  <div className="col-span-1">
-                    <span className="text-[10px] tracking-[0.3em] text-white/20 group-hover:text-white/40 transition-colors">
-                      {cap.num}
-                    </span>
+                <button
+                  type="button"
+                  onClick={() => setOpenCapabilityIdx((prev) => (prev === idx ? null : idx))}
+                  aria-expanded={openCapabilityIdx === idx}
+                  className="w-full text-left"
+                >
+                  {/* Grid: Number (8.3%) | Title (33.3%) | Description (58.3%) */}
+                  <div className="grid grid-cols-12 gap-8 items-start">
+                    {/* Number - rule of thirds alignment */}
+                    <div className="col-span-1">
+                      <span className="text-[10px] tracking-[0.3em] text-white/20 group-hover:text-white/40 transition-colors">
+                        {cap.num}
+                      </span>
+                    </div>
+                    
+                    {/* Title - golden ratio position */}
+                    <div className="col-span-11 md:col-span-4">
+                      <h3 className="text-[24px] md:text-[32px] font-light tracking-[-0.02em] leading-[1.1] group-hover:text-white/70 transition-colors">
+                        {cap.title}
+                      </h3>
+                    </div>
+                    
+                    {/* Description - remaining space */}
+                    <div className="col-span-11 col-start-2 md:col-span-7 md:col-start-6 flex items-start justify-between gap-8">
+                      <p className="text-[15px] md:text-[17px] font-light leading-[1.7] text-white/40 group-hover:text-white/60 transition-colors">
+                        {cap.desc}
+                      </p>
+                      <motion.div
+                        animate={{ rotate: openCapabilityIdx === idx ? 90 : 0, opacity: openCapabilityIdx === idx ? 1 : 0 }}
+                        className="w-5 h-5 mt-1 text-white/30 shrink-0 hidden md:block"
+                        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                      >
+                        <ArrowRight className="w-5 h-5" />
+                      </motion.div>
+                      <ArrowRight className="w-5 h-5 mt-1 text-white/0 group-hover:text-white/30 transition-all shrink-0 md:hidden" />
+                    </div>
                   </div>
-                  
-                  {/* Title - golden ratio position */}
-                  <div className="col-span-11 md:col-span-4">
-                    <h3 className="text-[24px] md:text-[32px] font-light tracking-[-0.02em] leading-[1.1] group-hover:text-white/70 transition-colors">
-                      {cap.title}
-                    </h3>
-                  </div>
-                  
-                  {/* Description - remaining space */}
-                  <div className="col-span-11 col-start-2 md:col-span-7 md:col-start-6 flex items-start justify-between gap-8">
-                    <p className="text-[15px] md:text-[17px] font-light leading-[1.7] text-white/40 group-hover:text-white/60 transition-colors">
-                      {cap.desc}
-                    </p>
-                    <ArrowRight className="w-5 h-5 mt-1 text-white/0 group-hover:text-white/30 transition-all shrink-0" />
-                  </div>
-                </div>
+                </button>
+
+                <AnimatePresence initial={false}>
+                  {openCapabilityIdx === idx && (
+                    <motion.div
+                      key="panel"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <div className="pt-12 pb-4">
+                        <div className="grid grid-cols-12 gap-8 items-start">
+                          {/* Video + framing */}
+                          <div
+                            className={`col-span-12 md:col-span-7 ${
+                              idx % 2 === 0 ? 'md:col-start-6' : 'md:col-start-1'
+                            }`}
+                          >
+                            <div className="relative aspect-[16/9] overflow-hidden border border-white/10 bg-black/40">
+                              {/* Soft vignette */}
+                              <div
+                                className="absolute inset-0 pointer-events-none"
+                                style={{
+                                  background:
+                                    'radial-gradient(ellipse 80% 60% at 50% 50%, transparent 0%, rgba(0,0,0,0.55) 100%)',
+                                }}
+                              />
+
+                              <SegmentVideo
+                                src={cap.demo.src}
+                                start={cap.demo.start}
+                                end={cap.demo.end}
+                                className="absolute inset-0 w-full h-full object-cover"
+                              />
+
+                              {/* Minimal label */}
+                              <div className="absolute top-6 left-6 flex items-center gap-3">
+                                <span className="text-[10px] tracking-[0.5em] text-white/50 font-light">DEMO</span>
+                                <span className="h-[1px] w-12 bg-white/10" />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Text story */}
+                          <div
+                            className={`col-span-12 md:col-span-5 ${
+                              idx % 2 === 0 ? 'md:col-start-1' : 'md:col-start-8'
+                            }`}
+                          >
+                            <div className="space-y-10">
+                              <div className="space-y-4">
+                                <p className="text-[10px] tracking-[0.5em] text-white/20 font-light">
+                                  HOW IT WORKS
+                                </p>
+                                <p className="text-[15px] md:text-[16px] leading-[1.9] text-white/50 font-light">
+                                  Click-to-preview, then keep scrolling — the system throttles the hero rendering once you
+                                  hit the paper sections.
+                                </p>
+                              </div>
+
+                              <ul className="space-y-4">
+                                {cap.bullets.map((b) => (
+                                  <li key={b} className="flex gap-4 text-[14px] md:text-[15px] leading-[1.8] text-white/55 font-light">
+                                    <span className="mt-[10px] h-[1px] w-6 bg-white/10 shrink-0" />
+                                    <span>{b}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             </Reveal>
           ))}
