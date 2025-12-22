@@ -9,10 +9,8 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Warm UI white (used for text/borders on black).
-        white: "#f8f6f3",
-        // Paper background for "white" sections.
-        paper: "#eeece8",
+        // Keep the `paper` token, but make it true white.
+        paper: "#ffffff",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],

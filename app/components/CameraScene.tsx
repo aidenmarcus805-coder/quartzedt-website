@@ -512,7 +512,7 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition, h
           roughness={0.1}
           metalness={0.0}
           envMapIntensity={0.2}
-          color="#f8f6f3"
+          color="#ffffff"
         />
       </mesh>
     </group>
@@ -551,13 +551,13 @@ function Lighting() {
   return (
     <>
       {/* Soft ambient for visibility */}
-      <ambientLight intensity={0.15} color="#f8f6f3" />
+      <ambientLight intensity={0.15} color="#ffffff" />
       
       {/* KEY LIGHT - Main illumination from top-right */}
       <directionalLight 
         position={[5, 6, 6]} 
         intensity={2.0}
-        color="#f8f6f3"
+        color="#ffffff"
         castShadow
         shadow-mapSize={[1024, 1024]}
         shadow-bias={-0.0001}
@@ -567,7 +567,7 @@ function Lighting() {
       <directionalLight 
         position={[-6, 3, -3]} 
         intensity={1.0}
-        color="#f8f6f3"
+        color="#ffffff"
       />
       
       {/* FILL LIGHT - Soft from left side */}
@@ -581,14 +581,14 @@ function Lighting() {
       <directionalLight
         position={[0, 8, 2]}
         intensity={0.9}
-        color="#f8f6f3"
+        color="#ffffff"
       />
       
       {/* FRONT ACCENT - Subtle face illumination */}
       <pointLight 
         position={[0, 1, 8]} 
         intensity={25} 
-        color="#f8f6f3" 
+        color="#ffffff" 
         distance={15}
         decay={2}
       />
@@ -617,7 +617,7 @@ function Lighting() {
       <pointLight 
         position={[-6, 2, 0]} 
         intensity={8} 
-        color="#f8f6f3" 
+        color="#ffffff" 
         distance={14}
         decay={2}
       />
@@ -626,7 +626,7 @@ function Lighting() {
       <pointLight 
         position={[6, 2, 0]} 
         intensity={8} 
-        color="#f8f6f3" 
+        color="#ffffff" 
         distance={14}
         decay={2}
       />
@@ -641,7 +641,7 @@ function Lighting() {
       />
       
       {/* Soft gradient environment */}
-      <hemisphereLight args={['#f8f6f3', '#1a1a1a', 0.25]} />
+      <hemisphereLight args={['#ffffff', '#1a1a1a', 0.25]} />
     </>
   );
 }

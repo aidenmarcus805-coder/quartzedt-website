@@ -448,7 +448,7 @@ export default function Home() {
               <motion.div
                 layout
                 className="group border-b border-white/5 py-16 md:py-20 cursor-pointer"
-                whileHover={{ backgroundColor: 'rgba(238,236,232,0.01)' }}
+                whileHover={{ backgroundColor: 'rgba(255,255,255,0.02)' }}
                 transition={{ duration: 0.4 }}
               >
                 <button
@@ -572,7 +572,7 @@ export default function Home() {
 
       {/* Workflow */}
       <section ref={firstWhiteRef} className="bg-paper text-black border-y border-black/5">
-        <div className="relative h-[220vh] overflow-hidden">
+        <div className="relative h-[150vh] overflow-hidden">
           {/* Dotted background (keep) */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
             <div
@@ -590,17 +590,16 @@ export default function Home() {
           </div>
 
           <div className="sticky top-0 h-screen">
-            <div className="relative max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 h-full pt-24 md:pt-28 pb-16 md:pb-20 flex flex-col">
+            <div className="relative max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 h-full pt-24 md:pt-28 pb-10 md:pb-14 flex flex-col">
               {/* Title must be above everything (per blueprint) */}
               <div className="flex-none">
                 <h2 className="text-[clamp(64px,6.5vw,110px)] font-light tracking-[-0.06em] leading-[0.92]">
                   The Workflow
                 </h2>
-                <div className="mt-6 h-px w-40 bg-black/15" />
               </div>
 
               {/* Videos */}
-              <div className="flex-1 mt-12 md:mt-14">
+              <div className="flex-1 mt-10 md:mt-12">
                 {/* One “video row”: active expands (main), others stay as shutters on the right.
                     Advancing tabs expands the next shutter into the main video (per blueprint). */}
                 <div className="relative overflow-hidden border border-black/15 bg-black/[0.02]">
@@ -680,7 +679,7 @@ export default function Home() {
               </div>
 
               {/* Bottom strip: labels only (scroll selects left → right) */}
-              <div className="flex-none mt-12 md:mt-14">
+              <div className="flex-none mt-10 md:mt-12">
                 <div className="grid grid-cols-12 gap-10">
                   <div className="col-span-12 lg:col-span-10">
                     <div className="relative border border-black/10 bg-paper overflow-hidden">
