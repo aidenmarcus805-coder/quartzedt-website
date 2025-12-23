@@ -75,6 +75,43 @@ const Reveal = ({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
   );
 };
 
+// Accent dot that "bleeps" twice, then fades out (guides the eye without staying noisy).
+const BleepDot = ({
+  className,
+  delay = 0,
+  sizeClass = 'h-2.5 w-2.5',
+}: {
+  className?: string;
+  delay?: number;
+  sizeClass?: string;
+}) => {
+  const ref = useRef<HTMLSpanElement | null>(null);
+  const isInView = useInView(ref, { once: true, margin: '-10% 0px -10% 0px' });
+
+  return (
+    <motion.span
+      ref={ref}
+      aria-hidden="true"
+      className={`inline-block align-middle rounded-full bg-accent ${sizeClass} ${className ?? ''}`}
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={
+        isInView
+          ? {
+              opacity: [0, 1, 0.25, 1, 0],
+              scale: [0.8, 1.6, 1, 1.6, 1],
+            }
+          : { opacity: 0, scale: 0.8 }
+      }
+      transition={{
+        duration: 1.25,
+        delay,
+        times: [0, 0.16, 0.42, 0.68, 1],
+        ease: [0.16, 1, 0.3, 1],
+      }}
+    />
+  );
+};
+
 // Loop a specific segment of a video file (feels like an "edited" clip without needing multiple assets).
 const SegmentVideo = ({
   src,
@@ -893,6 +930,7 @@ export default function Home() {
               <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 flex-none">
                 <h2 className="font-display text-[clamp(64px,6.5vw,110px)] font-light tracking-[-0.06em] leading-[0.92]">
                   The Workflow
+                  <BleepDot className="ml-4" />
                 </h2>
               </div>
 
@@ -1173,7 +1211,7 @@ export default function Home() {
                 <div className="col-span-12 md:col-span-7">
                   <h2 className="font-display text-[clamp(44px,4.8vw,72px)] font-extralight tracking-[-0.05em] leading-[1.02]">
                     A wedding edit, distilled
-                    <span className="inline-block align-middle ml-4 h-2.5 w-2.5 rounded-full bg-accent" aria-hidden="true" />
+                    <BleepDot className="ml-4" />
                   </h2>
                 </div>
                 <div className="col-span-12 md:col-span-5">
@@ -1399,6 +1437,7 @@ export default function Home() {
                   <h2 className="font-display text-[36px] md:text-[56px] font-extralight leading-[1.1] tracking-[-0.03em] max-w-2xl">
                     Technology that respects 
                     <span className="text-white/30"> the artist.</span>
+                    <BleepDot className="ml-4" />
                   </h2>
                 </div>
               </Reveal>
@@ -1435,7 +1474,8 @@ export default function Home() {
               <Reveal>
                 <div className="space-y-8">
                   <h2 className="font-display text-[42px] md:text-[64px] font-extralight tracking-[-0.04em] leading-[1.05]">
-                    Simple pricing.<br />
+                    Simple pricing.<BleepDot className="ml-4" />
+                    <br />
                     <span className="text-black/20">No subscriptions.</span>
                   </h2>
                   <p className="text-[15px] leading-[1.9] text-black/55 font-light max-w-[52ch]">
@@ -1468,7 +1508,10 @@ export default function Home() {
                       </p>
                       
                       <button className="group inline-flex items-center justify-center gap-3 w-full border border-black/15 py-5 text-[10px] tracking-[0.4em] hover:bg-black hover:text-white transition-all font-light">
-                        <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+                        <span
+                          className="h-2 w-2 rounded-full bg-accent opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 group-focus-visible:opacity-100 group-focus-visible:scale-100 transition-all duration-200"
+                          aria-hidden="true"
+                        />
                         BUY LITE
                       </button>
                     </div>
@@ -1498,7 +1541,10 @@ export default function Home() {
                       </p>
                       
                       <button className="group inline-flex items-center justify-center gap-3 w-full border border-white/20 group-hover:border-black/15 py-5 text-[10px] tracking-[0.4em] hover:bg-paper hover:text-black group-hover:hover:bg-black group-hover:hover:text-white transition-all font-light">
-                        <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+                        <span
+                          className="h-2 w-2 rounded-full bg-accent opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 group-focus-visible:opacity-100 group-focus-visible:scale-100 transition-all duration-200"
+                          aria-hidden="true"
+                        />
                         BUY MAX
                       </button>
                     </div>
@@ -1531,17 +1577,24 @@ export default function Home() {
                 Edit less.
                 <br />
                 <span className="text-white/20">Create more.</span>
+                <BleepDot className="ml-4" />
               </h2>
             </Reveal>
             
             <Reveal delay={0.2}>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                 <button className="group inline-flex items-center justify-center gap-3 px-12 py-5 bg-paper text-black text-[10px] tracking-[0.4em] hover:bg-paper/95 transition-all font-light hover:-translate-y-[1px] active:translate-y-0">
-                  <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+                  <span
+                    className="h-2 w-2 rounded-full bg-accent opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 group-focus-visible:opacity-100 group-focus-visible:scale-100 transition-all duration-200"
+                    aria-hidden="true"
+                  />
                   START FREE TRIAL
                 </button>
                 <button className="group inline-flex items-center justify-center gap-3 px-12 py-5 border border-white/10 text-[10px] tracking-[0.4em] text-white/60 hover:text-white hover:border-accent/50 transition-all font-light hover:-translate-y-[1px] active:translate-y-0">
-                  <span className="h-2 w-2 rounded-full bg-white/20 group-hover:bg-accent/70 transition-colors" aria-hidden="true" />
+                  <span
+                    className="h-2 w-2 rounded-full bg-accent/70 opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 group-focus-visible:opacity-100 group-focus-visible:scale-100 transition-all duration-200"
+                    aria-hidden="true"
+                  />
                   SCHEDULE DEMO
                 </button>
               </div>
