@@ -309,7 +309,7 @@ export default function Home() {
     let raf = 0;
     let snapRaf = 0;
     let ticking = false;
-    const SNAP_PX = 250; // tolerance so you can't "miss" the section by scrolling a bit too fast
+    const SNAP_PX = 650; // tolerance so you can't "miss" the section by scrolling a bit too fast
     const WORKFLOW_SNAP_OFFSET_PX = 35; // intentional: we snap slightly into the section so the stage feels “framed”
 
     const updateActive = () => {
