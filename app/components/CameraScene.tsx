@@ -1038,7 +1038,7 @@ export default function CameraScene({
               />
 
               <div className="relative z-10">
-                <div className="flex justify-center px-6">
+                <div className="flex justify-center pl-[26px] pr-0">
                   <Image
                     src="/logo.png?v=20251223"
                     alt="Cutline"
