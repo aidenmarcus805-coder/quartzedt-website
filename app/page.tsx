@@ -679,6 +679,11 @@ export default function Home() {
         <CameraScene lowPowerMode={lowPowerMode} variant="full" />
       </section>
 
+      {/* Spacer: breathing room before Workflow takeover */}
+      <section aria-hidden="true" className="relative bg-black">
+        <div className="h-[18vh] min-h-[180px] md:h-[24vh] md:min-h-[240px]" />
+      </section>
+
       {/* Workflow */}
       <section id="workflow" ref={firstWhiteRef} className="bg-paper text-black border-b border-black/5">
         <div className="relative h-[120vh] overflow-hidden">
