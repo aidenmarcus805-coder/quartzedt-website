@@ -665,7 +665,16 @@ function LoadingFallback() {
 }
 
 // Main component with scroll hijacking
-export default function CameraScene({ lowPowerMode = false }: { lowPowerMode?: boolean }) {
+export default function CameraScene({
+  lowPowerMode = false,
+  variant = 'full',
+  className,
+}: {
+  lowPowerMode?: boolean;
+  variant?: 'full' | 'gallery';
+  className?: string;
+}) {
+  const showHeroOverlays = variant === 'full';
   const [animationProgress, setAnimationProgress] = useState(0);
   const [isAnimationComplete, setIsAnimationComplete] = useState(false);
   const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null);
@@ -926,7 +935,7 @@ export default function CameraScene({ lowPowerMode = false }: { lowPowerMode?: b
     <>
       {/* Monitor Scene with hero overlay - pure black background */}
       <div 
-        className="w-full h-screen bg-black overflow-hidden"
+        className={`w-full bg-black overflow-hidden ${variant === 'full' ? 'h-screen' : 'h-full'} ${className ?? ''}`}
         style={{ 
           position: 'relative',
           zIndex: 10,
@@ -989,84 +998,86 @@ export default function CameraScene({ lowPowerMode = false }: { lowPowerMode?: b
           </Suspense>
         </Canvas>
 
-        {/* Initial centered text - CUTLINE (fades out as you scroll) */}
-        <div 
-          className="absolute inset-0 flex flex-col justify-center items-center text-center pointer-events-none z-10"
-          style={{ 
-            opacity: Math.max(0, 1 - animationProgress * 2.8),
-            transform: `translateY(${animationProgress * 30}px)`,
-            transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
-          }}
-        >
-          <h1 className="text-[clamp(64px,16vw,200px)] font-extralight leading-[0.85] tracking-[-0.05em] text-white inline-flex items-center justify-center gap-4">
-            <span>CUTLINE</span>
-            <span className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-accent" aria-hidden="true" />
-          </h1>
-          <p className="mt-10 max-w-lg px-6 text-[15px] md:text-[17px] leading-[1.7] text-white/40 font-light">
-            Precise edits. Made automatically.
-          </p>
-          
-          {/* Minimal CTA */}
-          <div 
-            className="mt-12 pointer-events-auto"
-          >
-            <button className="inline-flex items-center gap-3 px-10 py-4 text-[10px] tracking-[0.4em] text-white border border-white/20 hover:bg-paper hover:text-black transition-all duration-300 font-light">
-              <span className="w-2 h-2 rounded-full bg-accent" aria-hidden="true" />
-              START FREE TRIAL
-            </button>
-          </div>
-        </div>
-
-        {/* Hero text overlay - Lower third positioning */}
-        <div 
-          className="absolute inset-0 flex items-end pointer-events-none z-10"
-          style={{ 
-            opacity: animationProgress > 0.5 ? Math.min((animationProgress - 0.5) * 2, 1) : 0,
-            paddingBottom: '18vh', // Lower third, balanced with monitor
-          }}
-        >
-          {/* Text with subtle dark gradient for legibility */}
-          <div className="absolute inset-0 pointer-events-none" style={{
-            background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%)',
-          }} />
-          
-          {/* Content aligned to grid */}
-          <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 w-full relative z-10">
-            <div className="max-w-4xl">
-              {/* Main title */}
-              <div className="overflow-hidden">
-                <h1 
-                  className="text-[clamp(56px,10vw,140px)] font-extralight leading-[0.9] tracking-[-0.05em] text-white"
-                  style={{
-                    transform: `translateY(${(1 - (animationProgress > 0.6 ? Math.min((animationProgress - 0.6) * 3, 1) : 0)) * 100}%)`,
-                    textShadow: '0 2px 40px rgba(0,0,0,0.3)',
-                  }}
-                >
-                  Weeks to<br />
-                  <span className="text-white/60">Hours.</span>
-                </h1>
-              </div>
+        {showHeroOverlays && (
+          <>
+            {/* Initial centered text - CUTLINE (fades out as you scroll) */}
+            <div 
+              className="absolute inset-0 flex flex-col justify-center items-center text-center pointer-events-none z-10"
+              style={{ 
+                opacity: Math.max(0, 1 - animationProgress * 2.8),
+                transform: `translateY(${animationProgress * 30}px)`,
+                transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
+              }}
+            >
+              <h1 className="text-[clamp(64px,16vw,200px)] font-extralight leading-[0.85] tracking-[-0.05em] text-white inline-flex items-center justify-center gap-4">
+                <span>CUTLINE</span>
+                <span className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-accent" aria-hidden="true" />
+              </h1>
+              <p className="mt-10 max-w-lg px-6 text-[15px] md:text-[17px] leading-[1.7] text-white/40 font-light">
+                Precise edits. Made automatically.
+              </p>
               
-              {/* Tagline */}
-              <div 
-                className="mt-10 flex items-center gap-6"
-                style={{
-                  opacity: animationProgress > 0.8 ? Math.min((animationProgress - 0.8) * 4, 1) : 0,
-                }}
-              >
-                <div 
-                  className="h-[1px] bg-paper/30"
-                  style={{
-                    width: `${(animationProgress > 0.85 ? Math.min((animationProgress - 0.85) * 5, 1) : 0) * 80}px`,
-                  }}
-                />
-                <p className="text-[11px] tracking-[0.5em] text-white/50 font-light">
-                  AI WEDDING EDITING
-                </p>
+              {/* Minimal CTA */}
+              <div className="mt-12 pointer-events-auto">
+                <button className="inline-flex items-center gap-3 px-10 py-4 text-[10px] tracking-[0.4em] text-white border border-white/20 hover:bg-paper hover:text-black transition-all duration-300 font-light">
+                  <span className="w-2 h-2 rounded-full bg-accent" aria-hidden="true" />
+                  START FREE TRIAL
+                </button>
               </div>
             </div>
-          </div>
-        </div>
+
+            {/* Hero text overlay - Lower third positioning */}
+            <div 
+              className="absolute inset-0 flex items-end pointer-events-none z-10"
+              style={{ 
+                opacity: animationProgress > 0.5 ? Math.min((animationProgress - 0.5) * 2, 1) : 0,
+                paddingBottom: '18vh', // Lower third, balanced with monitor
+              }}
+            >
+              {/* Text with subtle dark gradient for legibility */}
+              <div className="absolute inset-0 pointer-events-none" style={{
+                background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%)',
+              }} />
+              
+              {/* Content aligned to grid */}
+              <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 w-full relative z-10">
+                <div className="max-w-4xl">
+                  {/* Main title */}
+                  <div className="overflow-hidden">
+                    <h1 
+                      className="text-[clamp(56px,10vw,140px)] font-extralight leading-[0.9] tracking-[-0.05em] text-white"
+                      style={{
+                        transform: `translateY(${(1 - (animationProgress > 0.6 ? Math.min((animationProgress - 0.6) * 3, 1) : 0)) * 100}%)`,
+                        textShadow: '0 2px 40px rgba(0,0,0,0.3)',
+                      }}
+                    >
+                      Weeks to<br />
+                      <span className="text-white/60">Hours.</span>
+                    </h1>
+                  </div>
+                  
+                  {/* Tagline */}
+                  <div 
+                    className="mt-10 flex items-center gap-6"
+                    style={{
+                      opacity: animationProgress > 0.8 ? Math.min((animationProgress - 0.8) * 4, 1) : 0,
+                    }}
+                  >
+                    <div 
+                      className="h-[1px] bg-paper/30"
+                      style={{
+                        width: `${(animationProgress > 0.85 ? Math.min((animationProgress - 0.85) * 5, 1) : 0) * 80}px`,
+                      }}
+                    />
+                    <p className="text-[11px] tracking-[0.5em] text-white/50 font-light">
+                      AI WEDDING EDITING
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </>
   );

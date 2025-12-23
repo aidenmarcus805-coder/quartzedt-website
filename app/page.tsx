@@ -7,7 +7,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 
 // Dynamic import for 3D scene (client-side only)
-const CameraScene = dynamic<{ lowPowerMode?: boolean }>(() => import('./components/CameraScene'), { 
+const CameraScene = dynamic<{ lowPowerMode?: boolean; variant?: 'full' | 'gallery'; className?: string }>(() => import('./components/CameraScene'), { 
   ssr: false,
   loading: () => (
     <div className="h-screen flex items-center justify-center bg-black">
@@ -672,15 +672,64 @@ export default function Home() {
         </div>
       </motion.nav>
 
-      {/* Hero Section - 3D Monitor with integrated overlay */}
-      <section ref={heroRef}>
-        <CameraScene lowPowerMode={lowPowerMode} />
+      {/* Hero (Gallery Minimal): calm left column + monitor right (no headline overlap) */}
+      <section ref={heroRef} className="relative border-b border-white/5">
+        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 min-h-screen pt-32 pb-24 flex items-center">
+          <div className="w-full grid grid-cols-12 gap-12 lg:gap-16 items-center">
+            <div className="col-span-12 lg:col-span-5">
+              <motion.div
+                initial={{ opacity: 0, y: 18, filter: 'blur(10px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                transition={{ duration: 1.05, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+              >
+                <h1 className="font-display text-[clamp(56px,6.2vw,112px)] font-extralight tracking-[-0.06em] leading-[0.95]">
+                  Weeks to
+                  <br />
+                  <span className="text-white/35">Hours</span>
+                  <span className="text-white/35">.</span>
+                  <span className="inline-block align-baseline ml-4 h-3 w-3 rounded-full bg-accent" aria-hidden="true" />
+                </h1>
+
+                <p className="mt-10 text-[15px] md:text-[17px] leading-[1.9] text-white/50 font-light max-w-[60ch]">
+                  AI wedding video editing that pulls the vows, reactions, and rhythm out of hours of footage — then hands you a timeline you finish.
+                </p>
+
+                <div className="mt-12 flex flex-col sm:flex-row items-start sm:items-center gap-6">
+                  <button className="group inline-flex items-center justify-center gap-3 px-12 py-5 bg-paper text-black text-[10px] tracking-[0.4em] hover:bg-paper/95 transition-all font-light hover:-translate-y-[1px] active:translate-y-0">
+                    <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+                    START FREE TRIAL
+                  </button>
+
+                  <a
+                    href="#workflow"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      document.getElementById('workflow')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }}
+                    className="link-underline inline-flex items-center gap-4 text-[10px] tracking-[0.45em] text-white/40 hover:text-white transition-colors font-light"
+                  >
+                    VIEW WORKFLOW
+                    <span className="text-white/35" aria-hidden="true">
+                      <ArrowRight className="w-4 h-4" />
+                    </span>
+                  </a>
+                </div>
+              </motion.div>
+            </div>
+
+            <div className="col-span-12 lg:col-span-7">
+              <div className="relative h-[72vh] min-h-[520px] max-h-[780px]">
+                <CameraScene lowPowerMode={lowPowerMode} variant="gallery" />
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Capabilities Section - Golden Ratio Grid */}
       <section id="work" className="border-t border-white/5">
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16">
-          <div className="py-24 md:py-32 border-b border-white/5">
+          <div className="py-32 border-b border-white/5">
             <Reveal>
               <div className="grid grid-cols-12 gap-10 items-end">
                 <div className="col-span-12 md:col-span-7">
@@ -702,8 +751,8 @@ export default function Home() {
             <Reveal key={cap.title} delay={idx * 0.1}>
               <motion.div
                 layout
-                className="group relative border-b border-white/5 py-16 md:py-20 cursor-pointer"
-                whileHover={{ backgroundColor: 'rgba(255,255,255,0.02)' }}
+                className="group relative border-b border-white/5 py-16 cursor-pointer"
+                whileHover={{ backgroundColor: 'rgba(255,255,255,0.015)' }}
                 transition={{ duration: 0.4 }}
               >
                 <div
@@ -727,7 +776,7 @@ export default function Home() {
                     
                     {/* Title - golden ratio position */}
                     <div className="col-span-11 md:col-span-4">
-                      <h3 className="text-[24px] md:text-[32px] font-light tracking-[-0.02em] leading-[1.1] group-hover:text-white/70 transition-colors">
+                      <h3 className="font-display text-[26px] md:text-[34px] font-light tracking-[-0.03em] leading-[1.05] group-hover:text-white/75 transition-colors">
                         {cap.title}
                       </h3>
                     </div>
@@ -758,7 +807,7 @@ export default function Home() {
                       transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
                       className="overflow-hidden"
                     >
-                      <div className="pt-10 md:pt-12 pb-2">
+                      <div className="pt-8 pb-0">
                         <div className="grid grid-cols-12 gap-8 items-start">
                           {/* 16:9 demo frame */}
                           <div className="col-span-12 md:col-span-10 md:col-start-2">
@@ -827,7 +876,7 @@ export default function Home() {
             </Reveal>
           ))}
 
-          <div className="py-20 md:py-24">
+          <div className="py-16">
             <Reveal delay={0.05}>
               <div className="flex items-center justify-between gap-8">
                 <div className="text-[15px] md:text-[17px] leading-[1.9] text-white/45 font-light max-w-2xl">
@@ -872,22 +921,24 @@ export default function Home() {
           </div>
 
           <div className="sticky top-0 h-screen">
-            <div className="relative max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 h-full pt-32 md:pt-36 pb-8 md:pb-10 flex flex-col">
-              {/* Title must be above everything (per blueprint) */}
-              <div className="flex-none">
+            <div className="relative h-full pt-32 pb-16 flex flex-col">
+              {/* Title (gallery rhythm: aligned to content grid) */}
+              <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 flex-none">
                 <h2 className="font-display text-[clamp(64px,6.5vw,110px)] font-light tracking-[-0.06em] leading-[0.92]">
                   The Workflow
                 </h2>
               </div>
 
               {/* Videos */}
-              <div className="flex-1 mt-10 md:mt-12">
-                {/* One “video row”: active expands (main), others stay as shutters on the right.
-                    Advancing tabs expands the next shutter into the main video (per blueprint). */}
-                <div className="relative overflow-hidden border border-black/15 bg-white shadow-[0_70px_160px_rgba(0,0,0,0.10)]">
+              <div className="flex-1 mt-16">
+                {/* Full-bleed stage (feels like an exhibit, not an inset embed) */}
+                <div className="relative w-screen left-1/2 -translate-x-1/2 px-8 md:px-12 lg:px-16">
+                  {/* One “video row”: active expands (main), others stay as shutters on the right.
+                      Advancing tabs expands the next shutter into the main video (per blueprint). */}
+                  <div className="relative overflow-hidden border border-black/15 bg-white shadow-[0_70px_160px_rgba(0,0,0,0.10)]">
                   {/* Workflow HUD (makes the scroll hijack feel intentional) */}
                   <div className="pointer-events-none absolute inset-x-0 top-0 z-10">
-                    <div className="flex items-start justify-between p-4 md:p-5">
+                    <div className="flex items-start justify-between p-4">
                       <div className="flex items-center gap-3">
                         <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
                         <span className="text-[10px] tracking-[0.5em] text-black/45 font-light">
@@ -1040,9 +1091,10 @@ export default function Home() {
                   </div>
                 </div>
               </div>
+              </div>
 
               {/* Bottom strip: labels only (scroll selects left → right) */}
-              <div className="flex-none mt-10 md:mt-12">
+              <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 flex-none mt-16">
                 <div className="relative border border-black/10 bg-paper overflow-hidden">
                   <motion.div
                     aria-hidden="true"
@@ -1086,7 +1138,7 @@ export default function Home() {
 
       {/* Philosophy Section - Golden Ratio: 38.2% / 61.8% */}
       <section ref={philosophyRef} className="relative border-t border-white/5">
-        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-32 md:py-48">
+        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-32">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-12 items-center">
             {/* Left: Image (5 cols = 41.6%, close to golden) */}
             <div className="lg:col-span-5">
@@ -1132,7 +1184,7 @@ export default function Home() {
 
       {/* Pricing - Minimal Grid */}
       <section className="bg-paper text-black border-y border-black/5">
-        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-32 md:py-40">
+        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-32">
           <Reveal>
             <div className="mb-20">
               <h2 className="font-display text-[42px] md:text-[64px] font-extralight tracking-[-0.04em] leading-[1.05]">
@@ -1216,7 +1268,7 @@ export default function Home() {
 
       {/* CTA Section - Centered, Minimal */}
       <section className="border-t border-white/5">
-        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-40 md:py-56">
+        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-32">
           <div className="max-w-4xl mx-auto text-center space-y-16">
             <Reveal>
               <h2 className="font-display text-[48px] md:text-[80px] font-extralight leading-[1.05] tracking-[-0.04em]">
@@ -1244,7 +1296,7 @@ export default function Home() {
 
       {/* Footer - Minimal Grid */}
       <footer className="border-t border-white/5">
-        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-20 md:py-24">
+        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-20">
           {/* Main Grid */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-16 md:gap-8">
             {/* Brand - 5 cols (golden ratio) */}
