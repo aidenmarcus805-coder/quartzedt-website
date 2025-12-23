@@ -166,16 +166,52 @@ const ReelOverlay = ({ type }: { type: ReelOverlayType }) => {
 
   return (
     <div className="absolute inset-0 pointer-events-none">
+      {/* Explicit proof labels (kept minimal, but specific) */}
+      {type === 'sync' && (
+        <div className="absolute left-6 top-6 flex items-center gap-3">
+          <span className="h-2 w-2 rounded-full bg-accent/80" aria-hidden="true" />
+          <span className="text-[10px] tracking-[0.5em] text-white/55 font-light">SYNC</span>
+        </div>
+      )}
+      {type === 'select' && (
+        <div className="absolute left-6 top-6 flex flex-wrap gap-2">
+          {['VOW', 'LAUGH', 'SPEECH'].map((t) => (
+            <span
+              key={t}
+              className="px-2 py-1 rounded-full border border-white/12 bg-black/35 text-[9px] tracking-[0.35em] text-white/55 font-light"
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+      )}
+      {type === 'flow' && (
+        <div className="absolute left-6 top-6 flex items-center gap-3">
+          <span className="h-2 w-2 rounded-full bg-accent/80" aria-hidden="true" />
+          <span className="text-[10px] tracking-[0.5em] text-white/55 font-light">ARC</span>
+        </div>
+      )}
+      {type === 'audio' && (
+        <div className="absolute left-6 top-6 flex items-center gap-3">
+          <span className="h-2 w-2 rounded-full bg-accent/80" aria-hidden="true" />
+          <span className="text-[10px] tracking-[0.5em] text-white/55 font-light">CLEAN</span>
+          <span className="text-[10px] tracking-[0.4em] text-white/35 font-light">−18 dB</span>
+        </div>
+      )}
+
       {/* Track area near the bottom for timelines / meters */}
       <div className="absolute left-6 right-6 bottom-8 h-[84px] md:h-[96px]">
         {type === 'sync' && (
-          <div className="absolute inset-0 flex flex-col justify-between py-3">
-            {[0, 1, 2].map((i) => (
+          <div className="absolute inset-0 flex flex-col justify-between py-3 pl-14">
+            {['CAM A', 'CAM B', 'AUDIO'].map((label, i) => (
               <div key={i} className="relative h-px bg-white/10">
+                <span className="absolute -left-14 -top-[7px] text-[9px] tracking-[0.35em] text-white/28 font-light">
+                  {label}
+                </span>
                 {/* Shared markers (alignment) */}
-                <span className="absolute -top-[2px] left-[18%] h-[5px] w-px bg-white/18" />
-                <span className="absolute -top-[2px] left-[52%] h-[5px] w-px bg-white/20" />
-                <span className="absolute -top-[2px] left-[78%] h-[5px] w-px bg-white/14" />
+                <span className="absolute -top-[2px] left-[18%] h-[5px] w-px bg-white/20" />
+                <span className="absolute -top-[2px] left-[52%] h-[5px] w-px bg-accent/70" />
+                <span className="absolute -top-[2px] left-[78%] h-[5px] w-px bg-white/18" />
                 {/* A faint “waveform” hint on the middle track */}
                 {i === 1 && (
                   <span className="absolute -top-[6px] left-[30%] h-[13px] w-[40%] border-t border-white/8" />
@@ -199,13 +235,24 @@ const ReelOverlay = ({ type }: { type: ReelOverlayType }) => {
 
         {type === 'flow' && (
           <div className="absolute inset-0 flex items-end gap-2 pb-2">
-            {[18, 12, 22, 14, 10, 24].map((w, i) => (
+            {[
+              { w: 18, label: 'CEREMONY' },
+              { w: 12, label: 'PORTRAITS' },
+              { w: 22, label: 'TOASTS' },
+              { w: 14, label: 'DANCE' },
+              { w: 10, label: 'DETAILS' },
+              { w: 24, label: 'EXIT' },
+            ].map((seg, i) => (
               <span
                 key={i}
                 className={`h-[22px] border ${i === 2 ? 'border-white/18 bg-white/6' : 'border-white/10 bg-white/3'}`}
-                style={{ width: `${w}%` }}
+                style={{ width: `${seg.w}%` }}
               />
             ))}
+            <div className="absolute inset-x-0 -bottom-1 flex justify-between">
+              <span className="text-[9px] tracking-[0.35em] text-white/22 font-light">START</span>
+              <span className="text-[9px] tracking-[0.35em] text-white/22 font-light">END</span>
+            </div>
           </div>
         )}
 
@@ -667,7 +714,7 @@ export default function Home() {
       {/* Capabilities Section - Golden Ratio Grid */}
       <section id="work" className="border-t border-white/5">
         <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16">
-          <div className="py-24 border-b border-white/10">
+          <div className="py-20 border-b border-white/12">
             <Reveal>
               <div className="grid grid-cols-12 gap-10 items-end">
                 <div className="col-span-12 md:col-span-7">
@@ -718,11 +765,11 @@ export default function Home() {
                         }}
                         onFocus={() => setActiveCapabilityIdx(idx)}
                         aria-expanded={isOpen}
-                        className="w-full text-left py-12"
+                        className="w-full text-left py-10"
                       >
                         <div className="grid grid-cols-12 gap-8 items-start">
                           <div className="col-span-1">
-                            <span className="text-[10px] tracking-[0.3em] text-white/35 group-hover:text-white/60 transition-colors">
+                            <span className="text-[10px] tracking-[0.3em] text-white/45 group-hover:text-white/70 transition-colors">
                               {cap.num}
                             </span>
                           </div>
@@ -734,14 +781,14 @@ export default function Home() {
                           </div>
 
                           <div className="col-span-11 col-start-2 md:col-span-7 md:col-start-6 flex items-start justify-between gap-8">
-                            <p className="text-[15px] md:text-[17px] font-light leading-[1.7] text-white/55 group-hover:text-white/75 transition-colors">
+                            <p className="text-[15px] md:text-[17px] font-light leading-[1.7] text-white/60 group-hover:text-white/80 transition-colors">
                               {cap.desc}
                             </p>
 
                             <motion.div
                               animate={{
-                                rotate: isActive ? 90 : 0,
-                                opacity: isActive ? 0.85 : 0.45,
+                                rotate: isOpen ? 90 : 0,
+                                opacity: isActive ? 0.9 : 0.55,
                                 x: isActive ? 2 : 0,
                               }}
                               className="w-5 h-5 mt-1 text-white/50 group-hover:text-white/80 transition-colors shrink-0"
