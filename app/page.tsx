@@ -1208,17 +1208,12 @@ export default function Home() {
           <div className="pt-20 pb-28">
             <Reveal>
               <div className="grid grid-cols-12 gap-10 items-end">
-                <div className="col-span-12 md:col-span-7">
+                <div className="col-span-12 md:col-span-12">
                   <h2 className="font-display text-[clamp(44px,4.8vw,72px)] font-extralight tracking-[-0.05em] leading-[1.02]">
                     A wedding edit, distilled
                     <BleepDot className="ml-4" />
                   </h2>
                 </div>
-                <div className="col-span-12 md:col-span-5">
-                  <p className="text-[15px] md:text-[17px] leading-[1.9] text-white/60 font-light max-w-xl">
-                    Every feature is designed for wedding footage — vows, speeches, reactions, and pacing.
-          </p>
-        </div>
               </div>
             </Reveal>
           </div>
@@ -1256,7 +1251,7 @@ export default function Home() {
                         }}
                         onFocus={() => setActiveCapabilityIdx(idx)}
                         aria-expanded={isOpen}
-                        className="w-full text-left py-10"
+                        className="w-full text-left py-10 pl-0 group-hover:pl-5 group-focus-within:pl-5 transition-[padding] duration-300"
                       >
                         <div className="grid grid-cols-12 gap-8 items-start">
                           <div className="col-span-1">
@@ -1341,10 +1336,7 @@ export default function Home() {
 
               <div className="pt-12 pb-28">
                 <Reveal delay={0.05}>
-                  <div className="flex items-center justify-between gap-8">
-                    <div className="text-[15px] md:text-[17px] leading-[1.9] text-white/55 font-light max-w-2xl">
-                      Then watch it stitch together — the same footage, but with intention.
-                    </div>
+                  <div className="flex items-center justify-start gap-8">
                     <a
                       href="#workflow"
                       onClick={(e) => {
