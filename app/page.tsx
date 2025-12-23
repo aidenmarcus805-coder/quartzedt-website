@@ -369,19 +369,17 @@ export default function Home() {
       const delta = targetY - startY;
       const start = performance.now();
       const distance = Math.abs(delta);
-      // Make the snap feel “guided” (not a yank):
-      // - short snaps are still responsive
-      // - long snaps take longer and start gently (ease-in-out)
-      const durationMs = Math.min(950, Math.max(420, distance * 1.05));
+      // Make the snap feel like natural scroll momentum (not a “gear shift”):
+      // - keep short snaps responsive
+      // - longer snaps decelerate smoothly (ease-out)
+      const durationMs = Math.min(900, Math.max(480, distance * 1.35));
 
-      const easeInOutCubic = (t: number) =>
-        t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
       const tick = (now: number) => {
         const t = Math.min(1, (now - start) / durationMs);
-        const eased = easeInOutCubic(t);
-        const y = startY + delta * eased;
-        window.scrollTo(0, Math.round(y));
+        const eased = easeOutCubic(t);
+        window.scrollTo(0, startY + delta * eased);
         if (t < 1) {
           snapRaf = window.requestAnimationFrame(tick);
         } else {
@@ -433,7 +431,8 @@ export default function Home() {
         // This avoids the inconsistent "stop point" you’re seeing.
         // Snap only when you're close enough that it feels like a gentle “magnet” (not a big jump).
         // Also avoid snapping back upward if you've already flown past the intended framed top.
-        const capturePx = Math.min(SNAP_PX, WORKFLOW_SNAP_OFFSET_PX + 160);
+        const MAX_SNAP_DELTA_PX = 175;
+        const capturePx = Math.min(SNAP_PX, Math.max(0, MAX_SNAP_DELTA_PX - WORKFLOW_SNAP_OFFSET_PX));
         const inSnapZone = rect.top <= capturePx && rect.top >= -WORKFLOW_SNAP_OFFSET_PX;
 
         if (shouldCapture && dir > 0 && inSnapZone) {
@@ -493,7 +492,8 @@ export default function Home() {
         const el = firstWhiteRef.current;
         if (!el) return;
         const rect = el.getBoundingClientRect();
-        const capturePx = Math.min(SNAP_PX, WORKFLOW_SNAP_OFFSET_PX + 160);
+        const MAX_SNAP_DELTA_PX = 175;
+        const capturePx = Math.min(SNAP_PX, Math.max(0, MAX_SNAP_DELTA_PX - WORKFLOW_SNAP_OFFSET_PX));
         const inSnapZone = rect.top <= capturePx && rect.top >= -WORKFLOW_SNAP_OFFSET_PX;
 
         if (shouldCapture && dir > 0 && inSnapZone) {
