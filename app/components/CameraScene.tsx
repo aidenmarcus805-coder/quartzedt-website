@@ -246,18 +246,36 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition, h
                 planeCenterMinus,
               };
             }
+
+            // Bezel / display housing: dark, slightly satin (less "flat grey").
+            child.material = new THREE.MeshPhysicalMaterial({
+              map: textures.baseColor,
+              normalMap: textures.baseNormal,
+              normalScale: new THREE.Vector2(0.35, 0.35),
+              color: new THREE.Color('#141416'),
+              metalness: 0.15,
+              roughness: 0.55,
+              clearcoat: 0.08,
+              clearcoatRoughness: 0.85,
+              envMapIntensity: 0.25,
+              side: THREE.FrontSide,
+            });
           }
           
           // Apply materials based on mesh name
           if (name === 'macpro_monitor_001-material') {
-            child.material = new THREE.MeshStandardMaterial({
+            // Stand: textured black plastic (not metallic).
+            child.material = new THREE.MeshPhysicalMaterial({
               map: textures.baseColor,
               normalMap: textures.baseNormal,
-              normalScale: new THREE.Vector2(1, 1),
-              metalness: 0.95,
-              roughness: 0.45,
-              side: THREE.DoubleSide,
-              envMapIntensity: 0.8,
+              normalScale: new THREE.Vector2(0.45, 0.45),
+              color: new THREE.Color('#101011'),
+              metalness: 0.02,
+              roughness: 0.86,
+              clearcoat: 0.04,
+              clearcoatRoughness: 0.92,
+              side: THREE.FrontSide,
+              envMapIntensity: 0.18,
             });
           }
 
@@ -326,8 +344,8 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition, h
     
     // Mouse parallax effect (disabled until first scroll)
     const mouseInfluence = isInteractive ? 1 - scrollEase * 0.5 : 0;
-    const mouseRotY = mousePosition.x * 0.03 * mouseInfluence;
-    const mouseRotX = mousePosition.y * 0.02 * mouseInfluence;
+    const mouseRotY = mousePosition.x * 0.02 * mouseInfluence;
+    const mouseRotX = mousePosition.y * 0.014 * mouseInfluence;
     
     // Scale (+0.1 at scroll=0)
     const startScale = 6.02;
@@ -532,7 +550,7 @@ function Scene({ scrollProgress, videoElement, mousePosition, hasUserScrolledRef
   return (
     <group position={[0, 0, 0]}>
       {/* Environment for reflections */}
-      {!lowPowerMode && <Environment preset="studio" environmentIntensity={0.14} />}
+      {!lowPowerMode && <Environment preset="studio" environmentIntensity={0.28} />}
       {!lowPowerMode && <Lighting />}
       <MonitorModel 
         scrollProgress={scrollProgress} 
@@ -551,40 +569,40 @@ function Lighting() {
   return (
     <>
       {/* Soft ambient for visibility */}
-      <ambientLight intensity={0.34} color="#ffffff" />
+      <ambientLight intensity={0.12} color="#ffffff" />
       
       {/* KEY LIGHT - Main illumination from top-right */}
       <directionalLight 
-        position={[5, 6, 6]} 
-        intensity={0.85}
+        position={[6, 6, 7]} 
+        intensity={1.15}
         color="#fff4ee"
       />
       
       {/* RIM LIGHT - Subtle edge definition from back-left */}
       <directionalLight 
-        position={[-6, 3, -3]} 
-        intensity={0.25}
+        position={[-6, 4, -4]} 
+        intensity={0.35}
         color="#ffffff"
       />
       
       {/* FILL LIGHT - Soft from left side */}
       <directionalLight 
-        position={[-5, 2, 4]} 
-        intensity={0.32} 
+        position={[-6, 2, 6]} 
+        intensity={0.45} 
         color="#eef2ff"
       />
       
       {/* TOP LIGHT - Even from above */}
       <directionalLight
         position={[0, 8, 2]}
-        intensity={0.35}
+        intensity={0.25}
         color="#ffffff"
       />
       
       {/* FRONT ACCENT - Subtle face illumination */}
       <pointLight 
         position={[0, 1.2, 10]} 
-        intensity={2.2} 
+        intensity={0.9} 
         color="#ffffff" 
         distance={26}
         decay={2}
@@ -593,7 +611,7 @@ function Lighting() {
       {/* (Removed extra point lights to avoid harsh spec/hotspots) */}
       
       {/* Soft gradient environment */}
-      <hemisphereLight args={['#ffffff', '#0b0b0c', 0.45]} />
+      <hemisphereLight args={['#ffffff', '#0b0b0c', 0.25]} />
     </>
   );
 }

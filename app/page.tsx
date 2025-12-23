@@ -5,6 +5,7 @@ import { ArrowRight, Download, Film, Minus, Search, Upload } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
 
 // Dynamic import for 3D scene (client-side only)
 const CameraScene = dynamic<{ lowPowerMode?: boolean; variant?: 'full' | 'gallery'; className?: string }>(() => import('./components/CameraScene'), { 
@@ -203,89 +204,6 @@ const ReelOverlay = ({ type }: { type: ReelOverlayType }) => {
         )}
       </div>
     </div>
-  );
-};
-
-const CutlinePoster = () => {
-  return (
-    <motion.div
-      className="relative aspect-[3/4] overflow-hidden border border-white/10 bg-white/[0.03]"
-      whileHover={{ scale: 1.01 }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-    >
-      {/* Dot grid (signature texture) */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0"
-        style={{
-          backgroundImage: 'radial-gradient(rgba(255,255,255,0.14) 1px, transparent 1px)',
-          backgroundSize: '24px 24px',
-          backgroundPosition: 'center',
-          opacity: 0.22,
-        }}
-      />
-
-      {/* Soft vignette */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(ellipse 75% 70% at 50% 45%, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.00) 55%), linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.42) 100%)',
-        }}
-      />
-
-      {/* Minimal “timeline” composition */}
-      <div className="absolute inset-0 p-8 md:p-10 flex flex-col">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
-            <span className="text-[10px] tracking-[0.5em] text-white/40 font-light">LIVE</span>
-          </div>
-          <span className="text-[10px] tracking-[0.4em] text-white/25 font-light">00:00:00</span>
-        </div>
-
-        <div className="mt-10 space-y-4">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="relative h-7 border border-white/10 bg-black/20 overflow-hidden">
-              <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/6 to-white/0" />
-              <div
-                aria-hidden="true"
-                className="absolute inset-y-0 left-[61.8%] w-px bg-accent/70"
-              />
-              <div
-                aria-hidden="true"
-                className="absolute left-[18%] top-0 bottom-0 w-[18%] bg-white/5"
-              />
-              <div
-                aria-hidden="true"
-                className="absolute left-[42%] top-0 bottom-0 w-[12%] bg-white/7"
-              />
-              <div
-                aria-hidden="true"
-                className="absolute left-[70%] top-0 bottom-0 w-[16%] bg-white/5"
-              />
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-auto pt-10">
-          <div className="flex items-end justify-between gap-8">
-            <div>
-              <div className="text-[46px] md:text-[56px] font-extralight tracking-[-0.06em] leading-none text-white/90">
-                47
-              </div>
-              <div className="mt-2 text-[10px] tracking-[0.5em] text-white/30 font-light">
-                EMOTIONAL MARKERS
-              </div>
-            </div>
-            <div className="text-right text-[10px] tracking-[0.4em] text-white/22 font-light">
-              CUTLINE
-            </div>
-          </div>
-        </div>
-      </div>
-    </motion.div>
   );
 };
 
@@ -690,7 +608,7 @@ export default function Home() {
                 </h1>
 
                 <p className="mt-10 text-[15px] md:text-[17px] leading-[1.9] text-white/50 font-light max-w-[60ch]">
-                  AI wedding video editing that pulls the vows, reactions, and rhythm out of hours of footage — then hands you a timeline you finish.
+                  AI wedding editing that detects vows, laughter, and 47 emotional markers per frame — then builds a timeline you finish.
                 </p>
 
                 <div className="mt-12 flex flex-col sm:flex-row items-start sm:items-center gap-6">
@@ -939,11 +857,16 @@ export default function Home() {
                   {/* Workflow HUD (makes the scroll hijack feel intentional) */}
                   <div className="pointer-events-none absolute inset-x-0 top-0 z-10">
                     <div className="flex items-start justify-between p-4">
-                      <div className="flex items-center gap-3">
-                        <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
-                        <span className="text-[10px] tracking-[0.5em] text-black/45 font-light">
-                          {WORKFLOW_STEPS[workflowIdx]?.label.toUpperCase()}
-                        </span>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-3">
+                          <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+                          <span className="text-[10px] tracking-[0.5em] text-black/45 font-light">
+                            {WORKFLOW_STEPS[workflowIdx]?.label.toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="pl-5 text-[12px] leading-[1.55] text-black/35 font-light">
+                          {WORKFLOW_STEPS[workflowIdx]?.desc}
+                        </div>
                       </div>
 
                       <div className="flex items-center gap-3 text-[10px] tracking-[0.4em] text-black/40 font-light">
@@ -962,7 +885,7 @@ export default function Home() {
                         animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                         exit={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
                         transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                        className="pointer-events-none absolute left-4 bottom-4 z-10"
+                        className="pointer-events-none absolute left-4 bottom-20 z-10"
                       >
                         <div className="inline-flex items-center gap-3 rounded-full border border-black/10 bg-white/80 backdrop-blur-sm px-4 py-2">
                           <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
@@ -990,7 +913,7 @@ export default function Home() {
                         animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                         exit={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
                         transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                        className="pointer-events-none absolute right-4 bottom-4 z-10"
+                        className="pointer-events-none absolute right-4 bottom-20 z-10"
                       >
                         <div className="inline-flex items-center gap-3 rounded-full border border-black/10 bg-white/80 backdrop-blur-sm px-4 py-2">
                           <span className="h-2 w-2 rounded-full bg-black/25" aria-hidden="true" />
@@ -1089,26 +1012,16 @@ export default function Home() {
                       })}
                     </motion.div>
                   </div>
-                </div>
-                </div>
-              </div>
-              </div>
 
-              {/* Bottom strip: labels only (scroll selects left → right) */}
-              <div className="flex-none mt-16">
-                <div className="relative w-screen left-1/2 -translate-x-1/2 px-8 md:px-12 lg:px-16">
-                  <div className="max-w-[1800px] mx-auto">
-                    <div className="relative border border-black/10 bg-paper overflow-hidden">
-                      <motion.div
-                        aria-hidden="true"
-                        className="absolute inset-y-0 left-0 w-1/4 bg-accent/10"
-                        animate={{ x: `${workflowIdx * 100}%` }}
-                        transition={{ type: 'spring', stiffness: 260, damping: 30 }}
-                      />
-                      <div className="relative grid grid-cols-4">
+                  {/* Step rail (replaces the old bottom widgets; always visible while locked) */}
+                  <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-5">
+                    <div className="mx-auto max-w-[780px]">
+                      <div aria-hidden="true" className="relative h-6">
+                        <div className="absolute left-0 right-0 top-[11px] h-px bg-black/10" />
+                      </div>
+                      <div className="flex items-start justify-between">
                         {WORKFLOW_STEPS.map((step, idx) => {
-                          const Icon = step.icon;
-
+                          const active = idx === workflowIdx;
                           return (
                             <button
                               key={step.label}
@@ -1117,16 +1030,23 @@ export default function Home() {
                                 setWorkflowHasInteracted(true);
                                 setWorkflowIdx(idx);
                               }}
-                              className="px-7 py-6 md:py-7 border-r last:border-r-0 border-black/10 text-left"
+                              className="group -mx-2 px-2"
+                              aria-label={`Select ${step.label}`}
                             >
-                              <div className="flex items-center justify-between gap-6">
-                                <div className={`text-[12px] tracking-[0.35em] font-light ${idx === workflowIdx ? 'text-black/70' : 'text-black/45'}`}>
+                              <div className="flex flex-col items-center gap-2">
+                                <span
+                                  className={`h-2 w-2 rounded-full transition-colors ${
+                                    active ? 'bg-accent' : 'bg-black/20 group-hover:bg-black/35'
+                                  }`}
+                                  aria-hidden="true"
+                                />
+                                <span
+                                  className={`text-[10px] tracking-[0.35em] font-light transition-colors ${
+                                    active ? 'text-black/65' : 'text-black/35 group-hover:text-black/55'
+                                  }`}
+                                >
                                   {step.label.toUpperCase()}
-                                </div>
-                                <Icon className={`w-4 h-4 ${idx === workflowIdx ? 'text-black/45' : 'text-black/30'}`} strokeWidth={1.5} />
-                              </div>
-                              <div className={`mt-2 text-[12px] leading-[1.6] font-light ${idx === workflowIdx ? 'text-black/45' : 'text-black/30'}`}>
-                                {step.desc}
+                                </span>
                               </div>
                             </button>
                           );
@@ -1135,7 +1055,10 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
+                </div>
               </div>
+              </div>
+
             </div>
           </div>
         </div>
@@ -1148,7 +1071,16 @@ export default function Home() {
             {/* Left: Image (5 cols = 41.6%, close to golden) */}
             <div className="lg:col-span-5">
               <Reveal>
-                  <CutlinePoster />
+                <div className="relative aspect-[3/4] overflow-hidden border border-white/10 bg-white/[0.02]">
+                  <Image
+                    src="https://images.unsplash.com/photo-1552168324-d612d77725e3?auto=format&fit=crop&w=1800&q=80"
+                    alt="Wedding filmmaker at work"
+                    fill
+                    sizes="(min-width: 1024px) 40vw, 100vw"
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/70" />
+                </div>
               </Reveal>
             </div>
             
@@ -1190,84 +1122,95 @@ export default function Home() {
       {/* Pricing - Minimal Grid */}
       <section className="bg-paper text-black border-y border-black/5">
         <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 py-32">
-          <Reveal>
-            <div className="mb-20">
-              <h2 className="font-display text-[42px] md:text-[64px] font-extralight tracking-[-0.04em] leading-[1.05]">
-                Simple pricing.<br />
-                <span className="text-black/20">No subscriptions.</span>
-              </h2>
-            </div>
-          </Reveal>
-          
-          <div className="grid md:grid-cols-2 gap-px bg-black/5">
-            {/* Lite */}
-            <Reveal delay={0.1}>
-              <div className="bg-paper p-12 md:p-16 group hover:bg-black hover:text-white transition-all duration-500">
-                <div className="space-y-12">
-                  <div>
-                    <p className="text-[10px] tracking-[0.4em] text-black/30 group-hover:text-white/30 mb-8">
-                      LITE
-                    </p>
-                    <div className="text-[64px] md:text-[80px] font-extralight tracking-[-0.04em] leading-none">
-                      $79
-                    </div>
-                    <p className="text-[14px] text-black/40 group-hover:text-white/40 mt-4 font-light">
-                      One-time purchase
-                    </p>
-                  </div>
-                  
-                  <p className="text-[15px] font-light leading-[1.7] text-black/60 group-hover:text-white/60">
-                    Essential editing tools for getting started with AI-powered workflows.
+          <div className="grid grid-cols-12 gap-12 items-start">
+            <div className="col-span-12 lg:col-span-4">
+              <Reveal>
+                <div className="space-y-8">
+                  <h2 className="font-display text-[42px] md:text-[64px] font-extralight tracking-[-0.04em] leading-[1.05]">
+                    Simple pricing.<br />
+                    <span className="text-black/20">No subscriptions.</span>
+                  </h2>
+                  <p className="text-[15px] leading-[1.9] text-black/55 font-light max-w-[52ch]">
+                    Own it outright. No monthly fees. Built for working wedding filmmakers.
                   </p>
-                  
-                  <button className="w-full border border-black/10 group-hover:border-white/20 py-5 text-[10px] tracking-[0.4em] hover:bg-black hover:text-white group-hover:hover:bg-paper group-hover:hover:text-black transition-all">
-                    BUY LITE
-                  </button>
                 </div>
-              </div>
-            </Reveal>
+              </Reveal>
+            </div>
 
-            {/* Max */}
-            <Reveal delay={0.2}>
-              <div className="bg-black text-white p-12 md:p-16 relative group hover:bg-paper hover:text-black transition-all duration-500">
-                <div className="absolute top-8 right-8 w-2 h-2 bg-accent rounded-full" />
-                
-                <div className="space-y-12">
-                  <div>
-                    <p className="text-[10px] tracking-[0.4em] text-white/30 group-hover:text-black/30 mb-8">
-                      MAX
-                    </p>
-                    <div className="text-[64px] md:text-[80px] font-extralight tracking-[-0.04em] leading-none">
-                      $149
+            <div className="col-span-12 lg:col-span-8">
+              <div className="grid md:grid-cols-2 gap-px bg-black/5 border border-black/5">
+                {/* Lite */}
+                <Reveal delay={0.1}>
+                  <div className="bg-paper p-12 md:p-16 hover:bg-gray-50 transition-colors duration-300">
+                    <div className="space-y-10">
+                      <div>
+                        <p className="text-[10px] tracking-[0.4em] text-black/30 mb-8">
+                          LITE
+                        </p>
+                        <div className="text-[64px] md:text-[80px] font-extralight tracking-[-0.04em] leading-none">
+                          $79
+                        </div>
+                        <p className="text-[14px] text-black/40 mt-4 font-light">
+                          One-time purchase
+                        </p>
+                      </div>
+                      
+                      <p className="text-[15px] font-light leading-[1.7] text-black/60">
+                        Essential tools for getting started with AI-powered workflows.
+                      </p>
+                      
+                      <button className="group inline-flex items-center justify-center gap-3 w-full border border-black/15 py-5 text-[10px] tracking-[0.4em] hover:bg-black hover:text-white transition-all font-light">
+                        <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+                        BUY LITE
+                      </button>
                     </div>
-                    <p className="text-[14px] text-white/40 group-hover:text-black/40 mt-4 font-light">
-                      One-time purchase
-          </p>
-        </div>
-                  
-                  <p className="text-[15px] font-light leading-[1.7] text-white/60 group-hover:text-black/60">
-                    Full professional suite with all features and priority support.
-                  </p>
-                  
-                  <button className="w-full border border-white/20 group-hover:border-black/10 py-5 text-[10px] tracking-[0.4em] hover:bg-paper hover:text-black group-hover:hover:bg-black group-hover:hover:text-white transition-all">
-                    BUY MAX
-                  </button>
-                </div>
+                  </div>
+                </Reveal>
+  
+                {/* Max */}
+                <Reveal delay={0.2}>
+                  <div className="bg-black text-white p-12 md:p-16 relative group hover:bg-paper hover:text-black transition-all duration-500">
+                    <div className="absolute top-8 right-8 w-2 h-2 bg-accent rounded-full" />
+                    
+                    <div className="space-y-10">
+                      <div>
+                        <p className="text-[10px] tracking-[0.4em] text-white/30 group-hover:text-black/30 mb-8">
+                          MAX
+                        </p>
+                        <div className="text-[64px] md:text-[80px] font-extralight tracking-[-0.04em] leading-none">
+                          $149
+                        </div>
+                        <p className="text-[14px] text-white/40 group-hover:text-black/40 mt-4 font-light">
+                          One-time purchase
+                        </p>
+                      </div>
+                      
+                      <p className="text-[15px] font-light leading-[1.7] text-white/60 group-hover:text-black/60">
+                        Full professional suite with all features and priority support.
+                      </p>
+                      
+                      <button className="group inline-flex items-center justify-center gap-3 w-full border border-white/20 group-hover:border-black/15 py-5 text-[10px] tracking-[0.4em] hover:bg-paper hover:text-black group-hover:hover:bg-black group-hover:hover:text-white transition-all font-light">
+                        <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+                        BUY MAX
+                      </button>
+                    </div>
+                  </div>
+                </Reveal>
               </div>
-            </Reveal>
-          </div>
-          
-          <Reveal delay={0.3}>
-            <div className="mt-16 text-center">
-              <Link 
-                href="/pricing" 
-                className="inline-flex items-center gap-4 text-[10px] tracking-[0.4em] text-black/30 hover:text-black transition-colors group"
-              >
-                <Minus className="w-8 h-[1px] text-black/20 group-hover:text-black/40 transition-colors" />
-                VIEW FULL COMPARISON
-              </Link>
+              
+              <Reveal delay={0.25}>
+                <div className="mt-12">
+                  <Link 
+                    href="/pricing" 
+                    className="inline-flex items-center gap-4 text-[10px] tracking-[0.4em] text-black/35 hover:text-black transition-colors group"
+                  >
+                    <Minus className="w-8 h-[1px] text-black/25 group-hover:text-black/45 transition-colors" />
+                    VIEW FULL COMPARISON
+                  </Link>
+                </div>
+              </Reveal>
             </div>
-          </Reveal>
+          </div>
         </div>
       </section>
 
@@ -1307,7 +1250,6 @@ export default function Home() {
             {/* Brand - 5 cols (golden ratio) */}
             <div className="md:col-span-5 space-y-8">
               <div className="flex items-center gap-2">
-            <span className="text-[11px] tracking-[0.5em] font-light">CUTLINE</span>
                 <span className="text-[11px] tracking-[0.5em] font-light">CUTLINE</span>
                 <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
               </div>
