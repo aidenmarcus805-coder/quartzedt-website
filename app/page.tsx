@@ -206,7 +206,7 @@ const ReelOverlay = ({ type }: { type: ReelOverlayType }) => {
   );
 };
 
-const VellumPoster = () => {
+const CutlinePoster = () => {
   return (
     <motion.div
       className="relative aspect-[3/4] overflow-hidden border border-white/10 bg-white/[0.03]"
@@ -280,7 +280,7 @@ const VellumPoster = () => {
               </div>
             </div>
             <div className="text-right text-[10px] tracking-[0.4em] text-white/22 font-light">
-              VELLUM
+              CUTLINE
             </div>
           </div>
         </div>
@@ -647,7 +647,7 @@ export default function Home() {
       >
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 h-24 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-[11px] tracking-[0.5em] font-light">VELLUM</span>
+            <span className="text-[11px] tracking-[0.5em] font-light">CUTLINE</span>
             <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
           </Link>
           
@@ -691,7 +691,7 @@ export default function Home() {
                 </div>
                 <div className="col-span-12 md:col-span-5">
                   <p className="text-[15px] md:text-[17px] leading-[1.9] text-white/50 font-light max-w-xl">
-                    Vellum pulls the vows, reactions, and rhythm out of hours of footage — so the edit stops taking weeks.
+                    Cutline pulls the vows, reactions, and rhythm out of hours of footage — so the edit stops taking weeks.
                   </p>
                 </div>
               </div>
@@ -1091,7 +1091,7 @@ export default function Home() {
             {/* Left: Image (5 cols = 41.6%, close to golden) */}
             <div className="lg:col-span-5">
               <Reveal>
-                  <VellumPoster />
+                  <CutlinePoster />
               </Reveal>
             </div>
             
@@ -1250,7 +1250,8 @@ export default function Home() {
             {/* Brand - 5 cols (golden ratio) */}
             <div className="md:col-span-5 space-y-8">
               <div className="flex items-center gap-2">
-                <span className="text-[11px] tracking-[0.5em] font-light">VELLUM</span>
+            <span className="text-[11px] tracking-[0.5em] font-light">CUTLINE</span>
+                <span className="text-[11px] tracking-[0.5em] font-light">CUTLINE</span>
                 <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
               </div>
               <p className="text-[15px] font-light leading-[1.8] text-white/40 max-w-md">
@@ -1291,7 +1292,7 @@ export default function Home() {
           {/* Bottom Bar */}
           <div className="mt-24 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <p className="text-[10px] tracking-[0.3em] text-white/20 font-light">
-              © 2024 VELLUM
+              © 2024 CUTLINE
             </p>
             <div className="flex items-center gap-8 text-[10px] tracking-[0.3em] text-white/20 font-light">
               <a href="#" className="hover:text-white/40 transition-colors">INSTAGRAM</a>

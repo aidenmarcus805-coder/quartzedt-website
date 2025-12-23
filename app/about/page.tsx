@@ -86,7 +86,7 @@ export default function About() {
       >
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 h-24 flex items-center justify-between">
           <Link href="/" className="text-[11px] tracking-[0.5em] font-light">
-            VELLUM
+            CUTLINE
           </Link>
           
           <div className="hidden md:flex items-center gap-16 text-[10px] tracking-[0.4em] font-light">
@@ -117,7 +117,7 @@ export default function About() {
         </div>
       </section>
 
-      {/* ① How Vellum Started */}
+      {/* ① How Cutline Started */}
       <section className="border-t border-white/5">
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-32 md:py-48">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-12">
@@ -126,7 +126,7 @@ export default function About() {
               <Reveal>
                 <SectionNum num="01" />
                 <h2 className="text-[36px] md:text-[48px] font-extralight leading-[1.1] tracking-[-0.03em] mt-6">
-                  How Vellum
+                  How Cutline
                   <br />
                   <span className="text-white/40">Started</span>
                 </h2>
@@ -313,7 +313,7 @@ export default function About() {
             
             <Reveal delay={0.3}>
               <p className="text-[19px] md:text-[22px] font-light leading-[1.7] text-black/50 mt-12 max-w-2xl mx-auto">
-                Vellum exists to turn weeks of work into days — 
+                Cutline exists to turn weeks of work into days — 
                 without losing the soul of your story.
               </p>
             </Reveal>
@@ -368,7 +368,7 @@ export default function About() {
                     </div>
                     <h3 className="text-[16px] font-light">Local AI</h3>
                     <p className="text-[14px] font-light text-white/40 leading-[1.7]">
-                      No dependence on external services. Vellum runs 
+                      No dependence on external services. Cutline runs 
                       entirely on your hardware.
                     </p>
                   </div>
@@ -393,7 +393,7 @@ export default function About() {
                     MAX Mode
                   </h3>
                   <p className="text-[15px] font-light text-white/50 leading-[1.7] max-w-xl">
-                    Full AI autonomy. Upload your footage, define your style, and Vellum 
+                    Full AI autonomy. Upload your footage, define your style, and Cutline 
                     delivers a complete first cut — ready for your creative polish.
                   </p>
                   
@@ -442,7 +442,7 @@ export default function About() {
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-20 md:py-24">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-16 md:gap-8">
             <div className="md:col-span-5 space-y-8">
-              <span className="text-[11px] tracking-[0.5em] font-light">VELLUM</span>
+              <span className="text-[11px] tracking-[0.5em] font-light">CUTLINE</span>
               <p className="text-[15px] font-light leading-[1.8] text-white/40 max-w-md">
                 AI-powered video editing engineered for filmmakers who value craft.
               </p>
@@ -479,7 +479,7 @@ export default function About() {
           
           <div className="mt-24 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <p className="text-[10px] tracking-[0.3em] text-white/20 font-light">
-              © 2024 VELLUM
+              © 2024 CUTLINE
             </p>
             <div className="flex items-center gap-8 text-[10px] tracking-[0.3em] text-white/20 font-light">
               <a href="#" className="hover:text-white/40 transition-colors">INSTAGRAM</a>

@@ -89,7 +89,7 @@ export default function PricingPage() {
           </div>
           <div className="flex items-center justify-center">
             <Link href="/" className="text-[13px] tracking-[0.4em] font-medium">
-              VELLUM
+              CUTLINE
             </Link>
           </div>
           <div className="flex items-center justify-end gap-8">
@@ -219,7 +219,7 @@ export default function PricingPage() {
           <p className="text-[14px] text-white/40 leading-relaxed">
             Studios typically spend <span className="text-white/70">$5,000–$15,000/month</span> on editing labor.
             <br />
-            Vellum pays for itself after a single wedding.
+            Cutline pays for itself after a single wedding.
           </p>
         </motion.div>
       </section>
@@ -286,7 +286,7 @@ export default function PricingPage() {
         <div className="max-w-6xl mx-auto px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="text-center md:text-left">
-              <p className="text-[13px] tracking-[0.3em]">VELLUM</p>
+              <p className="text-[13px] tracking-[0.3em]">CUTLINE</p>
               <p className="text-[11px] text-white/40 mt-2">AI Video Editing for Wedding Filmmakers</p>
             </div>
             <div className="flex items-center gap-12 text-[11px] tracking-[0.15em] text-white/40">
@@ -296,7 +296,7 @@ export default function PricingPage() {
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-white/5 text-[10px] text-white/20 text-center md:text-left">
-            © 2024 Vellum. All rights reserved.
+            © 2024 Cutline. All rights reserved.
           </div>
         </div>
       </footer>

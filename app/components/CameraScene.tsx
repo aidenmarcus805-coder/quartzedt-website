@@ -989,7 +989,7 @@ export default function CameraScene({ lowPowerMode = false }: { lowPowerMode?: b
           </Suspense>
         </Canvas>
 
-        {/* Initial centered text - VELLUM (fades out as you scroll) */}
+        {/* Initial centered text - CUTLINE (fades out as you scroll) */}
         <div 
           className="absolute inset-0 flex flex-col justify-center items-center text-center pointer-events-none z-10"
           style={{ 
@@ -999,7 +999,7 @@ export default function CameraScene({ lowPowerMode = false }: { lowPowerMode?: b
           }}
         >
           <h1 className="text-[clamp(64px,16vw,200px)] font-extralight leading-[0.85] tracking-[-0.05em] text-white inline-flex items-center justify-center gap-4">
-            <span>VELLUM</span>
+            <span>CUTLINE</span>
             <span className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-accent" aria-hidden="true" />
           </h1>
           <p className="mt-10 max-w-lg px-6 text-[15px] md:text-[17px] leading-[1.7] text-white/40 font-light">
