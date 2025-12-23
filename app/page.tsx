@@ -965,54 +965,6 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <AnimatePresence>
-                    {workflowLocked && !workflowHasInteracted && (
-                      <motion.div
-                        key="workflow-hint"
-                        initial={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
-                        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                        exit={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
-                        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                        className="pointer-events-none absolute left-4 bottom-20 z-10"
-                      >
-                        <div className="inline-flex items-center gap-3 rounded-full border border-black/10 bg-white/80 backdrop-blur-sm px-4 py-2">
-                          <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
-                          <span className="text-[10px] tracking-[0.45em] text-black/55 font-light">
-                            SCROLL TO ADVANCE
-                          </span>
-                          <motion.span
-                            aria-hidden="true"
-                            animate={{ x: [0, 4, 0] }}
-                            transition={{ duration: 1.6, repeat: Infinity, ease: [0.16, 1, 0.3, 1] }}
-                            className="text-black/35"
-                          >
-                            <ArrowRight className="w-4 h-4" />
-                          </motion.span>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  <AnimatePresence>
-                    {workflowLocked && workflowIdx === WORKFLOW_STEPS.length - 1 && (
-                      <motion.div
-                        key="workflow-exit-hint"
-                        initial={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
-                        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                        exit={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
-                        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                        className="pointer-events-none absolute right-4 bottom-20 z-10"
-                      >
-                        <div className="inline-flex items-center gap-3 rounded-full border border-black/10 bg-white/80 backdrop-blur-sm px-4 py-2">
-                          <span className="h-2 w-2 rounded-full bg-black/25" aria-hidden="true" />
-                          <span className="text-[10px] tracking-[0.45em] text-black/55 font-light">
-                            SCROLL TO CONTINUE
-                          </span>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
                   <div className="relative aspect-[21/10]">
                     <motion.div
                       className="absolute inset-0 flex gap-[6px] p-2 md:p-3"
@@ -1145,17 +1097,64 @@ export default function Home() {
                         );
                       })}
                     </motion.div>
+
+                    {/* Hints live on the “screen” area (not the bottom rail) */}
+                    <AnimatePresence>
+                      {workflowLocked && !workflowHasInteracted && (
+                        <motion.div
+                          key="workflow-hint"
+                          initial={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
+                          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                          exit={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
+                          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                          className="pointer-events-none absolute left-4 bottom-4 z-10"
+                        >
+                          <div className="inline-flex items-center gap-3 rounded-full border border-black/10 bg-white/80 backdrop-blur-sm px-4 py-2">
+                            <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+                            <span className="text-[10px] tracking-[0.45em] text-black/55 font-light">
+                              SCROLL TO ADVANCE
+                            </span>
+                            <motion.span
+                              aria-hidden="true"
+                              animate={{ x: [0, 4, 0] }}
+                              transition={{ duration: 1.6, repeat: Infinity, ease: [0.16, 1, 0.3, 1] }}
+                              className="text-black/35"
+                            >
+                              <ArrowRight className="w-4 h-4" />
+                            </motion.span>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    <AnimatePresence>
+                      {workflowLocked && workflowIdx === WORKFLOW_STEPS.length - 1 && (
+                        <motion.div
+                          key="workflow-exit-hint"
+                          initial={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
+                          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                          exit={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
+                          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                          className="pointer-events-none absolute right-4 bottom-4 z-10"
+                        >
+                          <div className="inline-flex items-center gap-3 rounded-full border border-black/10 bg-white/80 backdrop-blur-sm px-4 py-2">
+                            <span className="h-2 w-2 rounded-full bg-black/25" aria-hidden="true" />
+                            <span className="text-[10px] tracking-[0.45em] text-black/55 font-light">
+                              SCROLL TO CONTINUE
+                            </span>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
 
-                  {/* Step rail (replaces the old bottom widgets; always visible while locked) */}
-                  <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-5">
-                    <div className="mx-auto max-w-[780px]">
-                      <div aria-hidden="true" className="relative h-6">
-                        <div className="absolute left-0 right-0 top-[11px] h-px bg-black/10" />
-                      </div>
-                      <div className="flex items-start justify-between">
+                  {/* Step rail: an “extension” dock with label + description + icon (more apparent) */}
+                  <div className="border-t border-black/10 bg-[#f4f4f5]">
+                    <div className="px-4 md:px-6 py-5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                         {WORKFLOW_STEPS.map((step, idx) => {
                           const active = idx === workflowIdx;
+                          const Icon = step.icon;
                           return (
                             <button
                               key={step.label}
@@ -1168,28 +1167,47 @@ export default function Home() {
                                 setWorkflowAdvance(0);
                                 setWorkflowIdx(idx);
                               }}
-                              className="group -mx-2 px-2"
+                              className={`group w-full text-left rounded-[14px] border px-4 py-3 transition-colors ${
+                                active
+                                  ? 'border-black/15 bg-white'
+                                  : 'border-black/10 bg-white/55 hover:bg-white/80 hover:border-black/15'
+                              }`}
                               aria-label={`Select ${step.label}`}
                             >
-                              <div className="flex flex-col items-center gap-2">
-                                <span
-                                  className={`h-2 w-2 rounded-full transition-colors ${
-                                    active ? 'bg-accent' : 'bg-black/20 group-hover:bg-black/35'
+                              <div className="flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-3">
+                                  <span
+                                    className={`h-1.5 w-1.5 rounded-full transition-colors ${
+                                      active ? 'bg-accent' : 'bg-black/25 group-hover:bg-black/35'
+                                    }`}
+                                    aria-hidden="true"
+                                  />
+                                  <span
+                                    className={`text-[10px] tracking-[0.45em] font-light transition-colors ${
+                                      active ? 'text-black/80' : 'text-black/55 group-hover:text-black/70'
+                                    }`}
+                                  >
+                                    {step.label.toUpperCase()}
+                                  </span>
+                                </div>
+                                <Icon
+                                  className={`h-4 w-4 transition-colors ${
+                                    active ? 'text-black/55' : 'text-black/35 group-hover:text-black/50'
                                   }`}
                                   aria-hidden="true"
                                 />
-                                <span
-                                  className={`text-[10px] tracking-[0.35em] font-light transition-colors ${
-                                    active ? 'text-black/65' : 'text-black/35 group-hover:text-black/55'
-                                  }`}
-                                >
-                                  {step.label.toUpperCase()}
-                                </span>
                               </div>
+                              <p
+                                className={`mt-2 text-[12px] leading-[1.55] font-light transition-colors ${
+                                  active ? 'text-black/50' : 'text-black/35 group-hover:text-black/45'
+                                }`}
+                              >
+                                {step.desc}
+                              </p>
                             </button>
                           );
                         })}
-                      </div>
+        </div>
                     </div>
                   </div>
                 </div>
