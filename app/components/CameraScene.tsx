@@ -1070,11 +1070,11 @@ export default function CameraScene({
               
               {/* Content aligned to grid */}
               <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 w-full relative z-10">
-                <div className="max-w-4xl mx-auto text-center">
+                <div className="mx-auto text-center w-full">
                   {/* Main title */}
                   <div className="overflow-hidden">
                     <h1 
-                      className="text-[clamp(56px,10vw,140px)] font-extralight leading-[0.9] tracking-[-0.05em] text-white"
+                      className="text-[clamp(56px,10vw,140px)] font-extralight leading-[0.9] tracking-[-0.05em] text-white md:whitespace-nowrap"
                       style={{
                         transform: `translateY(${(1 - (animationProgress > 0.6 ? Math.min((animationProgress - 0.6) * 3, 1) : 0)) * 100}%)`,
                         textShadow: '0 2px 40px rgba(0,0,0,0.3)',
