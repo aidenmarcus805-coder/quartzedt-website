@@ -714,7 +714,7 @@ export default function Home() {
       {/* Capabilities Section - Golden Ratio Grid */}
       <section id="work" className="border-t border-white/5">
         <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16">
-          <div className="py-20 border-b border-white/12">
+          <div className="pt-20 pb-28 border-b border-white/12">
             <Reveal>
               <div className="grid grid-cols-12 gap-10 items-end">
                 <div className="col-span-12 md:col-span-7">
@@ -812,7 +812,7 @@ export default function Home() {
                             className="overflow-hidden lg:hidden"
                           >
                             <div className="pb-10">
-                              <div className="relative overflow-hidden border border-white/10 bg-black/35">
+                              <div className="relative overflow-hidden bg-black/35">
                                 <div className="relative aspect-video">
                                   <SegmentVideo
                                     src={cap.demo.src}
@@ -875,7 +875,7 @@ export default function Home() {
             {/* Right: proof (desktop) */}
             <div className="hidden lg:block lg:col-span-5">
               <div className="sticky top-28 pt-12">
-                <div className="relative overflow-hidden border border-white/10 bg-white/[0.02]">
+                <div className="relative overflow-hidden bg-white/[0.02]">
                   <div className="relative aspect-video">
                     <SegmentVideo
                       src={capabilities[activeCapabilityIdx]?.demo.src}
