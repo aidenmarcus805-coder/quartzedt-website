@@ -302,7 +302,7 @@ export default function Home() {
   const workflowLastStepAtRef = useRef(0);
   const workflowWheelAccumRef = useRef(0);
   const workflowTouchStartYRef = useRef<number | null>(null);
-  const workflowSnapAnimatingRef = useRef(false);
+  const workflowWallYRef = useRef<number | null>(null);
 
   useEffect(() => {
     workflowIdxRef.current = workflowIdx;
@@ -311,10 +311,9 @@ export default function Home() {
   // Scroll should not move the page here — it should ONLY advance the workflow left → right.
   useEffect(() => {
     let raf = 0;
-    let snapRaf = 0;
     let ticking = false;
     const SNAP_PX = 350; // tolerance so you can't "miss" the section by scrolling a bit too fast
-    const WORKFLOW_SNAP_OFFSET_PX = 75; // intentional: we snap slightly into the section so the stage feels “framed”
+    const WORKFLOW_SNAP_OFFSET_PX = 75; // intentional: wall engages slightly into the section so the stage feels “framed”
 
     const updateActive = () => {
       ticking = false;
@@ -325,8 +324,10 @@ export default function Home() {
       // Lock ONLY once the section is actually pinned (deterministic stop position).
       // This prevents "sometimes it stops higher/lower" depending on scroll speed.
       const EPS = 2;
-      const nextActive = rect.top <= EPS + WORKFLOW_SNAP_OFFSET_PX && rect.bottom >= vh - EPS;
+      const nextActive =
+        workflowWallYRef.current != null || (rect.top <= EPS + WORKFLOW_SNAP_OFFSET_PX && rect.bottom >= vh - EPS);
       workflowActiveRef.current = nextActive;
+      if (!nextActive) workflowWallYRef.current = null; // safety: never keep a stale wall
 
       // Drive a small UI “HUD” (avoid state churn by only updating on change).
       if (workflowLockedRef.current !== nextActive) {
@@ -361,92 +362,52 @@ export default function Home() {
       });
     };
 
-    const smoothSnapTo = (targetY: number) => {
-      if (workflowSnapAnimatingRef.current) return;
-      workflowSnapAnimatingRef.current = true;
-
-      const startY = window.scrollY;
-      const delta = targetY - startY;
-      const start = performance.now();
-      const distance = Math.abs(delta);
-      // Make the snap feel like natural scroll momentum (not a “gear shift”):
-      // - keep short snaps responsive
-      // - longer snaps decelerate smoothly (ease-out)
-      const durationMs = Math.min(900, Math.max(480, distance * 1.35));
-
-      const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
-
-      const tick = (now: number) => {
-        const t = Math.min(1, (now - start) / durationMs);
-        const eased = easeOutCubic(t);
-        window.scrollTo(0, startY + delta * eased);
-        if (t < 1) {
-          snapRaf = window.requestAnimationFrame(tick);
-        } else {
-          workflowSnapAnimatingRef.current = false;
-          snapRaf = 0;
-        }
-      };
-
-      snapRaf = window.requestAnimationFrame(tick);
-    };
-
-    const snapToWorkflowTop = () => {
-      const el = firstWhiteRef.current;
-      if (!el) return;
-
-      const rect = el.getBoundingClientRect();
-      // Snap so the workflow becomes a "checkpoint" and can't be skipped by momentum.
-      // Offset is intentional framing (see WORKFLOW_SNAP_OFFSET_PX above).
-      const targetY = window.scrollY + rect.top + WORKFLOW_SNAP_OFFSET_PX;
-      if (Math.abs(targetY - window.scrollY) < 10) return;
-      smoothSnapTo(targetY);
+    const engageWall = (wallY: number) => {
+      workflowWallYRef.current = wallY;
       workflowActiveRef.current = true;
       workflowWheelAccumRef.current = 0;
+      updateActive(); // immediately reflect lock state in HUD
+    };
+
+    const releaseWall = () => {
+      workflowWallYRef.current = null;
     };
 
     const onWheel = (e: WheelEvent) => {
-      if (workflowSnapAnimatingRef.current) {
-        e.preventDefault();
-        return;
-      }
-
       const dy = e.deltaY;
       if (dy === 0) return;
 
       const dir = dy > 0 ? (1 as const) : (-1 as const);
       const shouldCapture = !canExit(dir);
 
-      // If you're entering the section (or just barely overshot it), snap + lock.
-      // This prevents “missing” the checkpoint when scrolling fast AND makes the stop position deterministic.
+      // Entry: no snapping animation. You scroll until you hit a "wall", then scrolling advances steps.
       if (!workflowActiveRef.current) {
         const el = firstWhiteRef.current;
         if (!el) return;
         const rect = el.getBoundingClientRect();
+        const remainingToWall = rect.top - WORKFLOW_SNAP_OFFSET_PX; // px needed to bring top to the wall
+        const willHitWallThisTick = remainingToWall <= 0 || dy >= remainingToWall;
+        const nearEnough = rect.top <= SNAP_PX;
 
-        // Only snap if this direction still has “work” to do. If you're already at an end tab,
-        // allow the page to scroll through without being pulled back.
-        //
-        // Snap zone: once the section is close enough to "take over", we always snap to its top.
-        // This avoids the inconsistent "stop point" you’re seeing.
-        // Snap only when you're close enough that it feels like a gentle “magnet” (not a big jump).
-        // Also avoid snapping back upward if you've already flown past the intended framed top.
-        const MAX_SNAP_DELTA_PX = 175;
-        const capturePx = Math.min(SNAP_PX, Math.max(0, MAX_SNAP_DELTA_PX - WORKFLOW_SNAP_OFFSET_PX));
-        const inSnapZone = rect.top <= capturePx && rect.top >= -WORKFLOW_SNAP_OFFSET_PX;
-
-        if (shouldCapture && dir > 0 && inSnapZone) {
+        if (shouldCapture && dir > 0 && nearEnough && willHitWallThisTick) {
           e.preventDefault();
-          snapToWorkflowTop();
+          const wallY = remainingToWall > 0 ? window.scrollY + remainingToWall : window.scrollY;
+          if (remainingToWall > 0) window.scrollTo(0, wallY);
+          engageWall(wallY);
           return;
         }
       }
 
       if (!workflowActiveRef.current) return;
-      if (canExit(dir)) return; // Let the page scroll out at the ends.
+      if (canExit(dir)) {
+        // Unlock the wall at the ends so normal scroll resumes.
+        releaseWall();
+        return;
+      }
 
       // Always prevent page scroll while active.
       e.preventDefault();
+      if (workflowWallYRef.current != null) window.scrollTo(0, workflowWallYRef.current);
 
       // Accumulate deltas so trackpads don’t feel “twitchy”.
       const acc = workflowWheelAccumRef.current;
@@ -464,11 +425,6 @@ export default function Home() {
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (workflowSnapAnimatingRef.current) {
-        e.preventDefault();
-        return;
-      }
-
       let dir: 1 | -1 | 0 = 0;
 
       switch (e.key) {
@@ -487,40 +443,36 @@ export default function Home() {
 
       const shouldCapture = !canExit(dir);
 
-      // Same checkpoint behavior for keyboard scroll.
+      // Same wall behavior for keyboard scroll.
       if (!workflowActiveRef.current) {
         const el = firstWhiteRef.current;
         if (!el) return;
         const rect = el.getBoundingClientRect();
-        const MAX_SNAP_DELTA_PX = 175;
-        const capturePx = Math.min(SNAP_PX, Math.max(0, MAX_SNAP_DELTA_PX - WORKFLOW_SNAP_OFFSET_PX));
-        const inSnapZone = rect.top <= capturePx && rect.top >= -WORKFLOW_SNAP_OFFSET_PX;
-
-        if (shouldCapture && dir > 0 && inSnapZone) {
+        if (shouldCapture && dir > 0 && rect.top <= SNAP_PX) {
           e.preventDefault();
-          snapToWorkflowTop();
+          const remainingToWall = rect.top - WORKFLOW_SNAP_OFFSET_PX;
+          const wallY = remainingToWall > 0 ? window.scrollY + remainingToWall : window.scrollY;
+          if (remainingToWall > 0) window.scrollTo(0, wallY);
+          engageWall(wallY);
           return;
         }
       }
 
       if (!workflowActiveRef.current) return;
-      if (canExit(dir)) return;
+      if (canExit(dir)) {
+        releaseWall();
+        return;
+      }
       e.preventDefault();
+      if (workflowWallYRef.current != null) window.scrollTo(0, workflowWallYRef.current);
       step(dir);
     };
 
     const onTouchStart = (e: TouchEvent) => {
-      if (!workflowActiveRef.current) return;
       workflowTouchStartYRef.current = e.touches[0]?.clientY ?? null;
     };
 
     const onTouchMove = (e: TouchEvent) => {
-      if (workflowSnapAnimatingRef.current) {
-        e.preventDefault();
-        return;
-      }
-
-      if (!workflowActiveRef.current) return;
       const startY = workflowTouchStartYRef.current;
       const y = e.touches[0]?.clientY;
       if (startY == null || y == null) return;
@@ -529,9 +481,37 @@ export default function Home() {
       if (Math.abs(dy) < 28) return; // ignore micro movement (2x)
 
       const dir = dy > 0 ? (1 as const) : (-1 as const);
-      if (canExit(dir)) return;
+      const shouldCapture = !canExit(dir);
+
+      if (!workflowActiveRef.current) {
+        const el = firstWhiteRef.current;
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const remainingToWall = rect.top - WORKFLOW_SNAP_OFFSET_PX;
+        const willHitWallThisTick = remainingToWall <= 0 || dy >= remainingToWall;
+        const nearEnough = rect.top <= SNAP_PX;
+
+        if (shouldCapture && dir > 0 && nearEnough && willHitWallThisTick) {
+          e.preventDefault();
+          const wallY = remainingToWall > 0 ? window.scrollY + remainingToWall : window.scrollY;
+          if (remainingToWall > 0) window.scrollTo(0, wallY);
+          engageWall(wallY);
+          workflowTouchStartYRef.current = y;
+          return;
+        }
+        // Not active yet: allow normal page scroll.
+        workflowTouchStartYRef.current = y;
+        return;
+      }
+
+      if (canExit(dir)) {
+        releaseWall();
+        workflowTouchStartYRef.current = y;
+        return;
+      }
 
       e.preventDefault();
+      if (workflowWallYRef.current != null) window.scrollTo(0, workflowWallYRef.current);
       workflowTouchStartYRef.current = y;
       step(dir);
     };
@@ -553,7 +533,6 @@ export default function Home() {
       window.removeEventListener('touchstart', onTouchStart);
       window.removeEventListener('touchmove', onTouchMove);
       if (raf) window.cancelAnimationFrame(raf);
-      if (snapRaf) window.cancelAnimationFrame(snapRaf);
     };
   }, []);
 
