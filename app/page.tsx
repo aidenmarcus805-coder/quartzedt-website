@@ -427,8 +427,8 @@ export default function Home() {
         }
         workflowWheelAccumRef.current += dyPx;
 
-        // ~2x scroll required to advance (per request)
-        const threshold = 160;
+        // Require ~3 “scrolls” worth of input to advance a step (more intentional, less twitchy).
+        const threshold = 480;
         if (Math.abs(workflowWheelAccumRef.current) < threshold) return;
 
         workflowWheelAccumRef.current = 0;
