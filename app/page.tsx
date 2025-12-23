@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion, useInView } from 'framer-motion';
-import { ArrowDown, ArrowRight, Download, Film, Minus, Search, Upload } from 'lucide-react';
+import { ArrowRight, Download, Film, Minus, Search, Upload } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -313,8 +313,8 @@ export default function Home() {
     let raf = 0;
     let snapRaf = 0;
     let ticking = false;
-    const SNAP_PX = 650; // tolerance so you can't "miss" the section by scrolling a bit too fast
-    const WORKFLOW_SNAP_OFFSET_PX = 35; // intentional: we snap slightly into the section so the stage feels “framed”
+    const SNAP_PX = 550; // tolerance so you can't "miss" the section by scrolling a bit too fast
+    const WORKFLOW_SNAP_OFFSET_PX = 55; // intentional: we snap slightly into the section so the stage feels “framed”
 
     const updateActive = () => {
       ticking = false;
@@ -730,24 +730,6 @@ export default function Home() {
             />
           </div>
 
-            {/* Intro label */}
-            <div className="absolute inset-x-0 top-10">
-              <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16">
-              <div className="flex items-center justify-center gap-4">
-                <span className="h-px w-10 bg-white/12" aria-hidden="true" />
-                <span className="inline-flex items-center gap-3">
-                  <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
-                  <span className="text-[10px] tracking-[0.55em] text-white/70 font-light">
-                    THE WORKFLOW
-                  </span>
-                  <span className="text-white/35" aria-hidden="true">
-                    <ArrowDown className="w-4 h-4" />
-                  </span>
-                </span>
-                <span className="h-px w-10 bg-white/12" aria-hidden="true" />
-              </div>
-              </div>
-            </div>
           </div>
 
           {/* Dotted background (keep) */}
