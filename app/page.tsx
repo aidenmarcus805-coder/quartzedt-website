@@ -368,14 +368,19 @@ export default function Home() {
       const startY = window.scrollY;
       const delta = targetY - startY;
       const start = performance.now();
-      const durationMs = 220;
+      const distance = Math.abs(delta);
+      // Make the snap feel “guided” instead of jerky:
+      // - short snaps are quick
+      // - long snaps ease out over a bit longer time
+      const durationMs = Math.min(520, Math.max(260, distance * 0.55));
 
-      const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+      const easeOutQuint = (t: number) => 1 - Math.pow(1 - t, 5);
 
       const tick = (now: number) => {
         const t = Math.min(1, (now - start) / durationMs);
-        const eased = easeOutCubic(t);
-        window.scrollTo(0, startY + delta * eased);
+        const eased = easeOutQuint(t);
+        const y = startY + delta * eased;
+        window.scrollTo(0, Math.round(y));
         if (t < 1) {
           snapRaf = window.requestAnimationFrame(tick);
         } else {
@@ -674,214 +679,6 @@ export default function Home() {
         <CameraScene lowPowerMode={lowPowerMode} variant="full" />
       </section>
 
-      {/* Capabilities Section - Golden Ratio Grid */}
-      <section id="work">
-        <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16">
-          <div className="pt-20 pb-28">
-            <Reveal>
-              <div className="grid grid-cols-12 gap-10 items-end">
-                <div className="col-span-12 md:col-span-7">
-                  <h2 className="font-display text-[clamp(44px,4.8vw,72px)] font-extralight tracking-[-0.05em] leading-[1.02]">
-                    A wedding edit, distilled
-                    <span className="inline-block align-middle ml-4 h-2.5 w-2.5 rounded-full bg-accent" aria-hidden="true" />
-                  </h2>
-                </div>
-                <div className="col-span-12 md:col-span-5">
-                  <p className="text-[15px] md:text-[17px] leading-[1.9] text-white/60 font-light max-w-xl">
-                    Every feature is designed for wedding footage — vows, speeches, reactions, and pacing.
-          </p>
-        </div>
-              </div>
-            </Reveal>
-          </div>
-
-          <div className="grid grid-cols-12 gap-12 lg:gap-16">
-            {/* Left: list */}
-            <div className="col-span-12 lg:col-span-7">
-              {capabilities.map((cap, idx) => {
-                const isActive = activeCapabilityIdx === idx;
-                const isOpen = openCapabilityIdx === idx;
-
-                return (
-                  <Reveal key={cap.title} delay={idx * 0.06}>
-                    <motion.div
-                      layout
-                      className={`group relative border-b border-white/10 cursor-pointer ${
-                        isActive ? 'bg-white/[0.02]' : ''
-                      }`}
-                      whileHover={{ backgroundColor: 'rgba(255,255,255,0.02)' }}
-                      transition={{ duration: 0.35 }}
-                      onMouseEnter={() => setActiveCapabilityIdx(idx)}
-                    >
-                      <div
-                        aria-hidden="true"
-                        className={`absolute left-0 top-0 bottom-0 w-px transition-colors ${
-                          isActive ? 'bg-accent/55' : 'bg-accent/0 group-hover:bg-accent/35'
-                        }`}
-                      />
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setActiveCapabilityIdx(idx);
-                          setOpenCapabilityIdx((prev) => (prev === idx ? null : idx));
-                        }}
-                        onFocus={() => setActiveCapabilityIdx(idx)}
-                        aria-expanded={isOpen}
-                        className="w-full text-left py-10"
-                      >
-                        <div className="grid grid-cols-12 gap-8 items-start">
-                          <div className="col-span-1">
-                            <span className="text-[10px] tracking-[0.3em] text-white/45 group-hover:text-white/70 transition-colors">
-                              {cap.num}
-                            </span>
-                          </div>
-
-                          <div className="col-span-11 md:col-span-4">
-                            <h3 className="font-display text-[26px] md:text-[34px] font-light tracking-[-0.03em] leading-[1.05] text-white/90 group-hover:text-white transition-colors">
-                              {cap.title}
-                            </h3>
-                          </div>
-
-                          <div className="col-span-11 col-start-2 md:col-span-7 md:col-start-6 flex items-start justify-between gap-8">
-                            <p className="text-[15px] md:text-[17px] font-light leading-[1.7] text-white/60 group-hover:text-white/80 transition-colors">
-                              {cap.desc}
-                            </p>
-
-                            <motion.div
-                              animate={{
-                                rotate: isOpen ? 90 : 0,
-                                opacity: isActive ? 0.9 : 0.55,
-                                x: isActive ? 2 : 0,
-                              }}
-                              className="w-5 h-5 mt-1 text-white/50 group-hover:text-white/80 transition-colors shrink-0"
-                              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                            >
-                              <ArrowRight className="w-5 h-5" />
-                            </motion.div>
-                          </div>
-                        </div>
-                      </button>
-
-                      {/* Mobile-only proof panel (desktop uses the sticky right panel) */}
-                      <AnimatePresence initial={false}>
-                        {isOpen && (
-                          <motion.div
-                            key="panel"
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                            className="overflow-hidden lg:hidden"
-                          >
-                            <div className="pb-10">
-                              <div className="relative overflow-hidden bg-black/35">
-                                <div className="relative aspect-video">
-                                  <SegmentVideo
-                                    src={cap.demo.src}
-                                    start={cap.demo.start}
-                                    end={cap.demo.end}
-                                    className="absolute inset-0 w-full h-full object-cover"
-                                  />
-                                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-black/40" />
-                                  <ReelOverlay type={cap.overlay as ReelOverlayType} />
-                                </div>
-                              </div>
-                              <div className="mt-8 grid grid-cols-12 gap-8 items-end">
-                                <div className="col-span-5">
-                                  <div className="text-[52px] font-extralight tracking-[-0.06em] leading-[0.85] text-white/90">
-                                    {cap.metric.value}
-                                  </div>
-                                  <div className="mt-3 text-[10px] tracking-[0.55em] text-white/30 font-light">
-                                    {cap.metric.label}
-                                  </div>
-                                </div>
-                                <div className="col-span-7">
-                                  <p className="text-[14px] leading-[1.9] text-white/55 font-light">
-                                    {cap.caption}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </motion.div>
-                  </Reveal>
-                );
-              })}
-
-              <div className="pt-12 pb-28">
-                <Reveal delay={0.05}>
-                  <div className="flex items-center justify-between gap-8">
-                    <div className="text-[15px] md:text-[17px] leading-[1.9] text-white/55 font-light max-w-2xl">
-                      Then watch it stitch together — the same footage, but with intention.
-                    </div>
-                    <a
-                      href="#workflow"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        document.getElementById('workflow')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                      }}
-                      className="link-underline inline-flex items-center gap-4 text-[10px] tracking-[0.45em] text-white/45 hover:text-white transition-colors font-light shrink-0"
-                    >
-                      THE WORKFLOW
-                      <span className="text-white/40" aria-hidden="true">
-                        <ArrowRight className="w-4 h-4" />
-                      </span>
-          </a>
-        </div>
-                </Reveal>
-              </div>
-            </div>
-
-            {/* Right: proof (desktop) */}
-            <div className="hidden lg:block lg:col-span-5">
-              <div className="sticky top-28 pt-12">
-                <div className="relative overflow-hidden bg-white/[0.02]">
-                  <div className="relative aspect-video">
-                    <SegmentVideo
-                      src={capabilities[activeCapabilityIdx]?.demo.src}
-                      start={capabilities[activeCapabilityIdx]?.demo.start ?? 0}
-                      end={capabilities[activeCapabilityIdx]?.demo.end ?? 4}
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-black/45" />
-                    <ReelOverlay type={capabilities[activeCapabilityIdx]?.overlay as ReelOverlayType} />
-
-                    <div className="absolute top-6 left-6 flex items-center gap-4">
-                      <span className="text-[10px] tracking-[0.5em] text-white/55 font-light">
-                        {capabilities[activeCapabilityIdx]?.reel}
-                      </span>
-                      <span className="h-[1px] w-12 bg-white/12" aria-hidden="true" />
-                      <span className="text-[10px] tracking-[0.4em] text-white/35 font-light">
-                        {capabilities[activeCapabilityIdx]?.title}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-10 grid grid-cols-12 gap-8 items-end">
-                  <div className="col-span-5">
-                    <div className="text-[64px] font-extralight tracking-[-0.06em] leading-[0.85] text-white/90">
-                      {capabilities[activeCapabilityIdx]?.metric.value}
-                    </div>
-                    <div className="mt-3 text-[10px] tracking-[0.55em] text-white/30 font-light">
-                      {capabilities[activeCapabilityIdx]?.metric.label}
-                    </div>
-                  </div>
-                  <div className="col-span-7">
-                    <p className="text-[14px] leading-[1.9] text-white/55 font-light">
-                      {capabilities[activeCapabilityIdx]?.caption}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Workflow */}
       <section id="workflow" ref={firstWhiteRef} className="bg-paper text-black border-y border-black/5">
         <div className="relative h-[120vh] overflow-hidden">
@@ -1124,6 +921,214 @@ export default function Home() {
               </div>
               </div>
 
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Capabilities Section - Golden Ratio Grid */}
+      <section id="work">
+        <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16">
+          <div className="pt-20 pb-28">
+            <Reveal>
+              <div className="grid grid-cols-12 gap-10 items-end">
+                <div className="col-span-12 md:col-span-7">
+                  <h2 className="font-display text-[clamp(44px,4.8vw,72px)] font-extralight tracking-[-0.05em] leading-[1.02]">
+                    A wedding edit, distilled
+                    <span className="inline-block align-middle ml-4 h-2.5 w-2.5 rounded-full bg-accent" aria-hidden="true" />
+                  </h2>
+                </div>
+                <div className="col-span-12 md:col-span-5">
+                  <p className="text-[15px] md:text-[17px] leading-[1.9] text-white/60 font-light max-w-xl">
+                    Every feature is designed for wedding footage — vows, speeches, reactions, and pacing.
+          </p>
+        </div>
+              </div>
+            </Reveal>
+          </div>
+
+          <div className="grid grid-cols-12 gap-12 lg:gap-16">
+            {/* Left: list */}
+            <div className="col-span-12 lg:col-span-7">
+              {capabilities.map((cap, idx) => {
+                const isActive = activeCapabilityIdx === idx;
+                const isOpen = openCapabilityIdx === idx;
+
+                return (
+                  <Reveal key={cap.title} delay={idx * 0.06}>
+                    <motion.div
+                      layout
+                      className={`group relative border-b border-white/10 cursor-pointer ${
+                        isActive ? 'bg-white/[0.02]' : ''
+                      }`}
+                      whileHover={{ backgroundColor: 'rgba(255,255,255,0.02)' }}
+                      transition={{ duration: 0.35 }}
+                      onMouseEnter={() => setActiveCapabilityIdx(idx)}
+                    >
+                      <div
+                        aria-hidden="true"
+                        className={`absolute left-0 top-0 bottom-0 w-px transition-colors ${
+                          isActive ? 'bg-accent/55' : 'bg-accent/0 group-hover:bg-accent/35'
+                        }`}
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveCapabilityIdx(idx);
+                          setOpenCapabilityIdx((prev) => (prev === idx ? null : idx));
+                        }}
+                        onFocus={() => setActiveCapabilityIdx(idx)}
+                        aria-expanded={isOpen}
+                        className="w-full text-left py-10"
+                      >
+                        <div className="grid grid-cols-12 gap-8 items-start">
+                          <div className="col-span-1">
+                            <span className="text-[10px] tracking-[0.3em] text-white/45 group-hover:text-white/70 transition-colors">
+                              {cap.num}
+                            </span>
+                          </div>
+
+                          <div className="col-span-11 md:col-span-4">
+                            <h3 className="font-display text-[26px] md:text-[34px] font-light tracking-[-0.03em] leading-[1.05] text-white/90 group-hover:text-white transition-colors">
+                              {cap.title}
+                            </h3>
+                          </div>
+
+                          <div className="col-span-11 col-start-2 md:col-span-7 md:col-start-6 flex items-start justify-between gap-8">
+                            <p className="text-[15px] md:text-[17px] font-light leading-[1.7] text-white/60 group-hover:text-white/80 transition-colors">
+                              {cap.desc}
+                            </p>
+
+                            <motion.div
+                              animate={{
+                                rotate: isOpen ? 90 : 0,
+                                opacity: isActive ? 0.9 : 0.55,
+                                x: isActive ? 2 : 0,
+                              }}
+                              className="w-5 h-5 mt-1 text-white/50 group-hover:text-white/80 transition-colors shrink-0"
+                              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                            >
+                              <ArrowRight className="w-5 h-5" />
+                            </motion.div>
+                          </div>
+                        </div>
+                      </button>
+
+                      {/* Mobile-only proof panel (desktop uses the sticky right panel) */}
+                      <AnimatePresence initial={false}>
+                        {isOpen && (
+                          <motion.div
+                            key="panel"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                            className="overflow-hidden lg:hidden"
+                          >
+                            <div className="pb-10">
+                              <div className="relative overflow-hidden bg-black/35">
+                                <div className="relative aspect-video">
+                                  <SegmentVideo
+                                    src={cap.demo.src}
+                                    start={cap.demo.start}
+                                    end={cap.demo.end}
+                                    className="absolute inset-0 w-full h-full object-cover"
+                                  />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-black/40" />
+                                  <ReelOverlay type={cap.overlay as ReelOverlayType} />
+                                </div>
+                              </div>
+                              <div className="mt-8 grid grid-cols-12 gap-8 items-end">
+                                <div className="col-span-5">
+                                  <div className="text-[52px] font-extralight tracking-[-0.06em] leading-[0.85] text-white/90">
+                                    {cap.metric.value}
+                                  </div>
+                                  <div className="mt-3 text-[10px] tracking-[0.55em] text-white/30 font-light">
+                                    {cap.metric.label}
+                                  </div>
+                                </div>
+                                <div className="col-span-7">
+                                  <p className="text-[14px] leading-[1.9] text-white/55 font-light">
+                                    {cap.caption}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+                  </Reveal>
+                );
+              })}
+
+              <div className="pt-12 pb-28">
+                <Reveal delay={0.05}>
+                  <div className="flex items-center justify-between gap-8">
+                    <div className="text-[15px] md:text-[17px] leading-[1.9] text-white/55 font-light max-w-2xl">
+                      Then watch it stitch together — the same footage, but with intention.
+                    </div>
+                    <a
+                      href="#workflow"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        document.getElementById('workflow')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }}
+                      className="link-underline inline-flex items-center gap-4 text-[10px] tracking-[0.45em] text-white/45 hover:text-white transition-colors font-light shrink-0"
+                    >
+                      THE WORKFLOW
+                      <span className="text-white/40" aria-hidden="true">
+                        <ArrowRight className="w-4 h-4" />
+                      </span>
+          </a>
+        </div>
+                </Reveal>
+              </div>
+            </div>
+
+            {/* Right: proof (desktop) */}
+            <div className="hidden lg:block lg:col-span-5">
+              <div className="sticky top-28 pt-12">
+                <div className="relative overflow-hidden bg-white/[0.02]">
+                  <div className="relative aspect-video">
+                    <SegmentVideo
+                      src={capabilities[activeCapabilityIdx]?.demo.src}
+                      start={capabilities[activeCapabilityIdx]?.demo.start ?? 0}
+                      end={capabilities[activeCapabilityIdx]?.demo.end ?? 4}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-black/45" />
+                    <ReelOverlay type={capabilities[activeCapabilityIdx]?.overlay as ReelOverlayType} />
+
+                    <div className="absolute top-6 left-6 flex items-center gap-4">
+                      <span className="text-[10px] tracking-[0.5em] text-white/55 font-light">
+                        {capabilities[activeCapabilityIdx]?.reel}
+                      </span>
+                      <span className="h-[1px] w-12 bg-white/12" aria-hidden="true" />
+                      <span className="text-[10px] tracking-[0.4em] text-white/35 font-light">
+                        {capabilities[activeCapabilityIdx]?.title}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-10 grid grid-cols-12 gap-8 items-end">
+                  <div className="col-span-5">
+                    <div className="text-[64px] font-extralight tracking-[-0.06em] leading-[0.85] text-white/90">
+                      {capabilities[activeCapabilityIdx]?.metric.value}
+                    </div>
+                    <div className="mt-3 text-[10px] tracking-[0.55em] text-white/30 font-light">
+                      {capabilities[activeCapabilityIdx]?.metric.label}
+                    </div>
+                  </div>
+                  <div className="col-span-7">
+                    <p className="text-[14px] leading-[1.9] text-white/55 font-light">
+                      {capabilities[activeCapabilityIdx]?.caption}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
