@@ -310,7 +310,7 @@ export default function Home() {
 
   // Scroll should not move the page here — it should ONLY advance the workflow left → right.
   useEffect(() => {
-    const WORKFLOW_WALL_OFFSET_PX = -50; // “framed” wall position inside the workflow section
+    const WORKFLOW_WALL_OFFSET_PX = -75; // “framed” wall position inside the workflow section
     let scrollFrozen = false;
 
     const setLocked = (next: boolean) => {
