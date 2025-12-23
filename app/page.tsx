@@ -310,14 +310,36 @@ export default function Home() {
 
   // Scroll should not move the page here — it should ONLY advance the workflow left → right.
   useEffect(() => {
-    let enforceRaf = 0;
-    let lastScrollY = window.scrollY;
     const WORKFLOW_WALL_OFFSET_PX = -50; // “framed” wall position inside the workflow section
+    let scrollFrozen = false;
 
     const setLocked = (next: boolean) => {
       if (workflowLockedRef.current !== next) {
         workflowLockedRef.current = next;
         setWorkflowLocked(next);
+      }
+    };
+
+    const freezeScroll = () => {
+      if (scrollFrozen) return;
+      scrollFrozen = true;
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+      document.body.style.overflow = 'hidden';
+      const navbar = document.querySelector('nav');
+      if (navbar && navbar instanceof HTMLElement) {
+        navbar.style.paddingRight = `${scrollbarWidth}px`;
+      }
+    };
+
+    const unfreezeScroll = () => {
+      if (!scrollFrozen) return;
+      scrollFrozen = false;
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+      const navbar = document.querySelector('nav');
+      if (navbar && navbar instanceof HTMLElement) {
+        navbar.style.paddingRight = '';
       }
     };
 
@@ -352,7 +374,7 @@ export default function Home() {
     const ensureWall = () => {
       const y = workflowWallYRef.current;
       if (y == null) return;
-      if (Math.abs(window.scrollY - y) > 1) {
+      if (Math.abs(window.scrollY - y) > 0.1) {
         window.scrollTo(0, y);
       }
     };
@@ -363,6 +385,7 @@ export default function Home() {
       workflowActiveRef.current = true;
       workflowWheelAccumRef.current = 0;
       setLocked(true);
+      freezeScroll();
       window.scrollTo(0, y);
     };
 
@@ -371,6 +394,7 @@ export default function Home() {
       workflowActiveRef.current = false;
       workflowWheelAccumRef.current = 0;
       setLocked(false);
+      unfreezeScroll();
     };
 
     const wheelDeltaPx = (e: WheelEvent) => {
@@ -511,30 +535,12 @@ export default function Home() {
     };
 
     const onScroll = () => {
-      if (workflowWallYRef.current != null) {
-        // Some browsers still attempt inertial scroll; clamp back without thrashing.
-        if (enforceRaf) window.cancelAnimationFrame(enforceRaf);
-        enforceRaf = window.requestAnimationFrame(() => {
-          ensureWall();
-        });
-        lastScrollY = workflowWallYRef.current ?? window.scrollY;
-        return;
-      }
+      if (workflowWallYRef.current != null) return ensureWall();
 
       const wallY = getWallY();
-      if (wallY == null) {
-        lastScrollY = window.scrollY;
-        return;
-      }
-
-      const cur = window.scrollY;
-      const dir = cur > lastScrollY ? (1 as const) : cur < lastScrollY ? (-1 as const) : (0 as const);
-      lastScrollY = cur;
-
-      // If you scroll/drag past the wall, clamp to it and lock (unless you're allowed to exit).
-      if (dir > 0 && !canExit(1) && cur >= wallY) {
-        engageWall(wallY);
-      }
+      if (wallY == null) return;
+      // If you scroll/drag past the wall, clamp to it and lock (unless you're allowed to exit downward).
+      if (!canExit(1) && window.scrollY >= wallY) engageWall(wallY);
     };
 
     const onResize = () => {
@@ -561,7 +567,7 @@ export default function Home() {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('touchstart', onTouchStart);
       window.removeEventListener('touchmove', onTouchMove);
-      if (enforceRaf) window.cancelAnimationFrame(enforceRaf);
+      unfreezeScroll();
     };
   }, []);
 
@@ -819,9 +825,6 @@ export default function Home() {
                 <h2 className="font-display text-[clamp(64px,6.5vw,110px)] font-light tracking-[-0.06em] leading-[0.92]">
                   The Workflow
                 </h2>
-                <p className="mt-6 text-[15px] md:text-[17px] leading-[1.9] text-black/55 font-light max-w-2xl">
-                  Scroll to watch Cutline step through your wedding edit — from import to a Premiere/Resolve-ready timeline.
-                </p>
               </div>
 
               {/* Videos */}
