@@ -683,13 +683,13 @@ export default function Home() {
       <section id="workflow" ref={firstWhiteRef} className="bg-paper text-black border-b border-black/5">
         <div className="relative h-[120vh] overflow-hidden">
           {/* Transition band: Hero → Workflow (black → paper) */}
-          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 z-20 h-[220px]">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 z-20 h-[200px]">
             {/* Black-to-paper gradient */}
             <div
               className="absolute inset-0"
               style={{
                 background:
-                  'linear-gradient(to bottom, rgba(0,0,0,1) 0px, rgba(0,0,0,0.92) 54px, rgba(0,0,0,0.55) 96px, rgba(0,0,0,0) 160px)',
+                  'linear-gradient(to bottom, rgba(0,0,0,1) 0px, rgba(0,0,0,0.92) 44px, rgba(0,0,0,0.55) 84px, rgba(0,0,0,0.22) 118px, rgba(0,0,0,0) 150px)',
               }}
             />
 
@@ -701,7 +701,7 @@ export default function Home() {
             <div
               className="absolute inset-0 opacity-90"
               style={{
-                backgroundImage: 'radial-gradient(rgba(255,255,255,0.16) 1.25px, transparent 1.25px)',
+                backgroundImage: 'radial-gradient(rgba(255,255,255,0.18) 1.25px, transparent 1.25px)',
                 backgroundSize: '26px 26px',
                 backgroundPosition: 'center',
                 WebkitMaskImage:
@@ -714,13 +714,13 @@ export default function Home() {
             <div
               className="absolute inset-0 opacity-95"
               style={{
-                backgroundImage: 'radial-gradient(rgba(0,0,0,0.14) 1.25px, transparent 1.25px)',
+                backgroundImage: 'radial-gradient(rgba(0,0,0,0.18) 1.25px, transparent 1.25px)',
                 backgroundSize: '26px 26px',
                 backgroundPosition: 'center',
                 WebkitMaskImage:
-                  'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 36%, rgba(0,0,0,0.85) 78%, rgba(0,0,0,1) 100%)',
+                  'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 24%, rgba(0,0,0,0.75) 72%, rgba(0,0,0,1) 100%)',
                 maskImage:
-                  'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 36%, rgba(0,0,0,0.85) 78%, rgba(0,0,0,1) 100%)',
+                  'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 24%, rgba(0,0,0,0.75) 72%, rgba(0,0,0,1) 100%)',
               }}
             />
           </div>
@@ -728,15 +728,19 @@ export default function Home() {
             {/* Intro label */}
             <div className="absolute inset-x-0 top-10">
               <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16">
-                <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-black/35 backdrop-blur-sm px-4 py-2">
+              <div className="flex items-center justify-center gap-4">
+                <span className="h-px w-10 bg-white/12" aria-hidden="true" />
+                <span className="inline-flex items-center gap-3">
                   <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
-                  <span className="text-[10px] tracking-[0.5em] text-white/70 font-light">
+                  <span className="text-[10px] tracking-[0.55em] text-white/70 font-light">
                     THE WORKFLOW
                   </span>
-                  <span className="text-white/30" aria-hidden="true">
+                  <span className="text-white/35" aria-hidden="true">
                     <ArrowDown className="w-4 h-4" />
                   </span>
-                </div>
+                </span>
+                <span className="h-px w-10 bg-white/12" aria-hidden="true" />
+              </div>
               </div>
             </div>
           </div>
@@ -758,7 +762,7 @@ export default function Home() {
           </div>
 
           <div className="sticky top-0 h-screen">
-            <div className="relative h-full pt-40 pb-16 flex flex-col">
+            <div className="relative h-full pt-48 pb-16 flex flex-col">
               {/* Title (gallery rhythm: aligned to content grid) */}
               <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 flex-none">
                 <h2 className="font-display text-[clamp(64px,6.5vw,110px)] font-light tracking-[-0.06em] leading-[0.92]">
@@ -767,7 +771,7 @@ export default function Home() {
               </div>
 
               {/* Videos */}
-              <div className="flex-1 mt-12">
+              <div className="flex-1 mt-10">
                 {/* Full-bleed stage (feels like an exhibit, not an inset embed) */}
                 <div className="relative w-screen left-1/2 -translate-x-1/2 px-8 md:px-12 lg:px-16">
                   <div className="max-w-[1800px] mx-auto">
