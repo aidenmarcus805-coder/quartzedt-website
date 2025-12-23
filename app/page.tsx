@@ -280,7 +280,8 @@ const ReelOverlay = ({ type }: { type: ReelOverlayType }) => {
 
 const WORKFLOW_STEPS = [
   { label: 'Import', desc: 'Bring footage in. Auto-organize.', icon: Upload, start: 0.0, end: 5.5 },
-  { label: 'Analyze', desc: 'Find beats, scenes, emotion.', icon: Search, start: 5.5, end: 11.0 },
+  { label: 'Scenes', desc: 'Detect scenes and key beats.', icon: Search, start: 5.5, end: 8.25 },
+  { label: 'Transcribe', desc: 'Vows + speeches transcribed with speakers.', icon: Search, start: 8.25, end: 11.0 },
   { label: 'Timeline', desc: 'Assemble the rough cut.', icon: Film, start: 11.0, end: 16.5 },
   { label: 'Export', desc: 'Premiere / Resolve ready.', icon: Download, start: 16.5, end: 22.0 },
 ] as const;
