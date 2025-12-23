@@ -923,7 +923,7 @@ export default function Home() {
           <div className="sticky top-0 h-screen">
             <div className="relative h-full pt-32 pb-16 flex flex-col">
               {/* Title (gallery rhythm: aligned to content grid) */}
-              <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 flex-none">
+              <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 flex-none">
                 <h2 className="font-display text-[clamp(64px,6.5vw,110px)] font-light tracking-[-0.06em] leading-[0.92]">
                   The Workflow
                 </h2>
@@ -933,6 +933,7 @@ export default function Home() {
               <div className="flex-1 mt-16">
                 {/* Full-bleed stage (feels like an exhibit, not an inset embed) */}
                 <div className="relative w-screen left-1/2 -translate-x-1/2 px-8 md:px-12 lg:px-16">
+                  <div className="max-w-[1800px] mx-auto">
                   {/* One “video row”: active expands (main), others stay as shutters on the right.
                       Advancing tabs expands the next shutter into the main video (per blueprint). */}
                   <div className="relative overflow-hidden border border-black/15 bg-white shadow-[0_70px_160px_rgba(0,0,0,0.10)]">
@@ -1051,7 +1052,7 @@ export default function Home() {
                               src="/videoplayback1.mp4"
                               start={step.start}
                               end={step.end}
-                              className="absolute inset-0 w-full h-full object-cover grayscale contrast-125 brightness-95"
+                              className="absolute inset-0 w-full h-full object-cover"
                             />
 
                             {/* Depth / lighting */}
@@ -1090,44 +1091,49 @@ export default function Home() {
                     </motion.div>
                   </div>
                 </div>
+                </div>
               </div>
               </div>
 
               {/* Bottom strip: labels only (scroll selects left → right) */}
-              <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 flex-none mt-16">
-                <div className="relative border border-black/10 bg-paper overflow-hidden">
-                  <motion.div
-                    aria-hidden="true"
-                    className="absolute inset-y-0 left-0 w-1/4 bg-accent/10"
-                    animate={{ x: `${workflowIdx * 100}%` }}
-                    transition={{ type: 'spring', stiffness: 260, damping: 30 }}
-                  />
-                  <div className="relative grid grid-cols-4">
-                    {WORKFLOW_STEPS.map((step, idx) => {
-                      const Icon = step.icon;
+              <div className="flex-none mt-16">
+                <div className="relative w-screen left-1/2 -translate-x-1/2 px-8 md:px-12 lg:px-16">
+                  <div className="max-w-[1800px] mx-auto">
+                    <div className="relative border border-black/10 bg-paper overflow-hidden">
+                      <motion.div
+                        aria-hidden="true"
+                        className="absolute inset-y-0 left-0 w-1/4 bg-accent/10"
+                        animate={{ x: `${workflowIdx * 100}%` }}
+                        transition={{ type: 'spring', stiffness: 260, damping: 30 }}
+                      />
+                      <div className="relative grid grid-cols-4">
+                        {WORKFLOW_STEPS.map((step, idx) => {
+                          const Icon = step.icon;
 
-                      return (
-                        <button
-                          key={step.label}
-                          type="button"
-                          onClick={() => {
-                            setWorkflowHasInteracted(true);
-                            setWorkflowIdx(idx);
-                          }}
-                          className="px-7 py-6 md:py-7 border-r last:border-r-0 border-black/10 text-left"
-                        >
-                          <div className="flex items-center justify-between gap-6">
-                            <div className={`text-[12px] tracking-[0.35em] font-light ${idx === workflowIdx ? 'text-black/70' : 'text-black/45'}`}>
-                              {step.label.toUpperCase()}
-                            </div>
-                            <Icon className={`w-4 h-4 ${idx === workflowIdx ? 'text-black/45' : 'text-black/30'}`} strokeWidth={1.5} />
-                          </div>
-                          <div className={`mt-2 text-[12px] leading-[1.6] font-light ${idx === workflowIdx ? 'text-black/45' : 'text-black/30'}`}>
-                            {step.desc}
-                          </div>
-                        </button>
-                      );
-                    })}
+                          return (
+                            <button
+                              key={step.label}
+                              type="button"
+                              onClick={() => {
+                                setWorkflowHasInteracted(true);
+                                setWorkflowIdx(idx);
+                              }}
+                              className="px-7 py-6 md:py-7 border-r last:border-r-0 border-black/10 text-left"
+                            >
+                              <div className="flex items-center justify-between gap-6">
+                                <div className={`text-[12px] tracking-[0.35em] font-light ${idx === workflowIdx ? 'text-black/70' : 'text-black/45'}`}>
+                                  {step.label.toUpperCase()}
+                                </div>
+                                <Icon className={`w-4 h-4 ${idx === workflowIdx ? 'text-black/45' : 'text-black/30'}`} strokeWidth={1.5} />
+                              </div>
+                              <div className={`mt-2 text-[12px] leading-[1.6] font-light ${idx === workflowIdx ? 'text-black/45' : 'text-black/30'}`}>
+                                {step.desc}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -675,16 +675,35 @@ export default function CameraScene({
   className?: string;
 }) {
   const showHeroOverlays = variant === 'full';
-  const [animationProgress, setAnimationProgress] = useState(0);
-  const [isAnimationComplete, setIsAnimationComplete] = useState(false);
+  // In "gallery" mode we don't run the intro scroll hijack. We start at a framed pose where the monitor is visible.
+  const GALLERY_PROGRESS = 0.8;
+  const initialProgress = variant === 'gallery' ? GALLERY_PROGRESS : 0;
+
+  const [animationProgress, setAnimationProgress] = useState(initialProgress);
+  const [isAnimationComplete, setIsAnimationComplete] = useState(variant === 'gallery');
   const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [smoothMousePosition, setSmoothMousePosition] = useState({ x: 0, y: 0 });
   const videoRef = useRef<HTMLVideoElement>(null);
-  const targetProgress = useRef(0);
-  const isCompleteRef = useRef(false); // Ref for immediate checking
+  const targetProgress = useRef(initialProgress);
+  const isCompleteRef = useRef(variant === 'gallery'); // Ref for immediate checking
   const hasUserScrolledRef = useRef(false);
   const lowPowerModeRef = useRef(lowPowerMode);
+
+  // Ensure we never leave scroll locked if switching variants (or during hot reload).
+  useEffect(() => {
+    if (variant !== 'full') {
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+      const navbar = document.querySelector('nav');
+      if (navbar && navbar instanceof HTMLElement) {
+        navbar.style.paddingRight = '';
+      }
+      // Keep internal refs coherent without triggering render loops.
+      isCompleteRef.current = true;
+      targetProgress.current = GALLERY_PROGRESS;
+    }
+  }, [variant]);
 
   useEffect(() => {
     lowPowerModeRef.current = lowPowerMode;
@@ -768,6 +787,7 @@ export default function CameraScene({
 
   // Wheel, Touch, and Keyboard event handlers
   useEffect(() => {
+    if (variant !== 'full') return;
     let touchStartY = 0;
     
     const handleWheel = (e: WheelEvent) => {
@@ -896,10 +916,11 @@ export default function CameraScene({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [isAnimationComplete]);
+  }, [isAnimationComplete, variant]);
 
   // Lock scroll during animation - prevent scrollbar jitter
   useEffect(() => {
+    if (variant !== 'full') return;
     const navbar = document.querySelector('nav');
     
     if (!isCompleteRef.current) {
@@ -929,7 +950,7 @@ export default function CameraScene({
         navbar.style.paddingRight = '';
       }
     };
-  }, [isAnimationComplete]);
+  }, [isAnimationComplete, variant]);
 
   return (
     <>
