@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion, useInView } from 'framer-motion';
-import { ArrowRight, Download, Film, Minus, Search, Upload } from 'lucide-react';
+import { ArrowDown, ArrowRight, Download, Film, Minus, Search, Upload } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -680,8 +680,49 @@ export default function Home() {
       </section>
 
       {/* Workflow */}
-      <section id="workflow" ref={firstWhiteRef} className="bg-paper text-black border-y border-black/5">
+      <section id="workflow" ref={firstWhiteRef} className="bg-paper text-black border-b border-black/5">
         <div className="relative h-[120vh] overflow-hidden">
+          {/* Transition band: Hero → Workflow (black → paper) */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 z-20 h-[220px]">
+            {/* Black-to-paper gradient */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  'linear-gradient(to bottom, rgba(0,0,0,1) 0px, rgba(0,0,0,0.92) 54px, rgba(0,0,0,0.55) 96px, rgba(0,0,0,0) 160px)',
+              }}
+            />
+
+            {/* Subtle dot carry-through (matches the page’s motif) */}
+            <div
+              className="absolute inset-0 opacity-70"
+              style={{
+                backgroundImage: 'radial-gradient(rgba(255,255,255,0.10) 1px, transparent 1px)',
+                backgroundSize: '26px 26px',
+                backgroundPosition: 'center',
+                WebkitMaskImage:
+                  'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.65) 55%, rgba(0,0,0,0) 100%)',
+                maskImage:
+                  'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.65) 55%, rgba(0,0,0,0) 100%)',
+              }}
+            />
+
+            {/* Intro label */}
+            <div className="absolute inset-x-0 top-10">
+              <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16">
+                <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-black/35 backdrop-blur-sm px-4 py-2">
+                  <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+                  <span className="text-[10px] tracking-[0.5em] text-white/70 font-light">
+                    THE WORKFLOW
+                  </span>
+                  <span className="text-white/30" aria-hidden="true">
+                    <ArrowDown className="w-4 h-4" />
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Dotted background (keep) */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
             <div
