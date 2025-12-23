@@ -309,7 +309,7 @@ export default function Home() {
     let raf = 0;
     let snapRaf = 0;
     let ticking = false;
-    const SNAP_PX = 650; // tolerance so you can't "miss" the section by scrolling a bit too fast
+    const SNAP_PX = 650; // tolerance so you can't "miss" the section by scrolling a bit too fast11111111111111111111111111111111111111111111111111111111111111111111111111112111111111111111111111111111111
     const WORKFLOW_SNAP_OFFSET_PX = 35; // intentional: we snap slightly into the section so the stage feels “framed”
 
     const updateActive = () => {
@@ -712,9 +712,9 @@ export default function Home() {
       </section>
 
       {/* Capabilities Section - Golden Ratio Grid */}
-      <section id="work" className="border-t border-white/5">
+      <section id="work">
         <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16">
-          <div className="pt-20 pb-28 border-b border-white/12">
+          <div className="pt-20 pb-28">
             <Reveal>
               <div className="grid grid-cols-12 gap-10 items-end">
                 <div className="col-span-12 md:col-span-7">
@@ -848,7 +848,7 @@ export default function Home() {
                 );
               })}
 
-              <div className="py-12">
+              <div className="pt-12 pb-28">
                 <Reveal delay={0.05}>
                   <div className="flex items-center justify-between gap-8">
                     <div className="text-[15px] md:text-[17px] leading-[1.9] text-white/55 font-light max-w-2xl">
