@@ -1,6 +1,6 @@
 'use client';
 
-import { Canvas, useFrame, useLoader } from '@react-three/fiber';
+import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber';
 import { Environment } from '@react-three/drei';
 import { useRef, Suspense, useEffect, useState, useMemo, useCallback } from 'react';
 import * as THREE from 'three';
@@ -43,13 +43,22 @@ function createRoundedRectGeometry(width: number, height: number, radius: number
 }
 
 // 3D Monitor Model component with attached video screen
-function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition, hasUserScrolledRef, lowPowerMode }: { 
+function MonitorModel({
+  scrollProgress,
+  groupRef,
+  videoElement,
+  mousePositionRef,
+  hasUserScrolledRef,
+  lowPowerMode,
+  variant,
+}: { 
   scrollProgress: number; 
   groupRef: React.RefObject<THREE.Group | null>;
   videoElement: HTMLVideoElement | null;
-  mousePosition: { x: number; y: number };
+  mousePositionRef: React.MutableRefObject<{ x: number; y: number }>;
   hasUserScrolledRef: React.MutableRefObject<boolean>;
   lowPowerMode: boolean;
+  variant: 'full' | 'gallery';
 }) {
   // Load MTL first, then OBJ with materials
   const materials = useLoader(MTLLoader, '/monitor1.mtl');
@@ -311,6 +320,8 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition, h
     });
   }, [obj, lowPowerMode, lowPowerBasicMat]);
 
+  const smoothMouseRef = useRef({ x: 0, y: 0 });
+
   useFrame((state) => {
     // Create video texture when video is ready (only once)
     if (videoElement && !videoTextureRef.current && videoElement.readyState >= 2) {
@@ -337,15 +348,20 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition, h
     const time = performance.now() * 0.001; // Use performance.now() - faster than Date.now()
     const isInteractive = hasUserScrolledRef.current;
     
-    // Simplified floating animation
-    const floatY = Math.sin(time * 0.5) * 0.02;
-    const floatX = Math.cos(time * 0.3) * 0.01;
-    const floatRot = isInteractive ? Math.sin(time * 0.4) * 0.003 : 0;
+    const allowFloat = variant === 'full';
+    // Simplified floating animation (disabled in gallery mode so we can render on-demand)
+    const floatY = allowFloat ? Math.sin(time * 0.5) * 0.02 : 0;
+    const floatX = allowFloat ? Math.cos(time * 0.3) * 0.01 : 0;
+    const floatRot = allowFloat && isInteractive ? Math.sin(time * 0.4) * 0.003 : 0;
     
     // Mouse parallax effect (disabled until first scroll)
     const mouseInfluence = isInteractive ? 1 - scrollEase * 0.5 : 0;
-    const mouseRotY = mousePosition.x * 0.02 * mouseInfluence;
-    const mouseRotX = mousePosition.y * 0.014 * mouseInfluence;
+    // Smooth mouse locally to avoid React re-renders.
+    const rawMouse = mousePositionRef.current;
+    smoothMouseRef.current.x += (rawMouse.x - smoothMouseRef.current.x) * 0.08;
+    smoothMouseRef.current.y += (rawMouse.y - smoothMouseRef.current.y) * 0.08;
+    const mouseRotY = smoothMouseRef.current.x * 0.02 * mouseInfluence;
+    const mouseRotX = smoothMouseRef.current.y * 0.014 * mouseInfluence;
     
     // Scale (+0.1 at scroll=0)
     const startScale = 6.02;
@@ -538,12 +554,13 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition, h
 }
 
 // Scene
-function Scene({ scrollProgress, videoElement, mousePosition, hasUserScrolledRef, lowPowerMode }: { 
+function Scene({ scrollProgress, videoElement, mousePositionRef, hasUserScrolledRef, lowPowerMode, variant }: { 
   scrollProgress: number; 
   videoElement: HTMLVideoElement | null;
-  mousePosition: { x: number; y: number };
+  mousePositionRef: React.MutableRefObject<{ x: number; y: number }>;
   hasUserScrolledRef: React.MutableRefObject<boolean>;
   lowPowerMode: boolean;
+  variant?: 'full' | 'gallery';
 }) {
   const monitorGroupRef = useRef<THREE.Group>(null);
   
@@ -556,12 +573,28 @@ function Scene({ scrollProgress, videoElement, mousePosition, hasUserScrolledRef
         scrollProgress={scrollProgress} 
         groupRef={monitorGroupRef} 
         videoElement={videoElement}
-        mousePosition={mousePosition}
+        mousePositionRef={mousePositionRef}
         hasUserScrolledRef={hasUserScrolledRef}
         lowPowerMode={lowPowerMode}
+        variant={variant ?? 'full'}
       />
     </group>
   );
+}
+
+function InvalidateBridge({
+  invalidateRef,
+}: {
+  invalidateRef: React.MutableRefObject<(() => void) | null>;
+}) {
+  const invalidate = useThree((s) => s.invalidate);
+  useEffect(() => {
+    invalidateRef.current = invalidate;
+    return () => {
+      invalidateRef.current = null;
+    };
+  }, [invalidate, invalidateRef]);
+  return null;
 }
 
 // Scene lighting for monitor - Clean studio lighting
@@ -652,8 +685,8 @@ export default function CameraScene({
   const [animationProgress, setAnimationProgress] = useState(initialProgress);
   const [isAnimationComplete, setIsAnimationComplete] = useState(variant === 'gallery');
   const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [smoothMousePosition, setSmoothMousePosition] = useState({ x: 0, y: 0 });
+  const mousePositionRef = useRef({ x: 0, y: 0 });
+  const invalidateRef = useRef<(() => void) | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const targetProgress = useRef(initialProgress);
   const isCompleteRef = useRef(variant === 'gallery'); // Ref for immediate checking
@@ -700,16 +733,22 @@ export default function CameraScene({
       // Normalize mouse position to -1 to 1 range
       const x = (e.clientX / window.innerWidth) * 2 - 1;
       const y = (e.clientY / window.innerHeight) * 2 - 1;
-      setMousePosition({ x, y });
+      mousePositionRef.current.x = x;
+      mousePositionRef.current.y = y;
+      // Gallery mode renders on-demand; poke a frame when the cursor moves.
+      if (variant === 'gallery') {
+        invalidateRef.current?.();
+      }
     };
     
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  }, [variant]);
 
   // Smooth animation loop with easing (paused in low-power mode)
   useEffect(() => {
     if (lowPowerMode) return;
+    if (variant !== 'full') return;
     let animationFrame: number;
     
     const animate = () => {
@@ -719,28 +758,12 @@ export default function CameraScene({
         // Very fast interpolation - snappy response
         return prev + diff * 0.35;
       });
-      
-      // Smooth mouse position with slower, non-linear easing
-      setSmoothMousePosition(prev => {
-        const diffX = mousePosition.x - prev.x;
-        const diffY = mousePosition.y - prev.y;
-        
-        // Apply easing function for non-linear smoothing
-        const easedDiffX = diffX * 0.05; // Slower interpolation
-        const easedDiffY = diffY * 0.05;
-        
-        return {
-          x: prev.x + easedDiffX,
-          y: prev.y + easedDiffY
-        };
-      });
-      
       animationFrame = requestAnimationFrame(animate);
     };
     
     animationFrame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animationFrame);
-  }, [mousePosition, lowPowerMode]);
+  }, [lowPowerMode, variant]);
 
   // Pause the hero video when you're far down the page (saves CPU decode).
   useEffect(() => {
@@ -973,19 +996,21 @@ export default function CameraScene({
             stencil: false,
             depth: true,
           }}
-          dpr={lowPowerMode ? 1 : [1, 2]}
-          frameloop={lowPowerMode ? 'demand' : 'always'}
+          dpr={lowPowerMode ? 1 : variant === 'gallery' ? 1.25 : [1, 2]}
+          frameloop={lowPowerMode || variant === 'gallery' ? 'demand' : 'always'}
           shadows={!lowPowerMode}
           performance={{ min: lowPowerMode ? 0.3 : 0.5 }}
           style={{ background: 'transparent' }}
         >
+          <InvalidateBridge invalidateRef={invalidateRef} />
           <Suspense fallback={<LoadingFallback />}>
             <Scene
               scrollProgress={animationProgress}
               videoElement={videoElement}
-              mousePosition={smoothMousePosition}
+              mousePositionRef={mousePositionRef}
               hasUserScrolledRef={hasUserScrolledRef}
               lowPowerMode={lowPowerMode}
+              variant={variant}
             />
           </Suspense>
         </Canvas>

@@ -72,7 +72,19 @@ const Reveal = ({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
 };
 
 // Loop a specific segment of a video file (feels like an "edited" clip without needing multiple assets).
-const SegmentVideo = ({ src, start, end, className }: { src: string; start: number; end: number; className?: string }) => {
+const SegmentVideo = ({
+  src,
+  start,
+  end,
+  className,
+  play = true,
+}: {
+  src: string;
+  start: number;
+  end: number;
+  className?: string;
+  play?: boolean;
+}) => {
   const ref = useRef<HTMLVideoElement | null>(null);
   const boundsRef = useRef({ start, end });
 
@@ -87,37 +99,45 @@ const SegmentVideo = ({ src, start, end, className }: { src: string; start: numb
     let safeStart = start;
     let safeEnd = end;
 
-    const applyBoundsAndPlay = () => {
+    const applyBounds = () => {
       const duration = video.duration;
       if (Number.isFinite(duration) && duration > 0) {
         safeStart = Math.max(0, Math.min(boundsRef.current.start, Math.max(0, duration - 0.1)));
         safeEnd = Math.max(safeStart + 0.15, Math.min(boundsRef.current.end, duration));
       }
+    };
 
+    const sync = () => {
+      applyBounds();
       video.currentTime = safeStart;
-      video.play().catch(() => {});
+      if (play) {
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
     };
 
     const onTimeUpdate = () => {
+      if (!play) return;
       if (video.currentTime >= safeEnd) {
         video.currentTime = safeStart;
       }
     };
 
-    video.addEventListener('loadedmetadata', applyBoundsAndPlay);
+    video.addEventListener('loadedmetadata', sync);
     video.addEventListener('timeupdate', onTimeUpdate);
 
     // If metadata is already available, start immediately.
     if (video.readyState >= 1) {
-      applyBoundsAndPlay();
+      sync();
     }
 
     return () => {
-      video.removeEventListener('loadedmetadata', applyBoundsAndPlay);
+      video.removeEventListener('loadedmetadata', sync);
       video.removeEventListener('timeupdate', onTimeUpdate);
       video.pause();
     };
-  }, [src, start, end]);
+  }, [src, start, end, play]);
 
   return (
     <video
@@ -974,6 +994,7 @@ export default function Home() {
                               src="/videoplayback1.mp4"
                               start={step.start}
                               end={step.end}
+                              play={isActive}
                               className="absolute inset-0 w-full h-full object-cover"
                             />
 
