@@ -693,19 +693,37 @@ export default function Home() {
               }}
             />
 
-            {/* Subtle dot carry-through (matches the page’s motif) */}
+          {/* Dot carry-through (white → black as it fades into paper) */}
             <div
-              className="absolute inset-0 opacity-70"
+            className="absolute inset-0"
+          >
+            {/* White dots (readable in the dark) */}
+            <div
+              className="absolute inset-0 opacity-90"
               style={{
-                backgroundImage: 'radial-gradient(rgba(255,255,255,0.10) 1px, transparent 1px)',
+                backgroundImage: 'radial-gradient(rgba(255,255,255,0.16) 1.25px, transparent 1.25px)',
                 backgroundSize: '26px 26px',
                 backgroundPosition: 'center',
                 WebkitMaskImage:
-                  'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.65) 55%, rgba(0,0,0,0) 100%)',
+                  'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0) 100%)',
                 maskImage:
-                  'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.65) 55%, rgba(0,0,0,0) 100%)',
+                  'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0) 100%)',
               }}
             />
+            {/* Black dots (stay visible as we approach paper) */}
+            <div
+              className="absolute inset-0 opacity-95"
+              style={{
+                backgroundImage: 'radial-gradient(rgba(0,0,0,0.14) 1.25px, transparent 1.25px)',
+                backgroundSize: '26px 26px',
+                backgroundPosition: 'center',
+                WebkitMaskImage:
+                  'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 36%, rgba(0,0,0,0.85) 78%, rgba(0,0,0,1) 100%)',
+                maskImage:
+                  'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 36%, rgba(0,0,0,0.85) 78%, rgba(0,0,0,1) 100%)',
+              }}
+            />
+          </div>
 
             {/* Intro label */}
             <div className="absolute inset-x-0 top-10">
@@ -740,7 +758,7 @@ export default function Home() {
           </div>
 
           <div className="sticky top-0 h-screen">
-            <div className="relative h-full pt-32 pb-16 flex flex-col">
+            <div className="relative h-full pt-40 pb-16 flex flex-col">
               {/* Title (gallery rhythm: aligned to content grid) */}
               <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 flex-none">
                 <h2 className="font-display text-[clamp(64px,6.5vw,110px)] font-light tracking-[-0.06em] leading-[0.92]">
@@ -749,7 +767,7 @@ export default function Home() {
               </div>
 
               {/* Videos */}
-              <div className="flex-1 mt-16">
+              <div className="flex-1 mt-12">
                 {/* Full-bleed stage (feels like an exhibit, not an inset embed) */}
                 <div className="relative w-screen left-1/2 -translate-x-1/2 px-8 md:px-12 lg:px-16">
                   <div className="max-w-[1800px] mx-auto">
