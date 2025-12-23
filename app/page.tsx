@@ -645,7 +645,7 @@ export default function Home() {
         transition={{ duration: 1.2, delay: 0.6 }}
         className="fixed top-0 left-0 right-0 z-[100] mix-blend-difference"
       >
-        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 h-24 flex items-center justify-between">
+        <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 h-24 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <span className="text-[11px] tracking-[0.5em] font-light">CUTLINE</span>
             <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
@@ -674,7 +674,7 @@ export default function Home() {
 
       {/* Hero (Gallery Minimal): calm left column + monitor right (no headline overlap) */}
       <section ref={heroRef} className="relative border-b border-white/5">
-        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 min-h-screen pt-32 pb-24 flex items-center">
+        <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 min-h-screen pt-32 pb-24 flex items-center">
           <div className="w-full grid grid-cols-12 gap-12 lg:gap-16 items-center">
             <div className="col-span-12 lg:col-span-5">
               <motion.div
@@ -727,7 +727,7 @@ export default function Home() {
 
       {/* Capabilities Section - Golden Ratio Grid */}
       <section id="work" className="border-t border-white/5">
-        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16">
+        <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16">
           <div className="py-32 border-b border-white/5">
             <Reveal>
               <div className="grid grid-cols-12 gap-10 items-end">
@@ -1143,7 +1143,7 @@ export default function Home() {
 
       {/* Philosophy Section - Golden Ratio: 38.2% / 61.8% */}
       <section ref={philosophyRef} className="relative border-t border-white/5">
-        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-32">
+        <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 py-32">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-12 items-center">
             {/* Left: Image (5 cols = 41.6%, close to golden) */}
             <div className="lg:col-span-5">
@@ -1189,7 +1189,7 @@ export default function Home() {
 
       {/* Pricing - Minimal Grid */}
       <section className="bg-paper text-black border-y border-black/5">
-        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-32">
+        <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 py-32">
           <Reveal>
             <div className="mb-20">
               <h2 className="font-display text-[42px] md:text-[64px] font-extralight tracking-[-0.04em] leading-[1.05]">
@@ -1273,7 +1273,7 @@ export default function Home() {
 
       {/* CTA Section - Centered, Minimal */}
       <section className="border-t border-white/5">
-        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-32">
+        <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 py-32">
           <div className="max-w-4xl mx-auto text-center space-y-16">
             <Reveal>
               <h2 className="font-display text-[48px] md:text-[80px] font-extralight leading-[1.05] tracking-[-0.04em]">
@@ -1301,7 +1301,7 @@ export default function Home() {
 
       {/* Footer - Minimal Grid */}
       <footer className="border-t border-white/5">
-        <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-20">
+        <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 py-20">
           {/* Main Grid */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-16 md:gap-8">
             {/* Brand - 5 cols (golden ratio) */}

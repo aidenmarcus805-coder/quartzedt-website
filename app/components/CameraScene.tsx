@@ -328,8 +328,6 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition, h
     const mouseInfluence = isInteractive ? 1 - scrollEase * 0.5 : 0;
     const mouseRotY = mousePosition.x * 0.03 * mouseInfluence;
     const mouseRotX = mousePosition.y * 0.02 * mouseInfluence;
-    const mousePosX = mousePosition.x * 0.22 * mouseInfluence;
-    const mousePosY = mousePosition.y * 0.14 * mouseInfluence;
     
     // Scale (+0.1 at scroll=0)
     const startScale = 6.02;
@@ -338,9 +336,9 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition, h
     groupRef.current.scale.setScalar(currentScale);
     
     // Position
-    groupRef.current.position.x = -0.05 + floatX + mousePosX;
+    groupRef.current.position.x = -0.05 + floatX;
     // Drop the whole monitor slightly at the end of the scroll (scrollEase=1)
-    groupRef.current.position.y = -5.2 + (3.35) * scrollEase - 0.4 * scrollEase + floatY + mousePosY;
+    groupRef.current.position.y = -5.2 + (3.35) * scrollEase - 0.4 * scrollEase + floatY;
     
     // Rotation
     groupRef.current.rotation.y = -Math.PI / 2 + floatRot + mouseRotY;
@@ -534,7 +532,7 @@ function Scene({ scrollProgress, videoElement, mousePosition, hasUserScrolledRef
   return (
     <group position={[0, 0, 0]}>
       {/* Environment for reflections */}
-      {!lowPowerMode && <Environment preset="studio" environmentIntensity={0.25} />}
+      {!lowPowerMode && <Environment preset="studio" environmentIntensity={0.14} />}
       {!lowPowerMode && <Lighting />}
       <MonitorModel 
         scrollProgress={scrollProgress} 
@@ -553,94 +551,49 @@ function Lighting() {
   return (
     <>
       {/* Soft ambient for visibility */}
-      <ambientLight intensity={0.28} color="#ffffff" />
+      <ambientLight intensity={0.34} color="#ffffff" />
       
       {/* KEY LIGHT - Main illumination from top-right */}
       <directionalLight 
         position={[5, 6, 6]} 
-        intensity={1.25}
-        color="#fff6ef"
+        intensity={0.85}
+        color="#fff4ee"
       />
       
       {/* RIM LIGHT - Subtle edge definition from back-left */}
       <directionalLight 
         position={[-6, 3, -3]} 
-        intensity={0.55}
+        intensity={0.25}
         color="#ffffff"
       />
       
       {/* FILL LIGHT - Soft from left side */}
       <directionalLight 
         position={[-5, 2, 4]} 
-        intensity={0.45} 
-        color="#f3f6ff"
+        intensity={0.32} 
+        color="#eef2ff"
       />
       
       {/* TOP LIGHT - Even from above */}
       <directionalLight
         position={[0, 8, 2]}
-        intensity={0.55}
+        intensity={0.35}
         color="#ffffff"
       />
       
       {/* FRONT ACCENT - Subtle face illumination */}
       <pointLight 
         position={[0, 1.2, 10]} 
-        intensity={7} 
-        color="#ffffff" 
-        distance={22}
-        decay={2}
-      />
-      
-      {/* SUBTLE SURROUNDING ACCENT LIGHTS */}
-      
-      {/* Bottom left - warm subtle glow */}
-      <pointLight 
-        position={[-4, -1, 3]} 
-        intensity={2.5} 
-        color="#fff8f0" 
-        distance={12}
-        decay={2}
-      />
-      
-      {/* Bottom right - cool subtle glow */}
-      <pointLight 
-        position={[4, -1, 3]} 
-        intensity={2.5} 
-        color="#f0f4ff" 
-        distance={12}
-        decay={2}
-      />
-      
-      {/* Left side - soft accent */}
-      <pointLight 
-        position={[-6, 2, 0]} 
-        intensity={3.2} 
-        color="#ffffff" 
-        distance={14}
-        decay={2}
-      />
-      
-      {/* Right side - soft accent */}
-      <pointLight 
-        position={[6, 2, 0]} 
-        intensity={3.2} 
-        color="#ffffff" 
-        distance={14}
-        decay={2}
-      />
-      
-      {/* Back subtle rim - top */}
-      <pointLight 
-        position={[0, 5, -4]} 
         intensity={2.2} 
-        color="#e8e8ff" 
-        distance={10}
+        color="#ffffff" 
+        distance={26}
         decay={2}
       />
+      
+      {/* (Removed extra point lights to avoid harsh spec/hotspots) */}
       
       {/* Soft gradient environment */}
-      <hemisphereLight args={['#ffffff', '#1a1a1a', 0.35]} />
+      <hemisphereLight args={['#ffffff', '#0b0b0c', 0.45]} />
     </>
   );
 }
@@ -996,7 +949,7 @@ export default function CameraScene({
             antialias: true, 
             alpha: true,
             toneMapping: THREE.ACESFilmicToneMapping,
-            toneMappingExposure: 1.0,
+            toneMappingExposure: variant === 'gallery' ? 0.9 : 1.0,
             powerPreference: 'high-performance',
             outputColorSpace: THREE.SRGBColorSpace,
             stencil: false,
