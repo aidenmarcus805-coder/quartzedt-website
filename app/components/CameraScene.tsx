@@ -364,14 +364,14 @@ function MonitorModel({
     const mouseRotY = smoothMouseRef.current.x * 0.02 * mouseInfluence;
     const mouseRotX = smoothMouseRef.current.y * 0.014 * mouseInfluence;
     
-    // Scale (+0.1 at scroll=0)
-    const startScale = 6.02;
-    const endScale = 3.35;
+    // Scale (slightly larger overall per request)
+    const startScale = 6.12;
+    const endScale = 3.45;
     const currentScale = startScale + (endScale - startScale) * scrollEase; // Inline lerp
     groupRef.current.scale.setScalar(currentScale);
     
     // Position
-    groupRef.current.position.x = -0.05 + floatX;
+    groupRef.current.position.x = 0.0 + floatX;
     // Drop the whole monitor slightly at the end of the scroll (scrollEase=1)
     // Nudge down a touch (~20px perceived) to give the hero typography more breathing room.
     groupRef.current.position.y = -5.3 + (3.35) * scrollEase - 0.4 * scrollEase + floatY;
