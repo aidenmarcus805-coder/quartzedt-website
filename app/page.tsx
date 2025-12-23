@@ -312,7 +312,7 @@ export default function Home() {
   useEffect(() => {
     let enforceRaf = 0;
     let lastScrollY = window.scrollY;
-    const WORKFLOW_WALL_OFFSET_PX = 75; // “framed” wall position inside the workflow section
+    const WORKFLOW_WALL_OFFSET_PX = 175; // “framed” wall position inside the workflow section
 
     const setLocked = (next: boolean) => {
       if (workflowLockedRef.current !== next) {
