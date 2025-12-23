@@ -310,36 +310,23 @@ export default function Home() {
 
   // Scroll should not move the page here — it should ONLY advance the workflow left → right.
   useEffect(() => {
-    let raf = 0;
-    let ticking = false;
-    const SNAP_PX = 350; // tolerance so you can't "miss" the section by scrolling a bit too fast
-    const WORKFLOW_SNAP_OFFSET_PX = 75; // intentional: wall engages slightly into the section so the stage feels “framed”
+    let enforceRaf = 0;
+    let lastScrollY = window.scrollY;
+    const WORKFLOW_WALL_OFFSET_PX = 75; // “framed” wall position inside the workflow section
 
-    const updateActive = () => {
-      ticking = false;
-      const el = firstWhiteRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const vh = window.innerHeight;
-      // Lock ONLY once the section is actually pinned (deterministic stop position).
-      // This prevents "sometimes it stops higher/lower" depending on scroll speed.
-      const EPS = 2;
-      const nextActive =
-        workflowWallYRef.current != null || (rect.top <= EPS + WORKFLOW_SNAP_OFFSET_PX && rect.bottom >= vh - EPS);
-      workflowActiveRef.current = nextActive;
-      if (!nextActive) workflowWallYRef.current = null; // safety: never keep a stale wall
-
-      // Drive a small UI “HUD” (avoid state churn by only updating on change).
-      if (workflowLockedRef.current !== nextActive) {
-        workflowLockedRef.current = nextActive;
-        setWorkflowLocked(nextActive);
+    const setLocked = (next: boolean) => {
+      if (workflowLockedRef.current !== next) {
+        workflowLockedRef.current = next;
+        setWorkflowLocked(next);
       }
     };
 
-    const scheduleUpdate = () => {
-      if (ticking) return;
-      ticking = true;
-      raf = window.requestAnimationFrame(updateActive);
+    const getWallY = () => {
+      const el = firstWhiteRef.current;
+      if (!el) return null;
+      const rect = el.getBoundingClientRect();
+      // wallY is the scrollY where the workflow top sits at WORKFLOW_WALL_OFFSET_PX
+      return Math.round(window.scrollY + rect.top - WORKFLOW_WALL_OFFSET_PX);
     };
 
     const canExit = (dir: 1 | -1) => {
@@ -362,66 +349,78 @@ export default function Home() {
       });
     };
 
+    const ensureWall = () => {
+      const y = workflowWallYRef.current;
+      if (y == null) return;
+      if (Math.abs(window.scrollY - y) > 1) {
+        window.scrollTo(0, y);
+      }
+    };
+
     const engageWall = (wallY: number) => {
-      workflowWallYRef.current = wallY;
+      const y = Math.round(wallY);
+      workflowWallYRef.current = y;
       workflowActiveRef.current = true;
       workflowWheelAccumRef.current = 0;
-      updateActive(); // immediately reflect lock state in HUD
+      setLocked(true);
+      window.scrollTo(0, y);
     };
 
     const releaseWall = () => {
       workflowWallYRef.current = null;
+      workflowActiveRef.current = false;
+      workflowWheelAccumRef.current = 0;
+      setLocked(false);
+    };
+
+    const wheelDeltaPx = (e: WheelEvent) => {
+      // Normalize delta so “crossing the wall” math is reliable.
+      if (e.deltaMode === 1) return e.deltaY * 16; // lines → px (approx)
+      if (e.deltaMode === 2) return e.deltaY * window.innerHeight; // pages → px
+      return e.deltaY; // px
     };
 
     const onWheel = (e: WheelEvent) => {
-      const dy = e.deltaY;
-      if (dy === 0) return;
+      const dyPx = wheelDeltaPx(e);
+      if (dyPx === 0) return;
+      const dir = dyPx > 0 ? (1 as const) : (-1 as const);
 
-      const dir = dy > 0 ? (1 as const) : (-1 as const);
-      const shouldCapture = !canExit(dir);
-
-      // Entry: no snapping animation. You scroll until you hit a "wall", then scrolling advances steps.
-      if (!workflowActiveRef.current) {
-        const el = firstWhiteRef.current;
-        if (!el) return;
-        const rect = el.getBoundingClientRect();
-        const remainingToWall = rect.top - WORKFLOW_SNAP_OFFSET_PX; // px needed to bring top to the wall
-        const willHitWallThisTick = remainingToWall <= 0 || dy >= remainingToWall;
-        const nearEnough = rect.top <= SNAP_PX;
-
-        if (shouldCapture && dir > 0 && nearEnough && willHitWallThisTick) {
-          e.preventDefault();
-          const wallY = remainingToWall > 0 ? window.scrollY + remainingToWall : window.scrollY;
-          if (remainingToWall > 0) window.scrollTo(0, wallY);
-          engageWall(wallY);
-          return;
+      // Locked: you're at the wall. Scroll input only advances steps.
+      if (workflowWallYRef.current != null) {
+        if (canExit(dir)) {
+          releaseWall();
+          return; // allow normal page scroll
         }
-      }
 
-      if (!workflowActiveRef.current) return;
-      if (canExit(dir)) {
-        // Unlock the wall at the ends so normal scroll resumes.
-        releaseWall();
+        e.preventDefault();
+        ensureWall();
+
+        // Accumulate deltas so trackpads don’t feel “twitchy”.
+        const acc = workflowWheelAccumRef.current;
+        if (acc !== 0 && Math.sign(acc) !== Math.sign(dyPx)) {
+          workflowWheelAccumRef.current = 0;
+        }
+        workflowWheelAccumRef.current += dyPx;
+
+        // ~2x scroll required to advance (per request)
+        const threshold = 160;
+        if (Math.abs(workflowWheelAccumRef.current) < threshold) return;
+
+        workflowWheelAccumRef.current = 0;
+        step(dir);
         return;
       }
 
-      // Always prevent page scroll while active.
-      e.preventDefault();
-      if (workflowWallYRef.current != null) window.scrollTo(0, workflowWallYRef.current);
-
-      // Accumulate deltas so trackpads don’t feel “twitchy”.
-      const acc = workflowWheelAccumRef.current;
-      if (acc !== 0 && Math.sign(acc) !== Math.sign(dy)) {
-        workflowWheelAccumRef.current = 0;
+      // Not locked: let the page scroll normally UNTIL this input would cross the wall.
+      if (dir > 0 && !canExit(1)) {
+        const wallY = getWallY();
+        if (wallY == null) return;
+        const predicted = window.scrollY + dyPx;
+        if (predicted >= wallY) {
+          e.preventDefault();
+          engageWall(wallY);
+        }
       }
-      workflowWheelAccumRef.current += dy;
-
-      // ~2x scroll required to advance (per request)
-      const threshold = 160;
-      if (Math.abs(workflowWheelAccumRef.current) < threshold) return;
-
-      workflowWheelAccumRef.current = 0;
-      step(dir);
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
@@ -441,31 +440,28 @@ export default function Home() {
           return;
       }
 
-      const shouldCapture = !canExit(dir);
-
-      // Same wall behavior for keyboard scroll.
-      if (!workflowActiveRef.current) {
-        const el = firstWhiteRef.current;
-        if (!el) return;
-        const rect = el.getBoundingClientRect();
-        if (shouldCapture && dir > 0 && rect.top <= SNAP_PX) {
-          e.preventDefault();
-          const remainingToWall = rect.top - WORKFLOW_SNAP_OFFSET_PX;
-          const wallY = remainingToWall > 0 ? window.scrollY + remainingToWall : window.scrollY;
-          if (remainingToWall > 0) window.scrollTo(0, wallY);
-          engageWall(wallY);
+      // Locked: step.
+      if (workflowWallYRef.current != null) {
+        if (canExit(dir)) {
+          releaseWall();
           return;
         }
-      }
-
-      if (!workflowActiveRef.current) return;
-      if (canExit(dir)) {
-        releaseWall();
+        e.preventDefault();
+        ensureWall();
+        step(dir);
         return;
       }
-      e.preventDefault();
-      if (workflowWallYRef.current != null) window.scrollTo(0, workflowWallYRef.current);
-      step(dir);
+
+      // Not locked: if this keypress would jump you past the wall, lock instead.
+      if (dir > 0 && !canExit(1)) {
+        const wallY = getWallY();
+        if (wallY == null) return;
+        const approxJump = window.innerHeight * 0.9;
+        if (window.scrollY + approxJump >= wallY) {
+          e.preventDefault();
+          engageWall(wallY);
+        }
+      }
     };
 
     const onTouchStart = (e: TouchEvent) => {
@@ -481,58 +477,91 @@ export default function Home() {
       if (Math.abs(dy) < 28) return; // ignore micro movement (2x)
 
       const dir = dy > 0 ? (1 as const) : (-1 as const);
-      const shouldCapture = !canExit(dir);
 
-      if (!workflowActiveRef.current) {
-        const el = firstWhiteRef.current;
-        if (!el) return;
-        const rect = el.getBoundingClientRect();
-        const remainingToWall = rect.top - WORKFLOW_SNAP_OFFSET_PX;
-        const willHitWallThisTick = remainingToWall <= 0 || dy >= remainingToWall;
-        const nearEnough = rect.top <= SNAP_PX;
+      // Locked: step.
+      if (workflowWallYRef.current != null) {
+        if (canExit(dir)) {
+          releaseWall();
+          workflowTouchStartYRef.current = y;
+          return;
+        }
 
-        if (shouldCapture && dir > 0 && nearEnough && willHitWallThisTick) {
+        e.preventDefault();
+        ensureWall();
+        workflowTouchStartYRef.current = y;
+        step(dir);
+        return;
+      }
+
+      // Not locked: if this touch move would cross the wall, lock instead.
+      if (dir > 0 && !canExit(1)) {
+        const wallY = getWallY();
+        if (wallY == null) return;
+        const predicted = window.scrollY + dy;
+        if (predicted >= wallY) {
           e.preventDefault();
-          const wallY = remainingToWall > 0 ? window.scrollY + remainingToWall : window.scrollY;
-          if (remainingToWall > 0) window.scrollTo(0, wallY);
           engageWall(wallY);
           workflowTouchStartYRef.current = y;
           return;
         }
-        // Not active yet: allow normal page scroll.
-        workflowTouchStartYRef.current = y;
-        return;
       }
 
-      if (canExit(dir)) {
-        releaseWall();
-        workflowTouchStartYRef.current = y;
-        return;
-      }
-
-      e.preventDefault();
-      if (workflowWallYRef.current != null) window.scrollTo(0, workflowWallYRef.current);
+      // Not locked: allow normal page scroll.
       workflowTouchStartYRef.current = y;
-      step(dir);
     };
 
-    window.addEventListener('scroll', scheduleUpdate, { passive: true });
-    window.addEventListener('resize', scheduleUpdate);
+    const onScroll = () => {
+      if (workflowWallYRef.current != null) {
+        // Some browsers still attempt inertial scroll; clamp back without thrashing.
+        if (enforceRaf) window.cancelAnimationFrame(enforceRaf);
+        enforceRaf = window.requestAnimationFrame(() => {
+          ensureWall();
+        });
+        lastScrollY = workflowWallYRef.current ?? window.scrollY;
+        return;
+      }
+
+      const wallY = getWallY();
+      if (wallY == null) {
+        lastScrollY = window.scrollY;
+        return;
+      }
+
+      const cur = window.scrollY;
+      const dir = cur > lastScrollY ? (1 as const) : cur < lastScrollY ? (-1 as const) : (0 as const);
+      lastScrollY = cur;
+
+      // If you scroll/drag past the wall, clamp to it and lock (unless you're allowed to exit).
+      if (dir > 0 && !canExit(1) && cur >= wallY) {
+        engageWall(wallY);
+      }
+    };
+
+    const onResize = () => {
+      if (workflowWallYRef.current == null) return;
+      const wallY = getWallY();
+      if (wallY == null) return;
+      workflowWallYRef.current = wallY;
+      ensureWall();
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onResize);
     window.addEventListener('wheel', onWheel, { passive: false });
     window.addEventListener('keydown', onKeyDown, { passive: false });
     window.addEventListener('touchstart', onTouchStart, { passive: false });
     window.addEventListener('touchmove', onTouchMove, { passive: false });
-
-    updateActive();
+    // Initial sync (in case you reload near/inside the workflow)
+    onScroll();
 
     return () => {
-      window.removeEventListener('scroll', scheduleUpdate);
-      window.removeEventListener('resize', scheduleUpdate);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onResize);
       window.removeEventListener('wheel', onWheel);
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('touchstart', onTouchStart);
       window.removeEventListener('touchmove', onTouchMove);
-      if (raf) window.cancelAnimationFrame(raf);
+      if (enforceRaf) window.cancelAnimationFrame(enforceRaf);
     };
   }, []);
 
