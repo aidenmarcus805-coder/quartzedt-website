@@ -353,7 +353,7 @@ export default function Home() {
 
   // Scroll should not move the page here — it should ONLY advance the workflow left → right.
   useEffect(() => {
-    const WORKFLOW_WALL_OFFSET_PX = -75; // “framed” wall position inside the workflow section
+    const WORKFLOW_WALL_OFFSET_PX = -95; // “framed” wall position inside the workflow section
     let scrollFrozen = false;
 
     const setLocked = (next: boolean) => {
@@ -940,10 +940,10 @@ export default function Home() {
                 <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16">
                   {/* One “video row”: active expands (main), others stay as shutters on the right.
                       Advancing tabs expands the next shutter into the main video (per blueprint). */}
-                  <div className="relative overflow-hidden rounded-[26px] border border-black/12 bg-white shadow-[0_70px_160px_rgba(0,0,0,0.10)]">
+                  <div className="relative overflow-hidden border border-black/12 bg-white shadow-[0_70px_160px_rgba(0,0,0,0.10)]">
                   {/* Workflow HUD (makes the scroll hijack feel intentional) */}
                   <div className="pointer-events-none absolute inset-x-0 top-0 z-10">
-                    <div className="flex items-start justify-between p-4">
+                    <div className="flex items-start justify-between p-6">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-3">
                           <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
@@ -1026,7 +1026,7 @@ export default function Home() {
                               setWorkflowAdvance(0);
                               setWorkflowIdx(idx);
                             }}
-                            className={`relative h-full overflow-hidden rounded-[18px] border border-black/15 bg-[#f4f4f5] focus:outline-none ${
+                            className={`relative h-full overflow-hidden border border-black/15 bg-[#f4f4f5] focus:outline-none ${
                               isActive ? 'flex-1 min-w-0' : 'w-[44px] md:w-[52px] shrink-0'
                             }`}
                             style={{
@@ -1047,7 +1047,7 @@ export default function Home() {
                             aria-label={`Select ${step.label}`}
                           >
                             {/* Display glass (slight inset bezel) */}
-                            <div className="absolute inset-[3px] overflow-hidden rounded-[14px] bg-white">
+                            <div className="absolute inset-[3px] overflow-hidden bg-white">
                               <SegmentVideo
                                 src="/videoplayback1.mp4"
                                 start={step.start}
@@ -1074,7 +1074,7 @@ export default function Home() {
                             {/* Bezel + shadow (Apple-ish display frame) */}
                             <div
                               aria-hidden="true"
-                              className="absolute inset-0 pointer-events-none rounded-[18px]"
+                              className="absolute inset-0 pointer-events-none"
                               style={{
                                 boxShadow: isActive
                                   ? 'inset 0 0 0 1px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.65), 0 40px 110px rgba(0,0,0,0.12)'
@@ -1108,7 +1108,7 @@ export default function Home() {
                           transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                           className="pointer-events-none absolute left-4 bottom-4 z-10"
                         >
-                          <div className="inline-flex items-center gap-3 rounded-full border border-black/10 bg-white/80 backdrop-blur-sm px-4 py-2">
+                          <div className="inline-flex items-center gap-3 border border-black/10 bg-white/80 backdrop-blur-sm px-4 py-2">
                             <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
                             <span className="text-[10px] tracking-[0.45em] text-black/55 font-light">
                               SCROLL TO ADVANCE
@@ -1136,7 +1136,7 @@ export default function Home() {
                           transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                           className="pointer-events-none absolute right-4 bottom-4 z-10"
                         >
-                          <div className="inline-flex items-center gap-3 rounded-full border border-black/10 bg-white/80 backdrop-blur-sm px-4 py-2">
+                          <div className="inline-flex items-center gap-3 border border-black/10 bg-white/80 backdrop-blur-sm px-4 py-2">
                             <span className="h-2 w-2 rounded-full bg-black/25" aria-hidden="true" />
                             <span className="text-[10px] tracking-[0.45em] text-black/55 font-light">
                               SCROLL TO CONTINUE
