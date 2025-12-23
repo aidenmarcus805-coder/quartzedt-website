@@ -632,14 +632,15 @@ export default function Home() {
         className="fixed top-0 left-0 right-0 z-[100] mix-blend-difference"
       >
         <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 h-24 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center">
         <Image
-              src="/logo.png"
+              src="/logo.png?v=20251223"
               alt="Cutline"
               width={256}
               height={65}
           priority
               className="h-5 w-auto"
+              unoptimized
             />
           </Link>
           
@@ -665,8 +666,29 @@ export default function Home() {
       </motion.nav>
 
       {/* Hero (Gallery Minimal): calm left column + monitor right (no headline overlap) */}
-      <section ref={heroRef} className="relative border-b border-white/5">
-        <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 min-h-screen pt-32 pb-24 flex items-center">
+      <section ref={heroRef} className="relative overflow-hidden border-b border-white/5">
+        {/* Hero art-direction: soft spotlight + subtle dot field (Sigma-ish, but black/white) */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+          <div
+            className="absolute inset-0 opacity-[0.55]"
+            style={{
+              background:
+                'radial-gradient(900px at 72% 42%, rgba(255,255,255,0.10), transparent 62%), radial-gradient(800px at 28% 60%, rgba(255,59,48,0.10), transparent 60%)',
+            }}
+          />
+          <div
+            className="absolute inset-0 opacity-[0.16]"
+            style={{
+              backgroundImage: 'radial-gradient(rgba(255,255,255,0.22) 1px, transparent 1px)',
+              backgroundSize: '18px 18px',
+              WebkitMaskImage: 'radial-gradient(720px at 74% 44%, black 0%, black 48%, transparent 72%)',
+              maskImage: 'radial-gradient(720px at 74% 44%, black 0%, black 48%, transparent 72%)',
+            }}
+          />
+          <div className="absolute -top-24 -left-24 h-[520px] w-[520px] rounded-full bg-white/[0.02] blur-3xl" />
+        </div>
+
+        <div className="relative max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 min-h-screen pt-32 pb-24 flex items-center">
           <div className="w-full grid grid-cols-12 gap-12 lg:gap-16 items-center">
             <div className="col-span-12 lg:col-span-5">
               <motion.div
@@ -709,9 +731,24 @@ export default function Home() {
             </div>
 
             <div className="col-span-12 lg:col-span-7">
-              <div className="relative h-[72vh] min-h-[520px] max-h-[780px]">
+              <motion.div
+                initial={{ opacity: 0, y: 18, filter: 'blur(14px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                transition={{ duration: 1.15, ease: [0.16, 1, 0.3, 1], delay: 0.25 }}
+                className="relative h-[78vh] min-h-[560px] max-h-[820px]"
+              >
+                {/* Soft gallery glow behind the monitor (no border box) */}
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -inset-16 rounded-[60px] opacity-70 blur-3xl"
+                  style={{
+                    background:
+                      'radial-gradient(420px at 55% 45%, rgba(255,255,255,0.09), transparent 65%), radial-gradient(420px at 80% 30%, rgba(255,59,48,0.08), transparent 70%)',
+                  }}
+                />
+
                 <CameraScene lowPowerMode={lowPowerMode} variant="gallery" />
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
@@ -1358,7 +1395,14 @@ export default function Home() {
             {/* Brand - 5 cols (golden ratio) */}
             <div className="md:col-span-5 space-y-8">
               <Link href="/" className="inline-flex items-center">
-                <Image src="/logo.png" alt="Cutline" width={256} height={65} className="h-6 w-auto" />
+                <Image
+                  src="/logo.png?v=20251223"
+                  alt="Cutline"
+                  width={256}
+                  height={65}
+                  className="h-6 w-auto"
+                  unoptimized
+                />
               </Link>
               <p className="text-[15px] font-light leading-[1.8] text-white/40 max-w-md">
                 AI-powered video editing engineered for filmmakers who value craft.

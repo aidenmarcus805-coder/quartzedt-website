@@ -87,7 +87,15 @@ export default function About() {
       >
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 h-24 flex items-center justify-between">
           <Link href="/" className="inline-flex items-center">
-            <Image src="/logo.png" alt="Cutline" width={256} height={65} priority className="h-5 w-auto" />
+            <Image
+              src="/logo.png?v=20251223"
+              alt="Cutline"
+              width={256}
+              height={65}
+              priority
+              className="h-5 w-auto"
+              unoptimized
+            />
           </Link>
           
           <div className="hidden md:flex items-center gap-16 text-[10px] tracking-[0.4em] font-light">
@@ -444,7 +452,14 @@ export default function About() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-16 md:gap-8">
             <div className="md:col-span-5 space-y-8">
               <Link href="/" className="inline-flex items-center">
-                <Image src="/logo.png" alt="Cutline" width={256} height={65} className="h-6 w-auto" />
+                <Image
+                  src="/logo.png?v=20251223"
+                  alt="Cutline"
+                  width={256}
+                  height={65}
+                  className="h-6 w-auto"
+                  unoptimized
+                />
               </Link>
               <p className="text-[15px] font-light leading-[1.8] text-white/40 max-w-md">
                 AI-powered video editing engineered for filmmakers who value craft.

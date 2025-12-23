@@ -90,7 +90,15 @@ export default function PricingPage() {
           </div>
           <div className="flex items-center justify-center">
             <Link href="/" className="inline-flex items-center">
-              <Image src="/logo.png" alt="Cutline" width={256} height={65} priority className="h-5 w-auto" />
+              <Image
+                src="/logo.png?v=20251223"
+                alt="Cutline"
+                width={256}
+                height={65}
+                priority
+                className="h-5 w-auto"
+                unoptimized
+              />
             </Link>
           </div>
           <div className="flex items-center justify-end gap-8">
@@ -288,7 +296,14 @@ export default function PricingPage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="text-center md:text-left">
               <Link href="/" className="inline-flex items-center justify-center md:justify-start">
-                <Image src="/logo.png" alt="Cutline" width={256} height={65} className="h-6 w-auto" />
+                <Image
+                  src="/logo.png?v=20251223"
+                  alt="Cutline"
+                  width={256}
+                  height={65}
+                  className="h-6 w-auto"
+                  unoptimized
+                />
               </Link>
               <p className="text-[11px] text-white/40 mt-2">AI Video Editing for Wedding Filmmakers</p>
             </div>
