@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion, useInView } from 'framer-motion';
 import { ArrowRight, Download, Film, Minus, Search, Upload } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
@@ -12,7 +12,6 @@ const CameraScene = dynamic<{
   lowPowerMode?: boolean;
   variant?: 'full' | 'gallery';
   className?: string;
-  onVideoElement?: (el: HTMLVideoElement | null) => void;
 }>(() => import('./components/CameraScene'), {
   ssr: false,
   loading: () => (
@@ -279,180 +278,6 @@ const ReelOverlay = ({ type }: { type: ReelOverlayType }) => {
   );
 };
 
-const HERO_MARKERS = [
-  { t: 0.14, label: 'VOWS' },
-  { t: 0.36, label: 'LAUGH' },
-  { t: 0.62, label: 'SPEECH' },
-  { t: 0.84, label: 'REACTION' },
-] as const;
-
-const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
-
-const HeroProofStrip = ({
-  video,
-  onProgress,
-}: {
-  video: HTMLVideoElement | null;
-  onProgress?: (t: number) => void;
-}) => {
-  const trackRef = useRef<HTMLDivElement | null>(null);
-  const videoElRef = useRef<HTMLVideoElement | null>(null);
-  const [t, setT] = useState(0.18);
-  const [scrubbing, setScrubbing] = useState(false);
-  const interactedRef = useRef(false);
-
-  useEffect(() => {
-    videoElRef.current = video;
-  }, [video]);
-
-  const applyToVideo = useCallback(
-    (nextT: number, { pause }: { pause: boolean }) => {
-      const v = videoElRef.current;
-      if (!v) return;
-      const dur = v.duration;
-      if (!Number.isFinite(dur) || dur <= 0) return;
-      if (pause) v.pause();
-      const target = nextT * Math.max(0, dur - 0.12);
-      try {
-        v.currentTime = target;
-      } catch {
-        // ignore transient decoding errors while scrubbing
-      }
-    },
-    []
-  );
-
-  // A tiny auto-sweep on first view: makes the hero feel “alive” and demonstrates scrubbing.
-  useEffect(() => {
-    if (interactedRef.current) return;
-    const v = videoElRef.current;
-    if (!v) return;
-    let raf = 0;
-    const from = 0.16;
-    const to = 0.72;
-    const start = performance.now();
-    const durationMs = 1050;
-    const easeOut = (x: number) => 1 - Math.pow(1 - x, 3);
-
-    const tick = (now: number) => {
-      if (interactedRef.current) return;
-      const p = Math.min(1, (now - start) / durationMs);
-      const next = from + (to - from) * easeOut(p);
-      setT(next);
-      onProgress?.(next);
-      applyToVideo(next, { pause: true });
-      if (p < 1) {
-        raf = window.requestAnimationFrame(tick);
-      } else {
-        v.play().catch(() => {});
-      }
-    };
-
-    raf = window.requestAnimationFrame(tick);
-    return () => window.cancelAnimationFrame(raf);
-  }, [applyToVideo, onProgress, video]);
-
-  const setFromClientX = useCallback(
-    (clientX: number) => {
-      const el = trackRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const next = clamp01((clientX - rect.left) / Math.max(1, rect.width));
-      setT(next);
-      onProgress?.(next);
-      applyToVideo(next, { pause: true });
-    },
-    [applyToVideo, onProgress]
-  );
-
-  const activeMarkerIdx = HERO_MARKERS.reduce((best, m, idx) => {
-    const d = Math.abs(m.t - t);
-    return d < best.d ? { idx, d } : best;
-  }, { idx: 0, d: Infinity }).idx;
-
-  return (
-    <div className="mt-14 max-w-[560px] select-none">
-      <div className="flex items-center justify-between text-[10px] tracking-[0.45em] text-white/28 font-light">
-        <span className="inline-flex items-center gap-2">
-          <span className="h-1.5 w-1.5 rounded-full bg-accent" aria-hidden="true" />
-          47 MARKERS/FRAME
-        </span>
-        <span className="text-white/22">{scrubbing ? 'SCRUBBING' : 'SCRUB'}</span>
-      </div>
-
-      <div
-        ref={trackRef}
-        role="slider"
-        aria-label="Scrub the Cutline demo"
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={Math.round(t * 100)}
-        tabIndex={0}
-        className="mt-4 relative h-10"
-        onPointerDown={(e) => {
-          interactedRef.current = true;
-          setScrubbing(true);
-          (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
-          setFromClientX(e.clientX);
-        }}
-        onPointerMove={(e) => {
-          if (!scrubbing) return;
-          setFromClientX(e.clientX);
-        }}
-        onPointerUp={(e) => {
-          if (!scrubbing) return;
-          setScrubbing(false);
-          (e.currentTarget as HTMLDivElement).releasePointerCapture(e.pointerId);
-          videoElRef.current?.play().catch(() => {});
-        }}
-        onPointerCancel={() => {
-          if (!scrubbing) return;
-          setScrubbing(false);
-          videoElRef.current?.play().catch(() => {});
-        }}
-        onKeyDown={(e) => {
-          if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-          interactedRef.current = true;
-          const dir = e.key === 'ArrowRight' ? 1 : -1;
-          const next = clamp01(t + dir * 0.03);
-          setT(next);
-          onProgress?.(next);
-          applyToVideo(next, { pause: false });
-        }}
-      >
-        {/* Hairline track */}
-        <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-px bg-white/12" />
-
-        {/* Markers */}
-        {HERO_MARKERS.map((m, idx) => {
-          const isActive = idx === activeMarkerIdx;
-          return (
-            <div
-              key={m.label}
-              className="absolute top-1/2 -translate-y-1/2"
-              style={{ left: `${m.t * 100}%` }}
-            >
-              <div className={`h-3 w-px ${isActive ? 'bg-accent' : 'bg-white/14'}`} />
-            </div>
-          );
-        })}
-
-        {/* Playhead */}
-        <div
-          className="absolute top-1/2 -translate-y-1/2"
-          style={{ left: `${t * 100}%` }}
-        >
-          <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] tracking-[0.35em] text-white/26 font-light whitespace-nowrap">
-            {HERO_MARKERS[activeMarkerIdx]?.label}
-          </div>
-          <div className="h-6 w-px bg-white/18" />
-          <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 h-2.5 w-2.5 rounded-full bg-accent shadow-[0_0_0_6px_rgba(255,59,48,0.10)]" />
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const WORKFLOW_STEPS = [
   { label: 'Import', desc: 'Bring footage in. Auto-organize.', icon: Upload, start: 0.0, end: 5.5 },
   { label: 'Analyze', desc: 'Find beats, scenes, emotion.', icon: Search, start: 5.5, end: 11.0 },
@@ -466,8 +291,6 @@ export default function Home() {
   const firstWhiteRef = useRef<HTMLElement | null>(null);
   const philosophyRef = useRef<HTMLElement | null>(null);
   const [lowPowerMode, setLowPowerMode] = useState(false);
-  const [heroVideoEl, setHeroVideoEl] = useState<HTMLVideoElement | null>(null);
-  const [heroScrubT, setHeroScrubT] = useState(0.18);
   const [openCapabilityIdx, setOpenCapabilityIdx] = useState<number | null>(null);
   const [activeCapabilityIdx, setActiveCapabilityIdx] = useState(0);
   const [workflowIdx, setWorkflowIdx] = useState(0);
@@ -846,125 +669,9 @@ export default function Home() {
         </div>
       </motion.nav>
 
-      {/* Hero (Gallery Minimal): calm left column + monitor right (no headline overlap) */}
-      <section ref={heroRef} className="relative overflow-hidden border-b border-white/5">
-        {/* Hero art-direction: soft spotlight + subtle dot field (Sigma-ish, but black/white) */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-          <div
-            className="absolute inset-0 opacity-[0.55]"
-            style={{
-              background:
-                'radial-gradient(900px at 72% 42%, rgba(255,255,255,0.10), transparent 62%), radial-gradient(800px at 28% 60%, rgba(255,59,48,0.10), transparent 60%)',
-            }}
-          />
-          <div
-            className="absolute inset-0 opacity-[0.16]"
-            style={{
-              backgroundImage: 'radial-gradient(rgba(255,255,255,0.22) 1px, transparent 1px)',
-              backgroundSize: '18px 18px',
-              WebkitMaskImage: 'radial-gradient(720px at 74% 44%, black 0%, black 48%, transparent 72%)',
-              maskImage: 'radial-gradient(720px at 74% 44%, black 0%, black 48%, transparent 72%)',
-            }}
-          />
-          <div className="absolute -top-24 -left-24 h-[520px] w-[520px] rounded-full bg-white/[0.02] blur-3xl" />
-        </div>
-
-        <div className="relative max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 min-h-screen pt-32 pb-24 flex items-center">
-          <div className="w-full grid grid-cols-12 gap-12 lg:gap-16 items-center">
-            <div className="col-span-12 lg:col-span-5">
-              <motion.div
-                initial={{ opacity: 0, y: 18, filter: 'blur(10px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                transition={{ duration: 1.05, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
-              >
-                <h1 className="font-display text-[clamp(56px,6.2vw,112px)] font-extralight tracking-[-0.06em] leading-[0.95]">
-                  Cut weeks
-                  <br />
-                  <span className="text-white/50">to hours</span>
-                  <span className="inline-block align-baseline ml-3 h-3 w-3 rounded-full bg-accent" aria-hidden="true" />
-                </h1>
-
-                <p className="mt-10 text-[15px] md:text-[17px] leading-[1.9] text-white/60 font-light max-w-[58ch]">
-                  Detect vows, laughs, speeches, and reactions — then auto-rank moments into a timeline you finish.
-                </p>
-
-                <div className="mt-12 flex flex-col sm:flex-row items-start sm:items-center gap-6">
-                  <button className="group relative inline-flex items-center justify-center gap-3 px-12 py-5 bg-paper text-black text-[10px] tracking-[0.45em] hover:bg-paper/95 transition-all font-light hover:-translate-y-[1px] active:translate-y-0 shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
-                    <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
-                    START FREE TRIAL
-                    <span
-                      aria-hidden="true"
-                      className="absolute inset-y-0 left-0 w-px bg-accent/70 opacity-60 group-hover:opacity-100 transition-opacity"
-                    />
-                  </button>
-
-                  <a
-                    href="#workflow"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      document.getElementById('workflow')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }}
-                    className="link-underline inline-flex items-center gap-4 text-[10px] tracking-[0.45em] text-white/55 hover:text-white transition-colors font-light"
-                  >
-                    VIEW WORKFLOW
-                    <span className="text-white/35" aria-hidden="true">
-                      <ArrowRight className="w-4 h-4" />
-                    </span>
-                  </a>
-                </div>
-
-                <HeroProofStrip video={heroVideoEl} onProgress={setHeroScrubT} />
-              </motion.div>
-            </div>
-
-            <div className="col-span-12 lg:col-span-7">
-              <motion.div
-                initial={{ opacity: 0, y: 18, filter: 'blur(14px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                transition={{ duration: 1.15, ease: [0.16, 1, 0.3, 1], delay: 0.25 }}
-                className="relative h-[74vh] min-h-[540px] max-h-[800px]"
-              >
-                {/* Soft gallery glow behind the monitor (no border box) */}
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute -inset-16 rounded-[60px] opacity-70 blur-3xl"
-                  style={{
-                    background:
-                      'radial-gradient(420px at 55% 45%, rgba(255,255,255,0.09), transparent 65%), radial-gradient(420px at 80% 30%, rgba(255,59,48,0.08), transparent 70%)',
-                  }}
-                />
-
-                <CameraScene lowPowerMode={lowPowerMode} variant="gallery" onVideoElement={setHeroVideoEl} />
-
-                {/* Minimal “Cutline UI” overlay (ties the visual to editing) */}
-                <div aria-hidden="true" className="pointer-events-none absolute left-14 right-14 bottom-14 z-[20]">
-                  <div className="relative h-10">
-                    <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-px bg-white/14" />
-                    {HERO_MARKERS.map((m) => (
-                      <div
-                        key={m.label}
-                        className="absolute top-1/2 -translate-y-1/2 h-3 w-px bg-white/14"
-                        style={{ left: `${m.t * 100}%` }}
-                      />
-                    ))}
-                    <div
-                      className="absolute top-1/2 -translate-y-1/2"
-                      style={{ left: `${heroScrubT * 100}%` }}
-                    >
-                      <div className="h-5 w-px bg-white/18" />
-                      <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 h-2.5 w-2.5 rounded-full bg-accent shadow-[0_0_0_8px_rgba(255,59,48,0.10)]" />
-                    </div>
-                  </div>
-
-                  <div className="mt-2 flex items-center justify-between text-[9px] tracking-[0.35em] text-white/22 font-light">
-                    <span>RANKED SELECTS</span>
-                    <span>{String(Math.min(4, Math.max(1, Math.round(heroScrubT * 4)))).padStart(2, '0')}/04</span>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </div>
+      {/* Hero - Fullscreen intro (scroll-driven) */}
+      <section ref={heroRef} className="relative">
+        <CameraScene lowPowerMode={lowPowerMode} variant="full" />
       </section>
 
       {/* Capabilities Section - Golden Ratio Grid */}

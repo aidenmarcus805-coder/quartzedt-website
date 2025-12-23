@@ -672,12 +672,10 @@ export default function CameraScene({
   lowPowerMode = false,
   variant = 'full',
   className,
-  onVideoElement,
 }: {
   lowPowerMode?: boolean;
   variant?: 'full' | 'gallery';
   className?: string;
-  onVideoElement?: (el: HTMLVideoElement | null) => void;
 }) {
   const showHeroOverlays = variant === 'full';
   // In "gallery" mode we don't run the intro scroll hijack. We start at a framed pose where the monitor is visible.
@@ -717,7 +715,6 @@ export default function CameraScene({
 
   const handleVideoRef = useCallback((element: HTMLVideoElement | null) => {
     videoRef.current = element;
-    onVideoElement?.(element);
     if (element) {
       element.load();
       element.addEventListener('loadeddata', () => {
@@ -727,7 +724,7 @@ export default function CameraScene({
       element.play().catch(() => {});
       setVideoElement(element);
     }
-  }, [onVideoElement]);
+  }, []);
   
   // Mouse tracking for parallax effect
   useEffect(() => {
