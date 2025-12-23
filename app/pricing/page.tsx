@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { ArrowRight, Check, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const pricing = [
   {
@@ -88,8 +89,8 @@ export default function PricingPage() {
             </Link>
           </div>
           <div className="flex items-center justify-center">
-            <Link href="/" className="text-[13px] tracking-[0.4em] font-medium">
-              CUTLINE
+            <Link href="/" className="inline-flex items-center">
+              <Image src="/logo.png" alt="Cutline" width={256} height={65} priority className="h-5 w-auto" />
             </Link>
           </div>
           <div className="flex items-center justify-end gap-8">
@@ -286,7 +287,9 @@ export default function PricingPage() {
         <div className="max-w-6xl mx-auto px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="text-center md:text-left">
-              <p className="text-[13px] tracking-[0.3em]">CUTLINE</p>
+              <Link href="/" className="inline-flex items-center justify-center md:justify-start">
+                <Image src="/logo.png" alt="Cutline" width={256} height={65} className="h-6 w-auto" />
+              </Link>
               <p className="text-[11px] text-white/40 mt-2">AI Video Editing for Wedding Filmmakers</p>
             </div>
             <div className="flex items-center gap-12 text-[11px] tracking-[0.15em] text-white/40">

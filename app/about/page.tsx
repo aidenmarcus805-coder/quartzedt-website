@@ -4,6 +4,7 @@ import { motion, useInView } from 'framer-motion';
 import { ArrowRight, Minus } from 'lucide-react';
 import { useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 // Reveal animation wrapper
 const Reveal = ({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) => {
@@ -85,8 +86,8 @@ export default function About() {
         className="fixed top-0 left-0 right-0 z-[100] mix-blend-difference"
       >
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 h-24 flex items-center justify-between">
-          <Link href="/" className="text-[11px] tracking-[0.5em] font-light">
-            CUTLINE
+          <Link href="/" className="inline-flex items-center">
+            <Image src="/logo.png" alt="Cutline" width={256} height={65} priority className="h-5 w-auto" />
           </Link>
           
           <div className="hidden md:flex items-center gap-16 text-[10px] tracking-[0.4em] font-light">
@@ -442,7 +443,9 @@ export default function About() {
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-20 md:py-24">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-16 md:gap-8">
             <div className="md:col-span-5 space-y-8">
-              <span className="text-[11px] tracking-[0.5em] font-light">CUTLINE</span>
+              <Link href="/" className="inline-flex items-center">
+                <Image src="/logo.png" alt="Cutline" width={256} height={65} className="h-6 w-auto" />
+              </Link>
               <p className="text-[15px] font-light leading-[1.8] text-white/40 max-w-md">
                 AI-powered video editing engineered for filmmakers who value craft.
               </p>

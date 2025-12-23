@@ -309,7 +309,7 @@ export default function Home() {
     let raf = 0;
     let snapRaf = 0;
     let ticking = false;
-    const SNAP_PX = 650; // tolerance so you can't "miss" the section by scrolling a bit too fast11111111111111111111111111111111111111111111111111111111111111111111111111112111111111111111111111111111111
+    const SNAP_PX = 650; // tolerance so you can't "miss" the section by scrolling a bit too fast
     const WORKFLOW_SNAP_OFFSET_PX = 35; // intentional: we snap slightly into the section so the stage feels “framed”
 
     const updateActive = () => {
@@ -633,8 +633,14 @@ export default function Home() {
       >
         <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 h-24 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-[11px] tracking-[0.5em] font-light">CUTLINE</span>
-            <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+        <Image
+              src="/logo.png"
+              alt="Cutline"
+              width={256}
+              height={65}
+          priority
+              className="h-5 w-auto"
+            />
           </Link>
           
           <div className="hidden md:flex items-center gap-16 text-[10px] tracking-[0.4em] font-light">
@@ -1351,10 +1357,9 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-16 md:gap-8">
             {/* Brand - 5 cols (golden ratio) */}
             <div className="md:col-span-5 space-y-8">
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] tracking-[0.5em] font-light">CUTLINE</span>
-                <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
-              </div>
+              <Link href="/" className="inline-flex items-center">
+                <Image src="/logo.png" alt="Cutline" width={256} height={65} className="h-6 w-auto" />
+              </Link>
               <p className="text-[15px] font-light leading-[1.8] text-white/40 max-w-md">
                 AI-powered video editing engineered for filmmakers who value craft.
               </p>
