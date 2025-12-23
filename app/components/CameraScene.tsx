@@ -328,6 +328,8 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition, h
     const mouseInfluence = isInteractive ? 1 - scrollEase * 0.5 : 0;
     const mouseRotY = mousePosition.x * 0.03 * mouseInfluence;
     const mouseRotX = mousePosition.y * 0.02 * mouseInfluence;
+    const mousePosX = mousePosition.x * 0.22 * mouseInfluence;
+    const mousePosY = mousePosition.y * 0.14 * mouseInfluence;
     
     // Scale (+0.1 at scroll=0)
     const startScale = 6.02;
@@ -336,9 +338,9 @@ function MonitorModel({ scrollProgress, groupRef, videoElement, mousePosition, h
     groupRef.current.scale.setScalar(currentScale);
     
     // Position
-    groupRef.current.position.x = -0.05 + floatX;
+    groupRef.current.position.x = -0.05 + floatX + mousePosX;
     // Drop the whole monitor slightly at the end of the scroll (scrollEase=1)
-    groupRef.current.position.y = -5.2 + (3.35) * scrollEase - 0.4 * scrollEase + floatY;
+    groupRef.current.position.y = -5.2 + (3.35) * scrollEase - 0.4 * scrollEase + floatY + mousePosY;
     
     // Rotation
     groupRef.current.rotation.y = -Math.PI / 2 + floatRot + mouseRotY;
@@ -532,7 +534,7 @@ function Scene({ scrollProgress, videoElement, mousePosition, hasUserScrolledRef
   return (
     <group position={[0, 0, 0]}>
       {/* Environment for reflections */}
-      {!lowPowerMode && <Environment preset="city" environmentIntensity={0.5} />}
+      {!lowPowerMode && <Environment preset="studio" environmentIntensity={0.25} />}
       {!lowPowerMode && <Lighting />}
       <MonitorModel 
         scrollProgress={scrollProgress} 
@@ -551,45 +553,42 @@ function Lighting() {
   return (
     <>
       {/* Soft ambient for visibility */}
-      <ambientLight intensity={0.15} color="#ffffff" />
+      <ambientLight intensity={0.28} color="#ffffff" />
       
       {/* KEY LIGHT - Main illumination from top-right */}
       <directionalLight 
         position={[5, 6, 6]} 
-        intensity={2.0}
-        color="#ffffff"
-        castShadow
-        shadow-mapSize={[1024, 1024]}
-        shadow-bias={-0.0001}
+        intensity={1.25}
+        color="#fff6ef"
       />
       
       {/* RIM LIGHT - Subtle edge definition from back-left */}
       <directionalLight 
         position={[-6, 3, -3]} 
-        intensity={1.0}
+        intensity={0.55}
         color="#ffffff"
       />
       
       {/* FILL LIGHT - Soft from left side */}
       <directionalLight 
         position={[-5, 2, 4]} 
-        intensity={0.8} 
-        color="#f0f0f0"
+        intensity={0.45} 
+        color="#f3f6ff"
       />
       
       {/* TOP LIGHT - Even from above */}
       <directionalLight
         position={[0, 8, 2]}
-        intensity={0.9}
+        intensity={0.55}
         color="#ffffff"
       />
       
       {/* FRONT ACCENT - Subtle face illumination */}
       <pointLight 
-        position={[0, 1, 8]} 
-        intensity={25} 
+        position={[0, 1.2, 10]} 
+        intensity={7} 
         color="#ffffff" 
-        distance={15}
+        distance={22}
         decay={2}
       />
       
@@ -598,7 +597,7 @@ function Lighting() {
       {/* Bottom left - warm subtle glow */}
       <pointLight 
         position={[-4, -1, 3]} 
-        intensity={6} 
+        intensity={2.5} 
         color="#fff8f0" 
         distance={12}
         decay={2}
@@ -607,7 +606,7 @@ function Lighting() {
       {/* Bottom right - cool subtle glow */}
       <pointLight 
         position={[4, -1, 3]} 
-        intensity={6} 
+        intensity={2.5} 
         color="#f0f4ff" 
         distance={12}
         decay={2}
@@ -616,7 +615,7 @@ function Lighting() {
       {/* Left side - soft accent */}
       <pointLight 
         position={[-6, 2, 0]} 
-        intensity={8} 
+        intensity={3.2} 
         color="#ffffff" 
         distance={14}
         decay={2}
@@ -625,7 +624,7 @@ function Lighting() {
       {/* Right side - soft accent */}
       <pointLight 
         position={[6, 2, 0]} 
-        intensity={8} 
+        intensity={3.2} 
         color="#ffffff" 
         distance={14}
         decay={2}
@@ -634,14 +633,14 @@ function Lighting() {
       {/* Back subtle rim - top */}
       <pointLight 
         position={[0, 5, -4]} 
-        intensity={5} 
+        intensity={2.2} 
         color="#e8e8ff" 
         distance={10}
         decay={2}
       />
       
       {/* Soft gradient environment */}
-      <hemisphereLight args={['#ffffff', '#1a1a1a', 0.25]} />
+      <hemisphereLight args={['#ffffff', '#1a1a1a', 0.35]} />
     </>
   );
 }
@@ -676,7 +675,7 @@ export default function CameraScene({
 }) {
   const showHeroOverlays = variant === 'full';
   // In "gallery" mode we don't run the intro scroll hijack. We start at a framed pose where the monitor is visible.
-  const GALLERY_PROGRESS = 0.8;
+  const GALLERY_PROGRESS = 1.0;
   const initialProgress = variant === 'gallery' ? GALLERY_PROGRESS : 0;
 
   const [animationProgress, setAnimationProgress] = useState(initialProgress);
@@ -693,6 +692,7 @@ export default function CameraScene({
   // Ensure we never leave scroll locked if switching variants (or during hot reload).
   useEffect(() => {
     if (variant !== 'full') {
+      hasUserScrolledRef.current = true; // enable cursor parallax in gallery
       document.body.style.overflow = '';
       document.body.style.paddingRight = '';
       const navbar = document.querySelector('nav');
@@ -991,7 +991,7 @@ export default function CameraScene({
 
         {/* 3D Canvas with optimized settings */}
         <Canvas
-          camera={{ position: [0, 0, 5], fov: 50 }}
+          camera={{ position: [0, 0, variant === 'gallery' ? 6 : 5], fov: variant === 'gallery' ? 45 : 50 }}
           gl={{ 
             antialias: true, 
             alpha: true,

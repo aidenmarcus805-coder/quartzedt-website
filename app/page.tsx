@@ -683,11 +683,10 @@ export default function Home() {
                 transition={{ duration: 1.05, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
               >
                 <h1 className="font-display text-[clamp(56px,6.2vw,112px)] font-extralight tracking-[-0.06em] leading-[0.95]">
-                  Weeks to
+                  Cut weeks
                   <br />
-                  <span className="text-white/35">Hours</span>
-                  <span className="text-white/35">.</span>
-                  <span className="inline-block align-baseline ml-4 h-3 w-3 rounded-full bg-accent" aria-hidden="true" />
+                  <span className="text-white/35">to hours</span>
+                  <span className="inline-block align-baseline ml-3 h-3 w-3 rounded-full bg-accent" aria-hidden="true" />
                 </h1>
 
                 <p className="mt-10 text-[15px] md:text-[17px] leading-[1.9] text-white/50 font-light max-w-[60ch]">
