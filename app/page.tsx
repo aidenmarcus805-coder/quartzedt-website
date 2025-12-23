@@ -397,18 +397,20 @@ export default function Home() {
 
     const engageWall = (wallY: number) => {
       const y = Math.round(wallY);
+      // Never carry partial 1/3–2/3 progress into a new lock (causes “already at 3/3” feel + jitter).
+      resetAdvance();
       workflowWallYRef.current = y;
       workflowActiveRef.current = true;
-      workflowWheelAccumRef.current = 0;
       setLocked(true);
       freezeScroll();
       window.scrollTo(0, y);
     };
 
     const releaseWall = () => {
+      // Clear partial progress when leaving the wall so re-entry always starts at 0/3.
+      resetAdvance();
       workflowWallYRef.current = null;
       workflowActiveRef.current = false;
-      workflowWheelAccumRef.current = 0;
       setLocked(false);
       unfreezeScroll();
     };
