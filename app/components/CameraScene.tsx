@@ -372,7 +372,8 @@ function MonitorModel({
     // Position
     groupRef.current.position.x = -0.05 + floatX;
     // Drop the whole monitor slightly at the end of the scroll (scrollEase=1)
-    groupRef.current.position.y = -5.2 + (3.35) * scrollEase - 0.4 * scrollEase + floatY;
+    // Nudge down a touch (~20px perceived) to give the hero typography more breathing room.
+    groupRef.current.position.y = -5.3 + (3.35) * scrollEase - 0.4 * scrollEase + floatY;
     
     // Rotation
     groupRef.current.rotation.y = -Math.PI / 2 + floatRot + mouseRotY;
@@ -1079,27 +1080,9 @@ export default function CameraScene({
                         textShadow: '0 2px 40px rgba(0,0,0,0.3)',
                       }}
                     >
-                      Weeks to<br />
+                      Weeks to{' '}
                       <span className="text-white/60">Hours.</span>
                     </h1>
-                  </div>
-                  
-                  {/* Tagline */}
-                  <div 
-                    className="mt-10 flex items-center justify-center gap-6"
-                    style={{
-                      opacity: animationProgress > 0.8 ? Math.min((animationProgress - 0.8) * 4, 1) : 0,
-                    }}
-                  >
-                    <div 
-                      className="h-[1px] bg-paper/30"
-                      style={{
-                        width: `${(animationProgress > 0.85 ? Math.min((animationProgress - 0.85) * 5, 1) : 0) * 80}px`,
-                      }}
-                    />
-                    <p className="text-[11px] tracking-[0.5em] text-white/50 font-light">
-                      AI WEDDING EDITING
-                    </p>
                   </div>
                 </div>
               </div>
