@@ -903,7 +903,7 @@ export default function Home() {
                   <div className="max-w-[1800px] mx-auto">
                   {/* One “video row”: active expands (main), others stay as shutters on the right.
                       Advancing tabs expands the next shutter into the main video (per blueprint). */}
-                  <div className="relative overflow-hidden border border-black/15 bg-white shadow-[0_70px_160px_rgba(0,0,0,0.10)]">
+                  <div className="relative overflow-hidden rounded-[26px] border border-black/12 bg-white shadow-[0_70px_160px_rgba(0,0,0,0.10)]">
                   {/* Workflow HUD (makes the scroll hijack feel intentional) */}
                   <div className="pointer-events-none absolute inset-x-0 top-0 z-10">
                     <div className="flex items-start justify-between p-4">
@@ -1039,7 +1039,7 @@ export default function Home() {
                               setWorkflowAdvanceDir(0);
                               setWorkflowIdx(idx);
                             }}
-                            className={`relative h-full overflow-hidden border border-black/10 bg-white focus:outline-none ${
+                            className={`relative h-full overflow-hidden rounded-[18px] border border-black/15 bg-[#f4f4f5] focus:outline-none ${
                               isActive ? 'flex-1 min-w-0' : 'w-[44px] md:w-[52px] shrink-0'
                             }`}
                             style={{
@@ -1059,42 +1059,50 @@ export default function Home() {
                             transition={{ type: 'spring', stiffness: 260, damping: 30 }}
                             aria-label={`Select ${step.label}`}
                           >
-                            <SegmentVideo
-                              src="/videoplayback1.mp4"
-                              start={step.start}
-                              end={step.end}
-                              play={isActive}
-                              className="absolute inset-0 w-full h-full object-cover"
-                            />
+                            {/* Display glass (slight inset bezel) */}
+                            <div className="absolute inset-[3px] overflow-hidden rounded-[14px] bg-white">
+                              <SegmentVideo
+                                src="/videoplayback1.mp4"
+                                start={step.start}
+                                end={step.end}
+                                play={isActive}
+                                className="absolute inset-0 w-full h-full object-cover"
+                              />
 
-                            {/* Depth / lighting */}
-                            <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/0 to-black/14" />
-                            {/* Thickness edge (sells “blind” hinge) */}
+                              {/* Depth / lighting */}
+                              <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/0 to-black/14" />
+
+                              {/* Subtle glass sheen */}
+                              <div
+                                aria-hidden="true"
+                                className="absolute inset-0"
+                                style={{
+                                  background: isActive
+                                    ? 'linear-gradient(120deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.00) 35%, rgba(0,0,0,0.10) 100%)'
+                                    : 'linear-gradient(120deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.00) 42%, rgba(0,0,0,0.12) 100%)',
+                                }}
+                              />
+                            </div>
+
+                            {/* Bezel + shadow (Apple-ish display frame) */}
                             <div
                               aria-hidden="true"
-                              className="absolute inset-y-0 left-0 w-[10px]"
-                              style={{
-                                background: isActive
-                                  ? 'linear-gradient(to right, rgba(0,0,0,0.10), rgba(0,0,0,0.00))'
-                                  : 'linear-gradient(to right, rgba(0,0,0,0.18), rgba(0,0,0,0.00))',
-                              }}
-                            />
-                            <div
-                              aria-hidden="true"
-                              className="absolute inset-0"
-                              style={{
-                                background: isActive
-                                  ? 'linear-gradient(115deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.00) 28%, rgba(0,0,0,0.12) 100%)'
-                                  : 'linear-gradient(115deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.00) 38%, rgba(0,0,0,0.14) 100%)',
-                              }}
-                            />
-                            <div
-                              aria-hidden="true"
-                              className="absolute inset-0"
+                              className="absolute inset-0 pointer-events-none rounded-[18px]"
                               style={{
                                 boxShadow: isActive
-                                  ? 'inset 0 0 0 1px rgba(0,0,0,0.18), 0 70px 160px rgba(0,0,0,0.12)'
-                                  : 'inset 0 0 0 1px rgba(0,0,0,0.10), 0 30px 90px rgba(0,0,0,0.08)',
+                                  ? 'inset 0 0 0 1px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.65), 0 40px 110px rgba(0,0,0,0.12)'
+                                  : 'inset 0 0 0 1px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.65), 0 18px 60px rgba(0,0,0,0.10)',
+                              }}
+                            />
+
+                            {/* Right edge (makes the stacked shutters read like displays) */}
+                            <div
+                              aria-hidden="true"
+                              className="absolute inset-y-0 right-0 w-[12px] pointer-events-none"
+                              style={{
+                                background: isActive
+                                  ? 'linear-gradient(to left, rgba(0,0,0,0.10), rgba(0,0,0,0.00))'
+                                  : 'linear-gradient(to left, rgba(0,0,0,0.18), rgba(0,0,0,0.00))',
                               }}
                             />
                           </motion.button>
