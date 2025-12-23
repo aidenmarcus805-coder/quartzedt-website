@@ -429,9 +429,19 @@ export default function Home() {
 
       // Locked: you're at the wall. Scroll input only advances steps.
       if (workflowWallYRef.current != null) {
-        if (canExit(dir)) {
+        // Only advance left → right. Do not allow “reverse peel” in the locked state.
+        if (dir < 0) {
+          if (canExit(-1)) {
+            releaseWall();
+            return; // allow normal page scroll up (out of the section) only at the first step
+          }
+          e.preventDefault();
+          ensureWall();
+          return;
+        }
+        if (canExit(1)) {
           releaseWall();
-          return; // allow normal page scroll
+          return; // allow normal page scroll down (past the section) at the last step
         }
 
         e.preventDefault();
@@ -500,7 +510,17 @@ export default function Home() {
 
       // Locked: step.
       if (workflowWallYRef.current != null) {
-        if (canExit(dir)) {
+        // Only advance left → right. No reverse stepping/peel while locked.
+        if (dir < 0) {
+          if (canExit(-1)) {
+            releaseWall();
+            return;
+          }
+          e.preventDefault();
+          ensureWall();
+          return;
+        }
+        if (canExit(1)) {
           releaseWall();
           return;
         }
@@ -553,7 +573,19 @@ export default function Home() {
 
       // Locked: step.
       if (workflowWallYRef.current != null) {
-        if (canExit(dir)) {
+        // Only advance left → right. No reverse stepping/peel while locked.
+        if (dir < 0) {
+          if (canExit(-1)) {
+            releaseWall();
+            workflowTouchStartYRef.current = y;
+            return;
+          }
+          e.preventDefault();
+          ensureWall();
+          workflowTouchStartYRef.current = y;
+          return;
+        }
+        if (canExit(1)) {
           releaseWall();
           workflowTouchStartYRef.current = y;
           return;
@@ -994,9 +1026,7 @@ export default function Home() {
                         const shutterZ = -140 - rel * 26;
                         const shutterX = 2 + rel * 1.2;
                         const peekTarget =
-                          workflowLocked &&
-                          workflowAdvance > 0 &&
-                          ((workflowAdvanceDir === 1 && rel === 1) || (workflowAdvanceDir === -1 && rel === len - 1));
+                          workflowLocked && workflowAdvanceDir === 1 && workflowAdvance > 0 && rel === 1;
                         const peekT = peekTarget ? workflowAdvance / WORKFLOW_SCROLLS_PER_STEP : 0;
 
                         const baseRotateY = isActive ? 0 : shutterRot;
