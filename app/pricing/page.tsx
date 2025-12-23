@@ -199,7 +199,7 @@ export default function PricingPage() {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className={`mt-10 w-full py-4 text-[11px] tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${
+                className={`mt-10 w-full py-4 rounded-full text-[11px] tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${
                   plan.featured
                     ? 'bg-black text-white hover:bg-black/80'
                     : 'border border-white/20 hover:bg-paper hover:text-black'
