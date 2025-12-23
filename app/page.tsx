@@ -862,7 +862,7 @@ export default function Home() {
 
       {/* Workflow */}
       <section id="workflow" ref={firstWhiteRef} className="bg-paper text-black border-b border-black/5">
-        <div className="relative h-[120vh] overflow-hidden">
+        <div className="relative h-[110vh] overflow-hidden">
           {/* Transition band: Hero → Workflow (black → paper) */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 z-20 h-[200px]">
             {/* Black-to-paper gradient */}
@@ -936,9 +936,8 @@ export default function Home() {
 
               {/* Videos */}
               <div className="flex-1 mt-10">
-                {/* Full-bleed stage (feels like an exhibit, not an inset embed) */}
-                <div className="relative w-screen left-1/2 -translate-x-1/2 px-8 md:px-12 lg:px-16">
-                  <div className="max-w-[1800px] mx-auto">
+                {/* Stage (same width as the rest of the site) */}
+                <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16">
                   {/* One “video row”: active expands (main), others stay as shutters on the right.
                       Advancing tabs expands the next shutter into the main video (per blueprint). */}
                   <div className="relative overflow-hidden rounded-[26px] border border-black/12 bg-white shadow-[0_70px_160px_rgba(0,0,0,0.10)]">
@@ -1148,69 +1147,64 @@ export default function Home() {
                     </AnimatePresence>
                   </div>
 
-                  {/* Step rail: an “extension” dock with label + description + icon (more apparent) */}
-                  <div className="border-t border-black/10 bg-[#f4f4f5]">
-                    <div className="px-4 md:px-6 py-5">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                        {WORKFLOW_STEPS.map((step, idx) => {
-                          const active = idx === workflowIdx;
-                          const Icon = step.icon;
-                          return (
-                            <button
-                              key={step.label}
-                              type="button"
-                              onClick={() => {
-                                setWorkflowHasInteracted(true);
-                                workflowAdvanceRef.current = 0;
-                                workflowAdvanceDirRef.current = 0;
-                                workflowWheelAccumRef.current = 0;
-                                setWorkflowAdvance(0);
-                                setWorkflowIdx(idx);
-                              }}
-                              className={`group w-full text-left rounded-[14px] border px-4 py-3 transition-colors ${
-                                active
-                                  ? 'border-black/15 bg-white'
-                                  : 'border-black/10 bg-white/55 hover:bg-white/80 hover:border-black/15'
-                              }`}
-                              aria-label={`Select ${step.label}`}
-                            >
-                              <div className="flex items-center justify-between gap-4">
-                                <div className="flex items-center gap-3">
-                                  <span
-                                    className={`h-1.5 w-1.5 rounded-full transition-colors ${
-                                      active ? 'bg-accent' : 'bg-black/25 group-hover:bg-black/35'
-                                    }`}
-                                    aria-hidden="true"
-                                  />
-                                  <span
-                                    className={`text-[10px] tracking-[0.45em] font-light transition-colors ${
-                                      active ? 'text-black/80' : 'text-black/55 group-hover:text-black/70'
-                                    }`}
-                                  >
-                                    {step.label.toUpperCase()}
-                                  </span>
-                                </div>
-                                <Icon
-                                  className={`h-4 w-4 transition-colors ${
-                                    active ? 'text-black/55' : 'text-black/35 group-hover:text-black/50'
+                  {/* Step dock: full-width extension (no inset / no outer padding) */}
+                  <div className="border-t border-black/10 bg-black/10">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-px">
+                      {WORKFLOW_STEPS.map((step, idx) => {
+                        const active = idx === workflowIdx;
+                        const Icon = step.icon;
+                        return (
+                          <button
+                            key={step.label}
+                            type="button"
+                            onClick={() => {
+                              setWorkflowHasInteracted(true);
+                              workflowAdvanceRef.current = 0;
+                              workflowAdvanceDirRef.current = 0;
+                              workflowWheelAccumRef.current = 0;
+                              setWorkflowAdvance(0);
+                              setWorkflowIdx(idx);
+                            }}
+                            className={`group w-full text-left px-5 py-4 transition-colors ${
+                              active ? 'bg-white' : 'bg-[#f4f4f5] hover:bg-white/80'
+                            }`}
+                            aria-label={`Select ${step.label}`}
+                          >
+                            <div className="flex items-center justify-between gap-4">
+                              <div className="flex items-center gap-3">
+                                <span
+                                  className={`h-1.5 w-1.5 rounded-full transition-colors ${
+                                    active ? 'bg-accent' : 'bg-black/25 group-hover:bg-black/35'
                                   }`}
                                   aria-hidden="true"
                                 />
+                                <span
+                                  className={`text-[10px] tracking-[0.45em] font-light transition-colors ${
+                                    active ? 'text-black/80' : 'text-black/55 group-hover:text-black/70'
+                                  }`}
+                                >
+                                  {step.label.toUpperCase()}
+                                </span>
                               </div>
-                              <p
-                                className={`mt-2 text-[12px] leading-[1.55] font-light transition-colors ${
-                                  active ? 'text-black/50' : 'text-black/35 group-hover:text-black/45'
+                              <Icon
+                                className={`h-4 w-4 transition-colors ${
+                                  active ? 'text-black/55' : 'text-black/35 group-hover:text-black/50'
                                 }`}
-                              >
-                                {step.desc}
-                              </p>
-                            </button>
-                          );
-                        })}
+                                aria-hidden="true"
+                              />
+                            </div>
+                            <p
+                              className={`mt-2 text-[12px] leading-[1.55] font-light transition-colors ${
+                                active ? 'text-black/50' : 'text-black/35 group-hover:text-black/45'
+                              }`}
+                            >
+                              {step.desc}
+                            </p>
+                          </button>
+                        );
+                      })}
         </div>
-                    </div>
                   </div>
-                </div>
                 </div>
               </div>
               </div>
