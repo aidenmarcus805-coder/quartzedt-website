@@ -300,7 +300,6 @@ export default function Home() {
   const [workflowLocked, setWorkflowLocked] = useState(false);
   const [workflowHasInteracted, setWorkflowHasInteracted] = useState(false);
   const [workflowAdvance, setWorkflowAdvance] = useState(0); // 0..(WORKFLOW_SCROLLS_PER_STEP-1)
-  const [workflowAdvanceDir, setWorkflowAdvanceDir] = useState<1 | -1 | 0>(0);
   const workflowIdxRef = useRef(0);
   const workflowActiveRef = useRef(false);
   const workflowLockedRef = useRef(false);
@@ -370,7 +369,6 @@ export default function Home() {
       workflowAdvanceDirRef.current = 0;
       workflowWheelAccumRef.current = 0;
       setWorkflowAdvance(0);
-      setWorkflowAdvanceDir(0);
     };
 
     const step = (dir: 1 | -1) => {
@@ -455,7 +453,6 @@ export default function Home() {
         // Direction change resets the "3 scrolls" counter.
         if (workflowAdvanceDirRef.current !== dir) {
           workflowAdvanceDirRef.current = dir;
-          setWorkflowAdvanceDir(dir);
           workflowAdvanceRef.current = 0;
           setWorkflowAdvance(0);
         }
@@ -512,7 +509,6 @@ export default function Home() {
 
         if (workflowAdvanceDirRef.current !== dir) {
           workflowAdvanceDirRef.current = dir;
-          setWorkflowAdvanceDir(dir);
           workflowAdvanceRef.current = 0;
           setWorkflowAdvance(0);
         }
@@ -576,7 +572,6 @@ export default function Home() {
 
         if (workflowAdvanceDirRef.current !== dir) {
           workflowAdvanceDirRef.current = dir;
-          setWorkflowAdvanceDir(dir);
           workflowAdvanceRef.current = 0;
           setWorkflowAdvance(0);
         }
@@ -996,10 +991,9 @@ export default function Home() {
                         const shutterRot = -28 - rel * 2.8;
                         const shutterZ = -140 - rel * 26;
                         const shutterX = 2 + rel * 1.2;
-                        const peekTarget =
-                          workflowLocked &&
-                          workflowAdvance > 0 &&
-                          ((workflowAdvanceDir === 1 && rel === 1) || (workflowAdvanceDir === -1 && rel === len - 1));
+                        // “Animate on each scroll”: peel the back/right shutter as you scroll (both directions),
+                        // then commit the step change on the 3rd scroll.
+                        const peekTarget = workflowLocked && workflowAdvance > 0 && rel === len - 1;
                         const peekT = peekTarget ? workflowAdvance / WORKFLOW_SCROLLS_PER_STEP : 0;
 
                         const baseRotateY = isActive ? 0 : shutterRot;
@@ -1041,7 +1035,6 @@ export default function Home() {
                               workflowAdvanceDirRef.current = 0;
                               workflowWheelAccumRef.current = 0;
                               setWorkflowAdvance(0);
-                              setWorkflowAdvanceDir(0);
                               setWorkflowIdx(idx);
                             }}
                             className={`relative h-full overflow-hidden rounded-[18px] border border-black/15 bg-[#f4f4f5] focus:outline-none ${
@@ -1135,7 +1128,6 @@ export default function Home() {
                                 workflowAdvanceDirRef.current = 0;
                                 workflowWheelAccumRef.current = 0;
                                 setWorkflowAdvance(0);
-                                setWorkflowAdvanceDir(0);
                                 setWorkflowIdx(idx);
                               }}
                               className="group -mx-2 px-2"
