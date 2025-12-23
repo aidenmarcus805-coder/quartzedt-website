@@ -286,6 +286,8 @@ const WORKFLOW_STEPS = [
   { label: 'Export', desc: 'Premiere / Resolve ready.', icon: Download, start: 16.5, end: 22.0 },
 ] as const;
 
+const WORKFLOW_SCROLLS_PER_STEP = 3;
+
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
@@ -297,6 +299,8 @@ export default function Home() {
   const [workflowIdx, setWorkflowIdx] = useState(0);
   const [workflowLocked, setWorkflowLocked] = useState(false);
   const [workflowHasInteracted, setWorkflowHasInteracted] = useState(false);
+  const [workflowAdvance, setWorkflowAdvance] = useState(0); // 0..(WORKFLOW_SCROLLS_PER_STEP-1)
+  const [workflowAdvanceDir, setWorkflowAdvanceDir] = useState<1 | -1 | 0>(0);
   const workflowIdxRef = useRef(0);
   const workflowActiveRef = useRef(false);
   const workflowLockedRef = useRef(false);
@@ -304,6 +308,8 @@ export default function Home() {
   const workflowWheelAccumRef = useRef(0);
   const workflowTouchStartYRef = useRef<number | null>(null);
   const workflowWallYRef = useRef<number | null>(null);
+  const workflowAdvanceRef = useRef(0);
+  const workflowAdvanceDirRef = useRef<1 | -1 | 0>(0);
 
   useEffect(() => {
     workflowIdxRef.current = workflowIdx;
@@ -359,12 +365,21 @@ export default function Home() {
       return false;
     };
 
+    const resetAdvance = () => {
+      workflowAdvanceRef.current = 0;
+      workflowAdvanceDirRef.current = 0;
+      workflowWheelAccumRef.current = 0;
+      setWorkflowAdvance(0);
+      setWorkflowAdvanceDir(0);
+    };
+
     const step = (dir: 1 | -1) => {
       const now = performance.now();
-      const cooldownMs = 260;
+      const cooldownMs = 0; // gating is handled by WORKFLOW_SCROLLS_PER_STEP
       if (now - workflowLastStepAtRef.current < cooldownMs) return;
       workflowLastStepAtRef.current = now;
       setWorkflowHasInteracted(true);
+      resetAdvance();
 
       setWorkflowIdx((prev) => {
         const next = Math.max(0, Math.min(WORKFLOW_STEPS.length - 1, prev + dir));
@@ -420,19 +435,35 @@ export default function Home() {
         e.preventDefault();
         ensureWall();
 
-        // Accumulate deltas so trackpads don’t feel “twitchy”.
-        const acc = workflowWheelAccumRef.current;
-        if (acc !== 0 && Math.sign(acc) !== Math.sign(dyPx)) {
+        // Count discrete "scrolls" (not delta magnitude). Trackpads emit tiny deltas: treat ~120px as one scroll.
+        const isFine = Math.abs(dyPx) < 50;
+        if (isFine) {
+          const acc = workflowWheelAccumRef.current;
+          if (acc !== 0 && Math.sign(acc) !== Math.sign(dyPx)) workflowWheelAccumRef.current = 0;
+          workflowWheelAccumRef.current += dyPx;
+          if (Math.abs(workflowWheelAccumRef.current) < 120) return;
+          workflowWheelAccumRef.current = 0;
+        } else {
           workflowWheelAccumRef.current = 0;
         }
-        workflowWheelAccumRef.current += dyPx;
 
-        // Require ~3 “scrolls” worth of input to advance a step (more intentional, less twitchy).
-        const threshold = 480;
-        if (Math.abs(workflowWheelAccumRef.current) < threshold) return;
+        setWorkflowHasInteracted(true);
 
-        workflowWheelAccumRef.current = 0;
-        step(dir);
+        // Direction change resets the "3 scrolls" counter.
+        if (workflowAdvanceDirRef.current !== dir) {
+          workflowAdvanceDirRef.current = dir;
+          setWorkflowAdvanceDir(dir);
+          workflowAdvanceRef.current = 0;
+          setWorkflowAdvance(0);
+        }
+
+        const next = workflowAdvanceRef.current + 1;
+        if (next >= WORKFLOW_SCROLLS_PER_STEP) {
+          step(dir);
+        } else {
+          workflowAdvanceRef.current = next;
+          setWorkflowAdvance(next);
+        }
         return;
       }
 
@@ -473,7 +504,22 @@ export default function Home() {
         }
         e.preventDefault();
         ensureWall();
-        step(dir);
+        setWorkflowHasInteracted(true);
+
+        if (workflowAdvanceDirRef.current !== dir) {
+          workflowAdvanceDirRef.current = dir;
+          setWorkflowAdvanceDir(dir);
+          workflowAdvanceRef.current = 0;
+          setWorkflowAdvance(0);
+        }
+
+        const next = workflowAdvanceRef.current + 1;
+        if (next >= WORKFLOW_SCROLLS_PER_STEP) {
+          step(dir);
+        } else {
+          workflowAdvanceRef.current = next;
+          setWorkflowAdvance(next);
+        }
         return;
       }
 
@@ -514,7 +560,29 @@ export default function Home() {
         e.preventDefault();
         ensureWall();
         workflowTouchStartYRef.current = y;
-        step(dir);
+        setWorkflowHasInteracted(true);
+
+        // Touch deltas are small & frequent; treat ~120px as one scroll.
+        const acc = workflowWheelAccumRef.current;
+        if (acc !== 0 && Math.sign(acc) !== Math.sign(dy)) workflowWheelAccumRef.current = 0;
+        workflowWheelAccumRef.current += dy;
+        if (Math.abs(workflowWheelAccumRef.current) < 120) return;
+        workflowWheelAccumRef.current = 0;
+
+        if (workflowAdvanceDirRef.current !== dir) {
+          workflowAdvanceDirRef.current = dir;
+          setWorkflowAdvanceDir(dir);
+          workflowAdvanceRef.current = 0;
+          setWorkflowAdvance(0);
+        }
+
+        const next = workflowAdvanceRef.current + 1;
+        if (next >= WORKFLOW_SCROLLS_PER_STEP) {
+          step(dir);
+        } else {
+          workflowAdvanceRef.current = next;
+          setWorkflowAdvance(next);
+        }
         return;
       }
 
@@ -918,10 +986,44 @@ export default function Home() {
                     >
                       {WORKFLOW_STEPS.map((step, idx) => {
                         const isActive = idx === workflowIdx;
-                        const rel = (idx - workflowIdx + WORKFLOW_STEPS.length) % WORKFLOW_STEPS.length; // 0..3 (active = 0)
+                        const len = WORKFLOW_STEPS.length;
+                        const rel = (idx - workflowIdx + len) % len; // active=0, next=1, prev=len-1
                         const shutterRot = -28 - rel * 2.8;
                         const shutterZ = -140 - rel * 26;
                         const shutterX = 2 + rel * 1.2;
+                        const peekTarget =
+                          workflowLocked &&
+                          workflowAdvance > 0 &&
+                          ((workflowAdvanceDir === 1 && rel === 1) || (workflowAdvanceDir === -1 && rel === len - 1));
+                        const peekT = peekTarget ? workflowAdvance / WORKFLOW_SCROLLS_PER_STEP : 0;
+
+                        const baseRotateY = isActive ? 0 : shutterRot;
+                        const baseRotateZ = isActive ? 0 : -0.25 * rel;
+                        const baseX = isActive ? 0 : shutterX;
+                        const baseZ = isActive ? 0 : shutterZ;
+                        const baseScale = isActive ? 1 : 0.975;
+                        const baseOpacity = isActive ? 1 : 0.86;
+                        const baseFilter = isActive ? 'contrast(1.25) brightness(0.98)' : 'contrast(1.15) brightness(0.92)';
+
+                        let rotateY = baseRotateY;
+                        let rotateZ = baseRotateZ;
+                        let x = baseX;
+                        let z = baseZ;
+                        let scale = baseScale;
+                        let opacity = baseOpacity;
+                        let filter = baseFilter;
+
+                        // “Animate on each scroll”: gradually “peek” the next/prev shutter open across 3 scrolls.
+                        if (!isActive && peekTarget) {
+                          const open = Math.min(0.9, peekT * 1.2); // 1/3 -> 0.4, 2/3 -> 0.8
+                          rotateY = shutterRot + (0 - shutterRot) * open;
+                          rotateZ = (-0.25 * rel) * (1 - open * 0.85);
+                          x = shutterX * (1 - open * 0.35);
+                          z = shutterZ * (1 - open * 0.35);
+                          scale = 0.975 + (1 - 0.975) * (peekT * 0.55);
+                          opacity = 0.86 + (1 - 0.86) * (peekT * 0.8);
+                          filter = `contrast(${(1.15 + peekT * 0.18).toFixed(3)}) brightness(${(0.92 + peekT * 0.1).toFixed(3)})`;
+                        }
 
                         return (
                           <motion.button
@@ -930,6 +1032,11 @@ export default function Home() {
                             type="button"
                             onClick={() => {
                               setWorkflowHasInteracted(true);
+                              workflowAdvanceRef.current = 0;
+                              workflowAdvanceDirRef.current = 0;
+                              workflowWheelAccumRef.current = 0;
+                              setWorkflowAdvance(0);
+                              setWorkflowAdvanceDir(0);
                               setWorkflowIdx(idx);
                             }}
                             className={`relative h-full overflow-hidden border border-black/10 bg-white focus:outline-none ${
@@ -941,13 +1048,13 @@ export default function Home() {
                               transformOrigin: 'left center',
                             }}
                             animate={{
-                              rotateY: isActive ? 0 : shutterRot,
-                              rotateZ: isActive ? 0 : -0.25 * rel,
-                              x: isActive ? 0 : shutterX,
-                              z: isActive ? 0 : shutterZ,
-                              scale: isActive ? 1 : 0.975,
-                              opacity: isActive ? 1 : 0.86,
-                              filter: isActive ? 'contrast(1.25) brightness(0.98)' : 'contrast(1.15) brightness(0.92)',
+                              rotateY,
+                              rotateZ,
+                              x,
+                              z,
+                              scale,
+                              opacity,
+                              filter,
                             }}
                             transition={{ type: 'spring', stiffness: 260, damping: 30 }}
                             aria-label={`Select ${step.label}`}
@@ -1011,6 +1118,11 @@ export default function Home() {
                               type="button"
                               onClick={() => {
                                 setWorkflowHasInteracted(true);
+                                workflowAdvanceRef.current = 0;
+                                workflowAdvanceDirRef.current = 0;
+                                workflowWheelAccumRef.current = 0;
+                                setWorkflowAdvance(0);
+                                setWorkflowAdvanceDir(0);
                                 setWorkflowIdx(idx);
                               }}
                               className="group -mx-2 px-2"
