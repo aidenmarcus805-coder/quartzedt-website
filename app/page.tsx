@@ -327,7 +327,7 @@ const WORKFLOW_SCROLLS_PER_STEP = 2;
 const WORKFLOW_SCROLL_PX = 100; // ~one wheel "tick" (used to map scroll distance to step peel)
 const WORKFLOW_SCROLL_PX_PER_STEP = WORKFLOW_SCROLL_PX * WORKFLOW_SCROLLS_PER_STEP;
 const WORKFLOW_DOOR_SCROLL_PX = 600; // scroll distance to lift the "hero door" and reveal the workflow
-const WORKFLOW_STEP_MIN_DWELL_MS = 2000; // minimum time per step before allowing forward scroll into the next one
+const WORKFLOW_STEP_MIN_DWELL_MS = 500; // minimum time per step before allowing forward scroll into the next one
 const WORKFLOW_STEP_CLAMP_EPS_PX = 0.75; // tiny epsilon to stay inside the current step range when locked
 
 export default function Home() {
