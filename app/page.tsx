@@ -327,6 +327,8 @@ const WORKFLOW_SCROLLS_PER_STEP = 2;
 const WORKFLOW_SCROLL_PX = 100; // ~one wheel "tick" (used to map scroll distance to step peel)
 const WORKFLOW_SCROLL_PX_PER_STEP = WORKFLOW_SCROLL_PX * WORKFLOW_SCROLLS_PER_STEP;
 const WORKFLOW_DOOR_SCROLL_PX = 600; // scroll distance to lift the "hero door" and reveal the workflow
+const WORKFLOW_STEP_MIN_DWELL_MS = 2000; // minimum time per step before allowing forward scroll into the next one
+const WORKFLOW_STEP_CLAMP_EPS_PX = 0.75; // tiny epsilon to stay inside the current step range when locked
 
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -346,6 +348,10 @@ export default function Home() {
   const workflowAutoAdvanceRef = useRef(0);
   const workflowAutoLockedRef = useRef(false);
   const workflowHasInteractedRef = useRef(false);
+  const workflowStepLockUntilRef = useRef(0);
+  const workflowDoorFullyOpenRef = useRef(false);
+  const workflowBlockForwardWheelRef = useRef(false);
+  const workflowHoldScrollYRef = useRef<number | null>(null);
 
   // Workflow is now scroll-driven (no snap, no wall, no scroll hijack).
   // We map normal scroll progress through the sticky section to:
@@ -361,6 +367,7 @@ export default function Home() {
 
       const rect = el.getBoundingClientRect();
       const vh = window.innerHeight;
+      const now = performance.now();
       // Hysteresis to avoid “pin flapping” around 0px due to subpixel scroll.
       const EPS = 1;
       const pinned = rect.top <= EPS && rect.bottom >= vh - EPS;
@@ -378,6 +385,7 @@ export default function Home() {
       // "Garage door" transition: the dark hero panel lifts up with scroll, revealing the workflow.
       // The door is now position:sticky, so it naturally pins at top=0 and we translate it upward.
       const doorT = Math.max(0, Math.min(1, scrolled / WORKFLOW_DOOR_SCROLL_PX));
+      const doorOpen = doorT >= 0.999;
       const doorY = -doorT * vh; // lift the panel fully out of view
       if (workflowDoorRef.current) {
         const prevY = workflowDoorLastYRef.current;
@@ -387,28 +395,105 @@ export default function Home() {
         }
       }
 
-      // Workflow step scroll should begin only after the door is fully opened.
-      const scrolledForSteps = Math.max(0, scrolled - WORKFLOW_DOOR_SCROLL_PX);
+      // Once the door is fully open, start a dwell timer for the first step so you can’t flick-scroll through.
+      if (doorOpen && !workflowDoorFullyOpenRef.current) {
+        workflowDoorFullyOpenRef.current = true;
+        workflowStepLockUntilRef.current = now + WORKFLOW_STEP_MIN_DWELL_MS;
+      } else if (!doorOpen && workflowDoorFullyOpenRef.current) {
+        workflowDoorFullyOpenRef.current = false;
+      }
 
-      const idx = Math.min(
-        WORKFLOW_STEPS.length - 1,
-        Math.floor(scrolledForSteps / WORKFLOW_SCROLL_PX_PER_STEP),
-      );
-      const within = scrolledForSteps - idx * WORKFLOW_SCROLL_PX_PER_STEP; // 0..WORKFLOW_SCROLL_PX_PER_STEP
+      // Workflow step scroll should begin only after the door is fully opened.
+      const scrolledForStepsRaw = Math.max(0, scrolled - WORKFLOW_DOOR_SCROLL_PX);
+      const perStep = WORKFLOW_SCROLL_PX_PER_STEP;
+      const lastIdx = WORKFLOW_STEPS.length - 1;
+      const currentIdx = workflowAutoIdxRef.current;
+      const idxRaw = Math.min(lastIdx, Math.floor(scrolledForStepsRaw / perStep));
+
+      let nextIdx = idxRaw;
+      let scrolledForSteps = scrolledForStepsRaw;
+      let shouldClampScroll = false;
+
+      // Rate-limit forward progress: you must “dwell” on each step before you can scroll into the next.
+      if (doorOpen && pinned) {
+        const lockUntil = workflowStepLockUntilRef.current;
+
+        if (idxRaw > currentIdx && currentIdx < lastIdx) {
+          if (now < lockUntil) {
+            // Hold at the end of the current step until the dwell timer expires.
+            const boundary = (currentIdx + 1) * perStep;
+            const clamped = Math.min(scrolledForStepsRaw, boundary - WORKFLOW_STEP_CLAMP_EPS_PX);
+            scrolledForSteps = clamped;
+            shouldClampScroll = clamped !== scrolledForStepsRaw;
+          } else {
+            // Allow only ONE step forward per dwell window, then snap to the start of that step.
+            nextIdx = Math.min(lastIdx, currentIdx + 1);
+            scrolledForSteps = nextIdx * perStep;
+            shouldClampScroll = true;
+          }
+        } else if (idxRaw < currentIdx) {
+          // Backward is allowed immediately, but we snap to the step start to keep the UI crisp.
+          nextIdx = idxRaw;
+          scrolledForSteps = nextIdx * perStep;
+          shouldClampScroll = true;
+        }
+
+        // If we’re on the last step, also require dwell time before allowing the user to scroll out.
+        const atEnd = scrolled >= scrollable - EPS;
+        if (nextIdx === lastIdx && atEnd && now < workflowStepLockUntilRef.current) {
+          shouldClampScroll = true;
+        }
+      }
+
+      // Derive peel progress from the (possibly clamped) scrolled distance.
+      const idx = Math.min(lastIdx, Math.max(0, nextIdx));
+      const within = scrolledForSteps - idx * perStep; // 0..perStep
       const advance = Math.min(WORKFLOW_SCROLLS_PER_STEP - 1, Math.floor(within / WORKFLOW_SCROLL_PX));
 
       if (workflowAutoIdxRef.current !== idx) {
         workflowAutoIdxRef.current = idx;
         setWorkflowIdx(idx);
+        // Reset dwell timer on every step change so you can’t spam through.
+        workflowStepLockUntilRef.current = now + WORKFLOW_STEP_MIN_DWELL_MS;
+        // Snap peel progress to the start when you land on a step.
+        if (workflowAutoAdvanceRef.current !== 0) {
+          workflowAutoAdvanceRef.current = 0;
+          setWorkflowAdvance(0);
+        }
       }
       if (workflowAutoAdvanceRef.current !== advance) {
         workflowAutoAdvanceRef.current = advance;
         setWorkflowAdvance(advance);
       }
 
-      if (!workflowHasInteractedRef.current && scrolledForSteps > 18) {
+      if (!workflowHasInteractedRef.current && scrolledForStepsRaw > 18) {
         workflowHasInteractedRef.current = true;
         setWorkflowHasInteracted(true);
+      }
+
+      // Clamp forward scroll while locked (prevents Lenis momentum + wheel flicks from skipping steps).
+      workflowBlockForwardWheelRef.current = false;
+      workflowHoldScrollYRef.current = null;
+      if (doorOpen && pinned && shouldClampScroll) {
+        const sectionTopY = window.scrollY + rect.top;
+        const desiredScrolled = Math.min(scrollable, Math.max(0, WORKFLOW_DOOR_SCROLL_PX + scrolledForSteps));
+        const desiredY = sectionTopY + desiredScrolled;
+
+        // Keep a “hold” target for the wheel guard below.
+        if (now < workflowStepLockUntilRef.current) {
+          workflowBlockForwardWheelRef.current = true;
+          workflowHoldScrollYRef.current = desiredY;
+        }
+
+        // Snap immediately so scroll position can’t drift past the clamp.
+        if (Math.abs(window.scrollY - desiredY) > 0.5) {
+          const lenis = window.__lenis;
+          if (lenis?.scrollTo) {
+            lenis.scrollTo(desiredY, { immediate: true, force: true });
+          } else {
+            window.scrollTo({ top: desiredY, left: 0, behavior: 'auto' });
+          }
+        }
       }
     };
 
@@ -425,6 +510,39 @@ export default function Home() {
       window.removeEventListener('scroll', schedule);
       window.removeEventListener('resize', schedule);
       if (raf) window.cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  // Prevent “flick to finish”: when a dwell clamp is active, block forward wheel/keys so it can’t brute-force past.
+  useEffect(() => {
+    const onWheel = (e: WheelEvent) => {
+      if (!workflowBlockForwardWheelRef.current) return;
+      if (e.deltaY <= 0) return; // allow scrolling back/up
+      e.preventDefault();
+      e.stopPropagation();
+      const y = workflowHoldScrollYRef.current;
+      if (typeof y === 'number') {
+        const lenis = window.__lenis;
+        if (lenis?.scrollTo) {
+          lenis.scrollTo(y, { immediate: true, force: true });
+        } else {
+          window.scrollTo({ top: y, left: 0, behavior: 'auto' });
+        }
+      }
+    };
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!workflowBlockForwardWheelRef.current) return;
+      if (!(e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ')) return;
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    window.addEventListener('wheel', onWheel, { passive: false, capture: true });
+    window.addEventListener('keydown', onKeyDown, { capture: true });
+    return () => {
+      window.removeEventListener('wheel', onWheel, { capture: true });
+      window.removeEventListener('keydown', onKeyDown, { capture: true });
     };
   }, []);
 
@@ -749,9 +867,26 @@ export default function Home() {
                             layout
                             type="button"
                             onClick={() => {
+                              const now = performance.now();
+                              workflowHasInteractedRef.current = true;
                               setWorkflowHasInteracted(true);
+                              workflowAutoIdxRef.current = idx;
+                              workflowAutoAdvanceRef.current = 0;
                               setWorkflowAdvance(0);
                               setWorkflowIdx(idx);
+                              workflowStepLockUntilRef.current = now + WORKFLOW_STEP_MIN_DWELL_MS;
+
+                              const el = firstWhiteRef.current;
+                              if (el) {
+                                const topY = window.scrollY + el.getBoundingClientRect().top;
+                                const targetY = topY + WORKFLOW_DOOR_SCROLL_PX + idx * WORKFLOW_SCROLL_PX_PER_STEP;
+                                const lenis = window.__lenis;
+                                if (lenis?.scrollTo) {
+                                  lenis.scrollTo(targetY, { duration: 0.8 });
+                                } else {
+                                  window.scrollTo({ top: targetY, left: 0, behavior: 'smooth' });
+                                }
+                              }
                             }}
                             className={`relative h-full overflow-hidden border border-black/15 bg-[#f4f4f5] focus:outline-none ${
                               isActive ? 'flex-1 min-w-0' : 'w-[44px] md:w-[52px] shrink-0'
@@ -886,9 +1021,26 @@ export default function Home() {
                             key={step.label}
                             type="button"
                             onClick={() => {
+                              const now = performance.now();
+                              workflowHasInteractedRef.current = true;
                               setWorkflowHasInteracted(true);
+                              workflowAutoIdxRef.current = idx;
+                              workflowAutoAdvanceRef.current = 0;
                               setWorkflowAdvance(0);
                               setWorkflowIdx(idx);
+                              workflowStepLockUntilRef.current = now + WORKFLOW_STEP_MIN_DWELL_MS;
+
+                              const el = firstWhiteRef.current;
+                              if (el) {
+                                const topY = window.scrollY + el.getBoundingClientRect().top;
+                                const targetY = topY + WORKFLOW_DOOR_SCROLL_PX + idx * WORKFLOW_SCROLL_PX_PER_STEP;
+                                const lenis = window.__lenis;
+                                if (lenis?.scrollTo) {
+                                  lenis.scrollTo(targetY, { duration: 0.8 });
+                                } else {
+                                  window.scrollTo({ top: targetY, left: 0, behavior: 'smooth' });
+                                }
+                              }
                             }}
                             className={`group w-full text-left px-5 py-4 transition-colors ${
                               active ? 'bg-white' : 'bg-[#f4f4f5] hover:bg-white/80'
