@@ -421,6 +421,8 @@ export default function Home() {
         if (idxRaw > currentIdx && currentIdx < lastIdx) {
           if (now < lockUntil) {
             // Hold at the end of the current step until the dwell timer expires.
+            // IMPORTANT: keep the step index pinned to the current step while locked.
+            nextIdx = currentIdx;
             const boundary = (currentIdx + 1) * perStep;
             const clamped = Math.min(scrolledForStepsRaw, boundary - WORKFLOW_STEP_CLAMP_EPS_PX);
             scrolledForSteps = clamped;
@@ -447,7 +449,8 @@ export default function Home() {
 
       // Derive peel progress from the (possibly clamped) scrolled distance.
       const idx = Math.min(lastIdx, Math.max(0, nextIdx));
-      const within = scrolledForSteps - idx * perStep; // 0..perStep
+      const withinRaw = scrolledForSteps - idx * perStep;
+      const within = Math.max(0, Math.min(perStep - 0.001, withinRaw)); // clamp to avoid negative / overflow due to float + clamps
       const advance = Math.min(WORKFLOW_SCROLLS_PER_STEP - 1, Math.floor(within / WORKFLOW_SCROLL_PX));
 
       if (workflowAutoIdxRef.current !== idx) {
