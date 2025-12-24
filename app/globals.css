@@ -21,6 +21,19 @@ html {
   scroll-behavior: auto;
 }
 
+/* Lenis (inertial scroll) helpers */
+html.lenis {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -57,6 +70,20 @@ body {
 /* Smooth animations for all transitions */
 * {
   transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Remove tap highlight on mobile */

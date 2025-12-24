@@ -65,9 +65,9 @@ const Reveal = ({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
   return (
     <div ref={ref}>
       <motion.div
-        initial={{ opacity: 0, y: 26, filter: 'blur(10px)', scale: 0.985 }}
-        animate={isInView ? { opacity: 1, y: 0, filter: 'blur(0px)', scale: 1 } : {}}
-        transition={{ duration: 1.05, delay, ease: [0.16, 1, 0.3, 1] }}
+        initial={{ opacity: 0, y: 22, scale: 0.99 }}
+        animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+        transition={{ duration: 1.1, delay, ease: [0.16, 1, 0.3, 1] }}
       >
         {children}
       </motion.div>
@@ -518,7 +518,7 @@ export default function Home() {
       <motion.nav
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 1.2, delay: 0.6 }}
+        transition={{ duration: 1.2, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
         className="fixed top-0 left-0 right-0 z-[100] mix-blend-difference"
       >
         <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 h-24 flex items-center justify-between">
@@ -539,7 +539,12 @@ export default function Home() {
               href="#work"
               onClick={(e) => {
                 e.preventDefault();
-                document.getElementById('work')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const lenis = window.__lenis;
+                if (lenis?.scrollTo) {
+                  lenis.scrollTo('#work', { duration: 1.15, offset: 0 });
+                } else {
+                  document.getElementById('work')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
               }}
               className="link-underline hover:opacity-60 transition-opacity"
             >
@@ -755,6 +760,7 @@ export default function Home() {
                               order: rel,
                               transformStyle: 'preserve-3d',
                               transformOrigin: 'left center',
+                              willChange: 'transform, opacity, filter',
                             }}
                             animate={{
                               rotateY,
@@ -765,7 +771,7 @@ export default function Home() {
                               opacity,
                               filter,
                             }}
-                            transition={{ type: 'spring', stiffness: 260, damping: 30 }}
+                            transition={{ type: 'spring', stiffness: 170, damping: 26, mass: 1.1 }}
                             aria-label={`Select ${step.label}`}
                           >
                             {/* Display glass (slight inset bezel) */}
@@ -824,9 +830,9 @@ export default function Home() {
                       {workflowLocked && !workflowHasInteracted && (
                         <motion.div
                           key="workflow-hint"
-                          initial={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
-                          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                          exit={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
                           transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                           className="pointer-events-none absolute left-4 bottom-4 z-10"
                         >
@@ -852,9 +858,9 @@ export default function Home() {
                       {workflowLocked && workflowIdx === WORKFLOW_STEPS.length - 1 && (
                         <motion.div
                           key="workflow-exit-hint"
-                          initial={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
-                          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                          exit={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
                           transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                           className="pointer-events-none absolute right-4 bottom-4 z-10"
                         >
@@ -963,7 +969,7 @@ export default function Home() {
                         isActive ? 'bg-white/[0.02]' : ''
                       }`}
                       whileHover={{ backgroundColor: 'rgba(255,255,255,0.02)' }}
-                      transition={{ duration: 0.35 }}
+                      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                       onMouseEnter={() => setActiveCapabilityIdx(idx)}
                     >
                       <div
@@ -1071,7 +1077,12 @@ export default function Home() {
                       href="#workflow"
                       onClick={(e) => {
                         e.preventDefault();
-                        document.getElementById('workflow')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        const lenis = window.__lenis;
+                        if (lenis?.scrollTo) {
+                          lenis.scrollTo('#workflow', { duration: 1.15, offset: 0 });
+                        } else {
+                          document.getElementById('workflow')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
                       }}
                       className="link-underline inline-flex items-center gap-4 text-[10px] tracking-[0.45em] text-white/45 hover:text-white transition-colors font-light shrink-0"
                     >

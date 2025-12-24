@@ -45,7 +45,7 @@ function createRoundedRectGeometry(width: number, height: number, radius: number
 
 // 3D Monitor Model component with attached video screen
 function MonitorModel({
-  scrollProgress,
+  scrollProgressRef,
   groupRef,
   videoElement,
   mousePositionRef,
@@ -53,7 +53,7 @@ function MonitorModel({
   lowPowerMode,
   variant,
 }: { 
-  scrollProgress: number; 
+  scrollProgressRef: React.MutableRefObject<number>;
   groupRef: React.RefObject<THREE.Group | null>;
   videoElement: HTMLVideoElement | null;
   mousePositionRef: React.MutableRefObject<{ x: number; y: number }>;
@@ -345,7 +345,7 @@ function MonitorModel({
     if (!groupRef.current) return;
     if (lowPowerMode) return;
     
-    const scrollEase = scrollProgress;
+    const scrollEase = scrollProgressRef.current;
     const time = performance.now() * 0.001; // Use performance.now() - faster than Date.now()
     const isInteractive = hasUserScrolledRef.current;
     
@@ -556,8 +556,8 @@ function MonitorModel({
 }
 
 // Scene
-function Scene({ scrollProgress, videoElement, mousePositionRef, hasUserScrolledRef, lowPowerMode, variant }: { 
-  scrollProgress: number; 
+function Scene({ scrollProgressRef, videoElement, mousePositionRef, hasUserScrolledRef, lowPowerMode, variant }: { 
+  scrollProgressRef: React.MutableRefObject<number>;
   videoElement: HTMLVideoElement | null;
   mousePositionRef: React.MutableRefObject<{ x: number; y: number }>;
   hasUserScrolledRef: React.MutableRefObject<boolean>;
@@ -572,7 +572,7 @@ function Scene({ scrollProgress, videoElement, mousePositionRef, hasUserScrolled
       {!lowPowerMode && <Environment preset="studio" environmentIntensity={0.28} />}
       {!lowPowerMode && <Lighting />}
       <MonitorModel 
-        scrollProgress={scrollProgress} 
+        scrollProgressRef={scrollProgressRef} 
         groupRef={monitorGroupRef} 
         videoElement={videoElement}
         mousePositionRef={mousePositionRef}
@@ -684,13 +684,16 @@ export default function CameraScene({
   const GALLERY_PROGRESS = 1.0;
   const initialProgress = variant === 'gallery' ? GALLERY_PROGRESS : 0;
 
-  const [animationProgress, setAnimationProgress] = useState(initialProgress);
   const [isAnimationComplete, setIsAnimationComplete] = useState(variant === 'gallery');
   const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null);
   const mousePositionRef = useRef({ x: 0, y: 0 });
   const invalidateRef = useRef<(() => void) | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const targetProgress = useRef(initialProgress);
+  const progressRef = useRef(initialProgress);
+  const domIntroRef = useRef<HTMLDivElement | null>(null);
+  const domTitleWrapRef = useRef<HTMLDivElement | null>(null);
+  const domTitleH1Ref = useRef<HTMLHeadingElement | null>(null);
   const isCompleteRef = useRef(variant === 'gallery'); // Ref for immediate checking
   const hasUserScrolledRef = useRef(false);
   const lowPowerModeRef = useRef(lowPowerMode);
@@ -708,6 +711,7 @@ export default function CameraScene({
       // Keep internal refs coherent without triggering render loops.
       isCompleteRef.current = true;
       targetProgress.current = GALLERY_PROGRESS;
+      progressRef.current = GALLERY_PROGRESS;
     }
   }, [variant]);
 
@@ -747,25 +751,56 @@ export default function CameraScene({
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [variant]);
 
-  // Smooth animation loop with easing (paused in low-power mode)
+  const applyProgressToDom = useCallback((p: number) => {
+    // Intro (Cutline) overlay fades out and nudges down.
+    const intro = domIntroRef.current;
+    if (intro) {
+      const opacity = Math.max(0, 1 - p * 2.8);
+      const y = p * 30;
+      intro.style.opacity = `${opacity}`;
+      intro.style.transform = `translate3d(0, ${y}px, 0)`;
+    }
+
+    // Title overlay fades in after halfway.
+    const titleWrap = domTitleWrapRef.current;
+    if (titleWrap) {
+      const opacity = p > 0.5 ? Math.min((p - 0.5) * 2, 1) : 0;
+      titleWrap.style.opacity = `${opacity}`;
+    }
+
+    // Title line slides up (garage-door typography feel).
+    const h1 = domTitleH1Ref.current;
+    if (h1) {
+      const t = p > 0.6 ? Math.min((p - 0.6) * 3, 1) : 0;
+      const pct = (1 - t) * 100;
+      h1.style.transform = `translate3d(0, ${pct}%, 0)`;
+    }
+  }, []);
+
+  // Smooth animation loop with easing (paused in low-power mode).
+  // IMPORTANT: keep progress in refs + mutate DOM styles directly so React does NOT re-render every frame.
   useEffect(() => {
     if (lowPowerMode) return;
     if (variant !== 'full') return;
     let animationFrame: number;
     
     const animate = () => {
-      setAnimationProgress(prev => {
-        const diff = targetProgress.current - prev;
-        if (Math.abs(diff) < 0.001) return targetProgress.current;
-        // Very fast interpolation - snappy response
-        return prev + diff * 0.35;
-      });
+      const prev = progressRef.current;
+      const diff = targetProgress.current - prev;
+      const next = Math.abs(diff) < 0.001 ? targetProgress.current : prev + diff * 0.18;
+      progressRef.current = next;
+      applyProgressToDom(next);
       animationFrame = requestAnimationFrame(animate);
     };
     
     animationFrame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animationFrame);
-  }, [lowPowerMode, variant]);
+  }, [applyProgressToDom, lowPowerMode, variant]);
+
+  // Apply initial progress to DOM once overlays exist.
+  useEffect(() => {
+    applyProgressToDom(progressRef.current);
+  }, [applyProgressToDom]);
 
   // Pause the hero video when you're far down the page (saves CPU decode).
   useEffect(() => {
@@ -799,7 +834,10 @@ export default function CameraScene({
           isCompleteRef.current = true; // Set ref immediately
           setIsAnimationComplete(true);
           targetProgress.current = 1;
-          setAnimationProgress(1);
+          progressRef.current = 1;
+          applyProgressToDom(1);
+          progressRef.current = 1;
+          applyProgressToDom(1);
           // Immediately release scroll lock and remove padding
           document.body.style.overflow = '';
           document.body.style.paddingRight = '';
@@ -836,7 +874,8 @@ export default function CameraScene({
           isCompleteRef.current = true;
           setIsAnimationComplete(true);
           targetProgress.current = 1;
-          setAnimationProgress(1);
+          progressRef.current = 1;
+          applyProgressToDom(1);
           document.body.style.overflow = '';
           document.body.style.paddingRight = '';
           const navbar = document.querySelector('nav');
@@ -877,7 +916,8 @@ export default function CameraScene({
           isCompleteRef.current = true;
           setIsAnimationComplete(true);
           targetProgress.current = 1;
-          setAnimationProgress(1);
+          progressRef.current = 1;
+          applyProgressToDom(1);
           document.body.style.overflow = '';
           document.body.style.paddingRight = '';
           const navbar = document.querySelector('nav');
@@ -896,6 +936,9 @@ export default function CameraScene({
         isCompleteRef.current = false;
         setIsAnimationComplete(false);
         targetProgress.current = 0.99;
+        // Keep refs coherent with the reset path.
+        progressRef.current = targetProgress.current;
+        applyProgressToDom(progressRef.current);
       }
     };
 
@@ -912,7 +955,7 @@ export default function CameraScene({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [isAnimationComplete, variant]);
+  }, [applyProgressToDom, variant]);
 
   // Lock scroll during animation - prevent scrollbar jitter
   useEffect(() => {
@@ -1007,7 +1050,7 @@ export default function CameraScene({
           <InvalidateBridge invalidateRef={invalidateRef} />
           <Suspense fallback={<LoadingFallback />}>
             <Scene
-              scrollProgress={animationProgress}
+              scrollProgressRef={progressRef}
               videoElement={videoElement}
               mousePositionRef={mousePositionRef}
               hasUserScrolledRef={hasUserScrolledRef}
@@ -1021,12 +1064,11 @@ export default function CameraScene({
           <>
             {/* Initial hero text (bottom anchored) - CUTLINE (fades out as you scroll) */}
             <div 
+              ref={domIntroRef}
               className="absolute inset-0 flex flex-col justify-end items-center text-center pointer-events-none z-10"
               style={{ 
-                opacity: Math.max(0, 1 - animationProgress * 2.8),
-                transform: `translateY(${animationProgress * 30}px)`,
-                transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
                 paddingBottom: '10vh',
+                willChange: 'opacity, transform',
               }}
             >
               {/* Dark gradient for legibility (bottom anchored hero style) */}
@@ -1068,10 +1110,12 @@ export default function CameraScene({
 
             {/* Hero text overlay - Bottom anchored (reference-style) */}
             <div 
+              ref={domTitleWrapRef}
               className="absolute inset-0 flex items-end pointer-events-none z-10"
               style={{ 
-                opacity: animationProgress > 0.5 ? Math.min((animationProgress - 0.5) * 2, 1) : 0,
                 paddingBottom: '10vh',
+                opacity: 0,
+                willChange: 'opacity',
               }}
             >
               {/* Text with subtle dark gradient for legibility */}
@@ -1085,10 +1129,12 @@ export default function CameraScene({
                   {/* Main title */}
                   <div className="overflow-hidden">
                     <h1 
+                      ref={domTitleH1Ref}
                       className="text-[clamp(56px,10vw,140px)] font-extralight leading-[0.9] tracking-[-0.05em] text-white md:whitespace-nowrap"
                       style={{
-                        transform: `translateY(${(1 - (animationProgress > 0.6 ? Math.min((animationProgress - 0.6) * 3, 1) : 0)) * 100}%)`,
+                        transform: 'translate3d(0, 100%, 0)',
                         textShadow: '0 2px 40px rgba(0,0,0,0.3)',
+                        willChange: 'transform',
                       }}
                     >
                       Weeks to{' '}

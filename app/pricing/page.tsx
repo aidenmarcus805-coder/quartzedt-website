@@ -78,7 +78,7 @@ export default function PricingPage() {
       <motion.nav
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/5"
       >
         <div className="grid grid-cols-3 h-14 items-center px-8 text-[11px] tracking-[0.15em]">
@@ -114,7 +114,7 @@ export default function PricingPage() {
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="text-[10px] tracking-[0.4em] text-white/40"
           >
             PRICING
@@ -122,7 +122,7 @@ export default function PricingPage() {
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
+            transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             className="mt-6 text-[56px] md:text-[72px] font-light tracking-tight leading-none"
           >
             Simple, Transparent Pricing
@@ -130,7 +130,7 @@ export default function PricingPage() {
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className="mt-6 text-[18px] font-light text-white/50 max-w-xl mx-auto"
           >
             Choose the plan that fits your workflow. No hidden fees. Cancel anytime.
@@ -146,7 +146,7 @@ export default function PricingPage() {
               key={plan.name}
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 + idx * 0.15 }}
+              transition={{ duration: 0.8, delay: 0.3 + idx * 0.15, ease: [0.16, 1, 0.3, 1] }}
               className={`relative p-10 md:p-12 rounded-2xl ${
                 plan.featured
                   ? 'bg-paper text-black'
@@ -254,7 +254,7 @@ export default function PricingPage() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: idx * 0.05 }}
+                transition={{ delay: idx * 0.05, ease: [0.16, 1, 0.3, 1] }}
                 className="border-b border-white/10 py-8"
               >
                 <h3 className="text-[15px] font-medium tracking-wide">{faq.q}</h3>

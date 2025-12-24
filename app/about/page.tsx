@@ -82,7 +82,7 @@ export default function About() {
       <motion.nav
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 1.2, delay: 0.3 }}
+        transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
         className="fixed top-0 left-0 right-0 z-[100] mix-blend-difference"
       >
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 h-24 flex items-center justify-between">
