@@ -413,6 +413,7 @@ export default function Home() {
       let nextIdx = idxRaw;
       let scrolledForSteps = scrolledForStepsRaw;
       let shouldClampScroll = false;
+      let blockForwardWheel = false;
 
       // Rate-limit forward progress: you must “dwell” on each step before you can scroll into the next.
       if (doorOpen && pinned) {
@@ -423,6 +424,7 @@ export default function Home() {
             // Hold at the end of the current step until the dwell timer expires.
             // IMPORTANT: keep the step index pinned to the current step while locked.
             nextIdx = currentIdx;
+            blockForwardWheel = true;
             const boundary = (currentIdx + 1) * perStep;
             const clamped = Math.min(scrolledForStepsRaw, boundary - WORKFLOW_STEP_CLAMP_EPS_PX);
             scrolledForSteps = clamped;
@@ -444,6 +446,7 @@ export default function Home() {
         const atEnd = scrolled >= scrollable - EPS;
         if (nextIdx === lastIdx && atEnd && now < workflowStepLockUntilRef.current) {
           shouldClampScroll = true;
+          blockForwardWheel = true;
         }
       }
 
@@ -482,8 +485,9 @@ export default function Home() {
         const desiredScrolled = Math.min(scrollable, Math.max(0, WORKFLOW_DOOR_SCROLL_PX + scrolledForSteps));
         const desiredY = sectionTopY + desiredScrolled;
 
-        // Keep a “hold” target for the wheel guard below.
-        if (now < workflowStepLockUntilRef.current) {
+        // Keep a “hold” target for the wheel guard below ONLY when we’re actively blocking forward progress.
+        // (We still snap to step starts, but don’t freeze scrolling within the step.)
+        if (blockForwardWheel && now < workflowStepLockUntilRef.current) {
           workflowBlockForwardWheelRef.current = true;
           workflowHoldScrollYRef.current = desiredY;
         }
