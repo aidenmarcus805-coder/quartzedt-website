@@ -333,6 +333,8 @@ export default function Home() {
   const firstWhiteRef = useRef<HTMLElement | null>(null);
   const workflowRevealRef = useRef<HTMLDivElement | null>(null);
   const workflowRevealLastPxRef = useRef<number>(-1);
+  const workflowRevealContentRef = useRef<HTMLDivElement | null>(null);
+  const workflowRevealContentLastPxRef = useRef<number>(-1);
   const philosophyRef = useRef<HTMLElement | null>(null);
   const [lowPowerMode, setLowPowerMode] = useState(false);
   const [openCapabilityIdx, setOpenCapabilityIdx] = useState<number | null>(null);
@@ -375,12 +377,21 @@ export default function Home() {
       // Reveal the workflow like it’s sliding out from under the hero (no gradient).
       // We “unclip” the black overlay over the first ~220px of scroll within the section.
       const REVEAL_PX = 220;
-      const coverPx = Math.max(0, Math.min(REVEAL_PX, REVEAL_PX - scrolled));
+      const coverPx =
+        rect.top <= 0 ? Math.max(0, Math.min(REVEAL_PX, REVEAL_PX - scrolled)) : 0;
       if (workflowRevealRef.current) {
         const prev = workflowRevealLastPxRef.current;
         if (prev < 0 || Math.abs(prev - coverPx) >= 1) {
           workflowRevealLastPxRef.current = coverPx;
           workflowRevealRef.current.style.height = `${coverPx}px`;
+        }
+      }
+      if (workflowRevealContentRef.current) {
+        const prev = workflowRevealContentLastPxRef.current;
+        if (prev < 0 || Math.abs(prev - coverPx) >= 1) {
+          workflowRevealContentLastPxRef.current = coverPx;
+          workflowRevealContentRef.current.style.transform =
+            coverPx > 0 ? `translate3d(0, ${coverPx}px, 0)` : 'translate3d(0, 0, 0)';
         }
       }
 
@@ -577,34 +588,6 @@ export default function Home() {
             height: `calc(100vh + ${WORKFLOW_SCROLL_PX_PER_STEP * (WORKFLOW_STEPS.length - 1)}px)`,
           }}
         >
-          {/* “Under the hero” reveal: black overlay that unclips away as you scroll */}
-          <div
-            ref={workflowRevealRef}
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 top-0 z-30 overflow-hidden"
-            style={{ height: 0 }}
-          >
-            <div className="absolute inset-0 bg-black">
-              <div
-                className="absolute inset-0"
-                style={{
-                  backgroundImage: 'radial-gradient(rgba(255,255,255,0.10) 1px, transparent 1px)',
-                  backgroundSize: '26px 26px',
-                  backgroundPosition: 'center',
-                  opacity: 0.35,
-                }}
-              />
-              {/* Hard edge + shadow (tab feel) */}
-              <div
-                className="absolute inset-x-0 bottom-0 h-px"
-                style={{
-                  background: 'rgba(255,255,255,0.10)',
-                  boxShadow: '0 18px 60px rgba(0,0,0,0.55)',
-                }}
-              />
-            </div>
-          </div>
-
           {/* Dotted background (keep) */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
             <div
@@ -622,7 +605,40 @@ export default function Home() {
           </div>
 
           <div className="sticky top-0 h-screen">
-            <div className="relative h-full pt-48 pb-16 flex flex-col">
+            <div className="relative h-full">
+              {/* “Under the hero” reveal: black overlay tab that stays with the viewport */}
+              <div
+                ref={workflowRevealRef}
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 top-0 z-30 overflow-hidden"
+                style={{ height: 0 }}
+              >
+                <div className="absolute inset-0 bg-black">
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      backgroundImage: 'radial-gradient(rgba(255,255,255,0.10) 1px, transparent 1px)',
+                      backgroundSize: '26px 26px',
+                      backgroundPosition: 'center',
+                      opacity: 0.35,
+                    }}
+                  />
+                  {/* Hard edge + shadow (tab feel) */}
+                  <div
+                    className="absolute inset-x-0 bottom-0 h-px"
+                    style={{
+                      background: 'rgba(255,255,255,0.10)',
+                      boxShadow: '0 18px 60px rgba(0,0,0,0.55)',
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div
+                ref={workflowRevealContentRef}
+                className="relative h-full pt-32 pb-4 flex flex-col"
+                style={{ transform: 'translate3d(0, 0, 0)', willChange: 'transform' }}
+              >
               {/* Title (gallery rhythm: aligned to content grid) */}
               <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 flex-none">
                 <h2 className="font-display text-[clamp(64px,6.5vw,110px)] font-light tracking-[-0.06em] leading-[0.92]">
@@ -632,9 +648,9 @@ export default function Home() {
               </div>
 
               {/* Videos */}
-              <div className="flex-1 mt-10">
+              <div className="flex-1 mt-8 flex items-end">
                 {/* Stage (same width as the rest of the site) */}
-                <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16">
+                <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 w-full">
                   {/* One “video row”: active expands (main), others stay as shutters on the right.
                       Advancing tabs expands the next shutter into the main video (per blueprint). */}
                   <div className="relative overflow-hidden border border-black/12 bg-white shadow-[0_70px_160px_rgba(0,0,0,0.10)]">
@@ -894,9 +910,10 @@ export default function Home() {
                           </button>
                         );
                       })}
-        </div>
+                    </div>
                   </div>
                 </div>
+              </div>
               </div>
               </div>
 
