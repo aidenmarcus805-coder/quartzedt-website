@@ -323,10 +323,10 @@ const WORKFLOW_STEPS = [
   { label: 'Export', desc: 'Premiere / Resolve ready.', icon: Download, start: 16.5, end: 22.0 },
 ] as const;
 
-const WORKFLOW_SCROLLS_PER_STEP = 3;
-const WORKFLOW_SCROLL_PX = 120; // ~one wheel "tick" (used to map scroll distance to the 3-step peel)
+const WORKFLOW_SCROLLS_PER_STEP = 2;
+const WORKFLOW_SCROLL_PX = 100; // ~one wheel "tick" (used to map scroll distance to step peel)
 const WORKFLOW_SCROLL_PX_PER_STEP = WORKFLOW_SCROLL_PX * WORKFLOW_SCROLLS_PER_STEP;
-const WORKFLOW_DOOR_SCROLL_PX = 520; // scroll distance to lift the “hero door” and reveal the workflow
+const WORKFLOW_DOOR_SCROLL_PX = 200; // scroll distance to lift the "hero door" and reveal the workflow
 
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -375,12 +375,17 @@ export default function Home() {
 
       const scrolled = Math.min(scrollable, Math.max(0, -rect.top));
 
-      // “Garage door” transition: the dark hero panel lifts up with scroll, revealing the workflow.
+      // "Garage door" transition: the dark hero panel lifts up with scroll, revealing the workflow.
       // Use transforms only (no layout changes) to keep scrolling perfectly smooth.
+      // The door is position:fixed, so we show it only when the section is in view and not past the reveal.
       const doorT = Math.max(0, Math.min(1, scrolled / WORKFLOW_DOOR_SCROLL_PX));
       const doorY = -doorT * vh; // lift the panel fully out of view
+      const doorVisible = rect.top <= vh && rect.bottom >= 0 && doorT < 1;
       if (workflowDoorRef.current) {
         const prevY = workflowDoorLastYRef.current;
+        // Show/hide the door based on scroll position
+        workflowDoorRef.current.style.visibility = doorVisible ? 'visible' : 'hidden';
+        workflowDoorRef.current.style.pointerEvents = 'none';
         if (!Number.isFinite(prevY) || Math.abs(prevY - doorY) >= 0.5) {
           workflowDoorLastYRef.current = doorY;
           workflowDoorRef.current.style.transform = `translate3d(0, ${doorY}px, 0)`;
@@ -561,9 +566,60 @@ export default function Home() {
       </section>
 
       {/* Workflow */}
-      <section id="workflow" ref={firstWhiteRef} className="bg-paper text-black border-b border-black/5">
+      <section id="workflow" ref={firstWhiteRef} className="relative bg-paper text-black border-b border-black/5">
+        {/* Garage-door panel (fixed to viewport, slides up with scroll) */}
         <div
-          className="relative overflow-hidden"
+          ref={workflowDoorRef}
+          className="pointer-events-none fixed inset-x-0 top-0 z-40 bg-black"
+          style={{ height: '100vh', transform: 'translate3d(0, 0, 0)', willChange: 'transform', visibility: 'hidden' }}
+        >
+          {/* Subtle dot field (matches hero language) */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{
+              backgroundImage: 'radial-gradient(rgba(255,255,255,0.10) 1px, transparent 1px)',
+              backgroundSize: '26px 26px',
+              backgroundPosition: 'center',
+              opacity: 0.35,
+            }}
+          />
+
+          {/* Content that "rides" up like the hero widget */}
+          <div className="relative h-full">
+            <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 h-full flex items-end pb-20 md:pb-24">
+              <div className="max-w-4xl">
+                <div className="flex items-center gap-3">
+                  <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+                  <p className="text-[10px] tracking-[0.55em] text-white/35 font-light">
+                    AI WEDDING VIDEO EDITOR
+                  </p>
+                </div>
+
+                <h2 className="mt-10 font-display text-[clamp(32px,3.4vw,56px)] font-extralight tracking-[-0.04em] leading-[1.08] text-white">
+                  Cutline turns raw wedding footage into a timeline you can finish.
+                </h2>
+                <p className="mt-8 text-[15px] md:text-[17px] leading-[1.9] text-white/55 font-light max-w-[62ch]">
+                  Sync cameras + lavs, find vows and speeches, rank reactions, shape pacing — then export a clean rough cut
+                  to Premiere or Resolve.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom edge + shadow so the "door" reads as a panel */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-x-0 bottom-0 h-px"
+            style={{
+              background: 'rgba(255,255,255,0.10)',
+              boxShadow: '0 18px 60px rgba(0,0,0,0.55)',
+            }}
+          />
+        </div>
+
+        <div
+          className="relative"
           style={{
             height: `calc(100vh + ${WORKFLOW_DOOR_SCROLL_PX + WORKFLOW_SCROLL_PX_PER_STEP * (WORKFLOW_STEPS.length - 1)}px)`,
           }}
@@ -584,70 +640,18 @@ export default function Home() {
             />
           </div>
 
-          <div className="sticky top-0 h-screen overflow-hidden">
-            <div className="relative h-full">
-              {/* Garage-door panel (sticks to viewport, slides up with scroll) */}
-              <div
-                ref={workflowDoorRef}
-                className="pointer-events-none absolute inset-0 z-30 bg-black"
-                style={{ transform: 'translate3d(0, 0, 0)', willChange: 'transform' }}
-              >
-                {/* Subtle dot field (matches hero language) */}
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0"
-                  style={{
-                    backgroundImage: 'radial-gradient(rgba(255,255,255,0.10) 1px, transparent 1px)',
-                    backgroundSize: '26px 26px',
-                    backgroundPosition: 'center',
-                    opacity: 0.35,
-                  }}
-                />
-
-                {/* Content that “rides” up like the hero widget */}
-                <div className="relative h-full">
-                  <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 h-full flex items-end pb-20 md:pb-24">
-                    <div className="max-w-4xl">
-                      <div className="flex items-center gap-3">
-                        <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
-                        <p className="text-[10px] tracking-[0.55em] text-white/35 font-light">
-                          AI WEDDING VIDEO EDITOR
-                        </p>
-                      </div>
-
-                      <h2 className="mt-10 font-display text-[clamp(32px,3.4vw,56px)] font-extralight tracking-[-0.04em] leading-[1.08] text-white">
-                        Cutline turns raw wedding footage into a timeline you can finish.
-                      </h2>
-                      <p className="mt-8 text-[15px] md:text-[17px] leading-[1.9] text-white/55 font-light max-w-[62ch]">
-                        Sync cameras + lavs, find vows and speeches, rank reactions, shape pacing — then export a clean rough cut
-                        to Premiere or Resolve.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bottom edge + shadow so the “door” reads as a panel */}
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-x-0 bottom-0 h-px"
-                  style={{
-                    background: 'rgba(255,255,255,0.10)',
-                    boxShadow: '0 18px 60px rgba(0,0,0,0.55)',
-                  }}
-                />
+          <div className="sticky top-0 h-screen">
+            <div className="relative h-full pt-24 pb-6 flex flex-col">
+              {/* Title (gallery rhythm: aligned to content grid) */}
+              <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 flex-none">
+                <h2 className="font-display text-[clamp(56px,5.5vw,96px)] font-light tracking-[-0.06em] leading-[0.92]">
+                  The Workflow
+                  <BleepDot className="ml-4" />
+                </h2>
               </div>
 
-              <div className="relative h-full pt-32 pb-4 flex flex-col">
-                {/* Title (gallery rhythm: aligned to content grid) */}
-                <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 flex-none">
-                  <h2 className="font-display text-[clamp(64px,6.5vw,110px)] font-light tracking-[-0.06em] leading-[0.92]">
-                    The Workflow
-                    <BleepDot className="ml-4" />
-                  </h2>
-                </div>
-
               {/* Videos */}
-              <div className="flex-1 mt-8 flex items-end">
+              <div className="flex-1 mt-6 flex items-end">
                 {/* Stage (same width as the rest of the site) */}
                 <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 w-full">
                   {/* One “video row”: active expands (main), others stay as shutters on the right.
@@ -912,7 +916,6 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-              </div>
               </div>
             </div>
           </div>
