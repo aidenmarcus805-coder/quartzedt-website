@@ -324,11 +324,15 @@ const WORKFLOW_STEPS = [
 ] as const;
 
 const WORKFLOW_SCROLLS_PER_STEP = 3;
+const WORKFLOW_SCROLL_PX = 120; // ~one wheel "tick" (used to map scroll distance to the 3-step peel)
+const WORKFLOW_SCROLL_PX_PER_STEP = WORKFLOW_SCROLL_PX * WORKFLOW_SCROLLS_PER_STEP;
 
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
   const firstWhiteRef = useRef<HTMLElement | null>(null);
+  const workflowRevealRef = useRef<HTMLDivElement | null>(null);
+  const workflowRevealLastPxRef = useRef<number>(-1);
   const philosophyRef = useRef<HTMLElement | null>(null);
   const [lowPowerMode, setLowPowerMode] = useState(false);
   const [openCapabilityIdx, setOpenCapabilityIdx] = useState<number | null>(null);
@@ -337,343 +341,81 @@ export default function Home() {
   const [workflowLocked, setWorkflowLocked] = useState(false);
   const [workflowHasInteracted, setWorkflowHasInteracted] = useState(false);
   const [workflowAdvance, setWorkflowAdvance] = useState(0); // 0..(WORKFLOW_SCROLLS_PER_STEP-1)
-  const workflowIdxRef = useRef(0);
-  const workflowActiveRef = useRef(false);
-  const workflowLockedRef = useRef(false);
-  const workflowLastStepAtRef = useRef(0);
-  const workflowWheelAccumRef = useRef(0);
-  const workflowTouchStartYRef = useRef<number | null>(null);
-  const workflowWallYRef = useRef<number | null>(null);
-  const workflowAdvanceRef = useRef(0);
-  const workflowAdvanceDirRef = useRef<1 | -1 | 0>(0);
+  const workflowAutoIdxRef = useRef(0);
+  const workflowAutoAdvanceRef = useRef(0);
+  const workflowAutoLockedRef = useRef(false);
+  const workflowHasInteractedRef = useRef(false);
 
+  // Workflow is now scroll-driven (no snap, no wall, no scroll hijack).
+  // We map normal scroll progress through the sticky section to:
+  // - step index (video)
+  // - peel progress (0/3, 1/3, 2/3)
   useEffect(() => {
-    workflowIdxRef.current = workflowIdx;
-  }, [workflowIdx]);
+    let raf = 0;
 
-  // Scroll should not move the page here — it should ONLY advance the workflow left → right.
-  useEffect(() => {
-    const WORKFLOW_WALL_OFFSET_PX = -95; // “framed” wall position inside the workflow section
-    let scrollFrozen = false;
-
-    const setLocked = (next: boolean) => {
-      if (workflowLockedRef.current !== next) {
-        workflowLockedRef.current = next;
-        setWorkflowLocked(next);
-      }
-    };
-
-    const freezeScroll = () => {
-      if (scrollFrozen) return;
-      scrollFrozen = true;
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-      document.body.style.overflow = 'hidden';
-      const navbar = document.querySelector('nav');
-      if (navbar && navbar instanceof HTMLElement) {
-        navbar.style.paddingRight = `${scrollbarWidth}px`;
-      }
-    };
-
-    const unfreezeScroll = () => {
-      if (!scrollFrozen) return;
-      scrollFrozen = false;
-      document.body.style.overflow = '';
-      document.body.style.paddingRight = '';
-      const navbar = document.querySelector('nav');
-      if (navbar && navbar instanceof HTMLElement) {
-        navbar.style.paddingRight = '';
-      }
-    };
-
-    const getWallY = () => {
+    const update = () => {
+      raf = 0;
       const el = firstWhiteRef.current;
-      if (!el) return null;
+      if (!el) return;
+
       const rect = el.getBoundingClientRect();
-      // wallY is the scrollY where the workflow top sits at WORKFLOW_WALL_OFFSET_PX
-      return Math.round(window.scrollY + rect.top - WORKFLOW_WALL_OFFSET_PX);
-    };
+      const vh = window.innerHeight;
+      const pinned = rect.top <= 0 && rect.bottom >= vh;
 
-    const canExit = (dir: 1 | -1) => {
-      const idx = workflowIdxRef.current;
-      if (dir > 0 && idx >= WORKFLOW_STEPS.length - 1) return true;
-      if (dir < 0 && idx <= 0) return true;
-      return false;
-    };
-
-    const resetAdvance = () => {
-      workflowAdvanceRef.current = 0;
-      workflowAdvanceDirRef.current = 0;
-      workflowWheelAccumRef.current = 0;
-      setWorkflowAdvance(0);
-    };
-
-    const step = (dir: 1 | -1) => {
-      const now = performance.now();
-      const cooldownMs = 0; // gating is handled by WORKFLOW_SCROLLS_PER_STEP
-      if (now - workflowLastStepAtRef.current < cooldownMs) return;
-      workflowLastStepAtRef.current = now;
-      setWorkflowHasInteracted(true);
-      resetAdvance();
-
-      setWorkflowIdx((prev) => {
-        const next = Math.max(0, Math.min(WORKFLOW_STEPS.length - 1, prev + dir));
-        return next;
-      });
-    };
-
-    const ensureWall = () => {
-      const y = workflowWallYRef.current;
-      if (y == null) return;
-      if (Math.abs(window.scrollY - y) > 0.1) {
-        window.scrollTo(0, y);
+      if (workflowAutoLockedRef.current !== pinned) {
+        workflowAutoLockedRef.current = pinned;
+        setWorkflowLocked(pinned);
       }
-    };
 
-    const engageWall = (wallY: number) => {
-      const y = Math.round(wallY);
-      // Never carry partial 1/3–2/3 progress into a new lock (causes “already at 3/3” feel + jitter).
-      resetAdvance();
-      workflowWallYRef.current = y;
-      workflowActiveRef.current = true;
-      setLocked(true);
-      freezeScroll();
-      window.scrollTo(0, y);
-    };
+      const scrollable = el.offsetHeight - vh;
+      if (scrollable <= 0) return;
 
-    const releaseWall = () => {
-      // Clear partial progress when leaving the wall so re-entry always starts at 0/3.
-      resetAdvance();
-      workflowWallYRef.current = null;
-      workflowActiveRef.current = false;
-      setLocked(false);
-      unfreezeScroll();
-    };
+      const scrolled = Math.min(scrollable, Math.max(0, -rect.top));
 
-    const wheelDeltaPx = (e: WheelEvent) => {
-      // Normalize delta so “crossing the wall” math is reliable.
-      if (e.deltaMode === 1) return e.deltaY * 16; // lines → px (approx)
-      if (e.deltaMode === 2) return e.deltaY * window.innerHeight; // pages → px
-      return e.deltaY; // px
-    };
-
-    const onWheel = (e: WheelEvent) => {
-      const dyPx = wheelDeltaPx(e);
-      if (dyPx === 0) return;
-      const dir = dyPx > 0 ? (1 as const) : (-1 as const);
-
-      // Locked: you're at the wall. Scroll input only advances steps.
-      if (workflowWallYRef.current != null) {
-        // Allow both directions while locked (scroll up to go back / un-peel).
-        if (canExit(dir)) {
-          releaseWall();
-          return; // allow normal page scroll at the ends
+      // Reveal the workflow like it’s sliding out from under the hero (no gradient).
+      // We “unclip” the black overlay over the first ~220px of scroll within the section.
+      const REVEAL_PX = 220;
+      const coverPx = Math.max(0, Math.min(REVEAL_PX, REVEAL_PX - scrolled));
+      if (workflowRevealRef.current) {
+        const prev = workflowRevealLastPxRef.current;
+        if (prev < 0 || Math.abs(prev - coverPx) >= 1) {
+          workflowRevealLastPxRef.current = coverPx;
+          workflowRevealRef.current.style.height = `${coverPx}px`;
         }
+      }
 
-        e.preventDefault();
-        ensureWall();
+      const idx = Math.min(WORKFLOW_STEPS.length - 1, Math.floor(scrolled / WORKFLOW_SCROLL_PX_PER_STEP));
+      const within = scrolled - idx * WORKFLOW_SCROLL_PX_PER_STEP; // 0..WORKFLOW_SCROLL_PX_PER_STEP
+      const advance = Math.min(WORKFLOW_SCROLLS_PER_STEP - 1, Math.floor(within / WORKFLOW_SCROLL_PX));
 
-        // Count discrete "scrolls" (not delta magnitude). Trackpads emit tiny deltas: treat ~120px as one scroll.
-        const isFine = Math.abs(dyPx) < 50;
-        if (isFine) {
-          const acc = workflowWheelAccumRef.current;
-          if (acc !== 0 && Math.sign(acc) !== Math.sign(dyPx)) workflowWheelAccumRef.current = 0;
-          workflowWheelAccumRef.current += dyPx;
-          if (Math.abs(workflowWheelAccumRef.current) < 120) return;
-          workflowWheelAccumRef.current = 0;
-        } else {
-          workflowWheelAccumRef.current = 0;
-        }
+      if (workflowAutoIdxRef.current !== idx) {
+        workflowAutoIdxRef.current = idx;
+        setWorkflowIdx(idx);
+      }
+      if (workflowAutoAdvanceRef.current !== advance) {
+        workflowAutoAdvanceRef.current = advance;
+        setWorkflowAdvance(advance);
+      }
 
+      if (!workflowHasInteractedRef.current && scrolled > 18) {
+        workflowHasInteractedRef.current = true;
         setWorkflowHasInteracted(true);
-
-        // Direction change resets the "3 scrolls" counter.
-        if (workflowAdvanceDirRef.current !== dir) {
-          workflowAdvanceDirRef.current = dir;
-          workflowAdvanceRef.current = 0;
-          setWorkflowAdvance(0);
-        }
-
-        const next = workflowAdvanceRef.current + 1;
-        if (next >= WORKFLOW_SCROLLS_PER_STEP) {
-          step(dir);
-        } else {
-          workflowAdvanceRef.current = next;
-          setWorkflowAdvance(next);
-        }
-        return;
-      }
-
-      // Not locked: let the page scroll normally UNTIL this input would cross the wall.
-      if (dir > 0 && !canExit(1)) {
-        const wallY = getWallY();
-        if (wallY == null) return;
-        const predicted = window.scrollY + dyPx;
-        if (predicted >= wallY) {
-          e.preventDefault();
-          engageWall(wallY);
-        }
       }
     };
 
-    const onKeyDown = (e: KeyboardEvent) => {
-      let dir: 1 | -1 | 0 = 0;
-
-      switch (e.key) {
-        case 'ArrowDown':
-        case 'PageDown':
-        case ' ':
-          dir = 1;
-          break;
-        case 'ArrowUp':
-        case 'PageUp':
-          dir = -1;
-          break;
-        default:
-          return;
-      }
-
-      // Locked: step.
-      if (workflowWallYRef.current != null) {
-        // Allow both directions while locked (scroll up to go back / un-peel).
-        if (canExit(dir)) {
-          releaseWall();
-          return;
-        }
-        e.preventDefault();
-        ensureWall();
-        setWorkflowHasInteracted(true);
-
-        if (workflowAdvanceDirRef.current !== dir) {
-          workflowAdvanceDirRef.current = dir;
-          workflowAdvanceRef.current = 0;
-          setWorkflowAdvance(0);
-        }
-
-        const next = workflowAdvanceRef.current + 1;
-        if (next >= WORKFLOW_SCROLLS_PER_STEP) {
-          step(dir);
-        } else {
-          workflowAdvanceRef.current = next;
-          setWorkflowAdvance(next);
-        }
-        return;
-      }
-
-      // Not locked: if this keypress would jump you past the wall, lock instead.
-      if (dir > 0 && !canExit(1)) {
-        const wallY = getWallY();
-        if (wallY == null) return;
-        const approxJump = window.innerHeight * 0.9;
-        if (window.scrollY + approxJump >= wallY) {
-          e.preventDefault();
-          engageWall(wallY);
-        }
-      }
+    const schedule = () => {
+      if (raf) return;
+      raf = window.requestAnimationFrame(update);
     };
 
-    const onTouchStart = (e: TouchEvent) => {
-      workflowTouchStartYRef.current = e.touches[0]?.clientY ?? null;
-    };
-
-    const onTouchMove = (e: TouchEvent) => {
-      const startY = workflowTouchStartYRef.current;
-      const y = e.touches[0]?.clientY;
-      if (startY == null || y == null) return;
-
-      const dy = startY - y;
-      if (Math.abs(dy) < 28) return; // ignore micro movement (2x)
-
-      const dir = dy > 0 ? (1 as const) : (-1 as const);
-
-      // Locked: step.
-      if (workflowWallYRef.current != null) {
-        // Allow both directions while locked (swipe up to go back / un-peel).
-        if (canExit(dir)) {
-          releaseWall();
-          workflowTouchStartYRef.current = y;
-          return;
-        }
-
-        e.preventDefault();
-        ensureWall();
-        workflowTouchStartYRef.current = y;
-        setWorkflowHasInteracted(true);
-
-        // Touch deltas are small & frequent; treat ~120px as one scroll.
-        const acc = workflowWheelAccumRef.current;
-        if (acc !== 0 && Math.sign(acc) !== Math.sign(dy)) workflowWheelAccumRef.current = 0;
-        workflowWheelAccumRef.current += dy;
-        if (Math.abs(workflowWheelAccumRef.current) < 120) return;
-        workflowWheelAccumRef.current = 0;
-
-        if (workflowAdvanceDirRef.current !== dir) {
-          workflowAdvanceDirRef.current = dir;
-          workflowAdvanceRef.current = 0;
-          setWorkflowAdvance(0);
-        }
-
-        const next = workflowAdvanceRef.current + 1;
-        if (next >= WORKFLOW_SCROLLS_PER_STEP) {
-          step(dir);
-        } else {
-          workflowAdvanceRef.current = next;
-          setWorkflowAdvance(next);
-        }
-        return;
-      }
-
-      // Not locked: if this touch move would cross the wall, lock instead.
-      if (dir > 0 && !canExit(1)) {
-        const wallY = getWallY();
-        if (wallY == null) return;
-        const predicted = window.scrollY + dy;
-        if (predicted >= wallY) {
-          e.preventDefault();
-          engageWall(wallY);
-          workflowTouchStartYRef.current = y;
-          return;
-        }
-      }
-
-      // Not locked: allow normal page scroll.
-      workflowTouchStartYRef.current = y;
-    };
-
-    const onScroll = () => {
-      if (workflowWallYRef.current != null) return ensureWall();
-
-      const wallY = getWallY();
-      if (wallY == null) return;
-      // If you scroll/drag past the wall, clamp to it and lock (unless you're allowed to exit downward).
-      if (!canExit(1) && window.scrollY >= wallY) engageWall(wallY);
-    };
-
-    const onResize = () => {
-      if (workflowWallYRef.current == null) return;
-      const wallY = getWallY();
-      if (wallY == null) return;
-      workflowWallYRef.current = wallY;
-      ensureWall();
-    };
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onResize);
-    window.addEventListener('wheel', onWheel, { passive: false });
-    window.addEventListener('keydown', onKeyDown, { passive: false });
-    window.addEventListener('touchstart', onTouchStart, { passive: false });
-    window.addEventListener('touchmove', onTouchMove, { passive: false });
-    // Initial sync (in case you reload near/inside the workflow)
-    onScroll();
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    update();
 
     return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onResize);
-      window.removeEventListener('wheel', onWheel);
-      window.removeEventListener('keydown', onKeyDown);
-      window.removeEventListener('touchstart', onTouchStart);
-      window.removeEventListener('touchmove', onTouchMove);
-      unfreezeScroll();
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+      if (raf) window.cancelAnimationFrame(raf);
     };
   }, []);
 
@@ -829,50 +571,38 @@ export default function Home() {
 
       {/* Workflow */}
       <section id="workflow" ref={firstWhiteRef} className="bg-paper text-black border-b border-black/5">
-        <div className="relative h-[110vh] overflow-hidden">
-          {/* Transition band: Hero → Workflow (black → paper) */}
-          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 z-20 h-[200px]">
-            {/* Black-to-paper gradient */}
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  'linear-gradient(to bottom, rgba(0,0,0,1) 0px, rgba(0,0,0,0.92) 44px, rgba(0,0,0,0.55) 84px, rgba(0,0,0,0.22) 118px, rgba(0,0,0,0) 150px)',
-              }}
-            />
-
-          {/* Dot carry-through (white → black as it fades into paper) */}
-            <div
-            className="absolute inset-0"
+        <div
+          className="relative overflow-hidden"
+          style={{
+            height: `calc(100vh + ${WORKFLOW_SCROLL_PX_PER_STEP * (WORKFLOW_STEPS.length - 1)}px)`,
+          }}
+        >
+          {/* “Under the hero” reveal: black overlay that unclips away as you scroll */}
+          <div
+            ref={workflowRevealRef}
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 top-0 z-30 overflow-hidden"
+            style={{ height: 0 }}
           >
-            {/* White dots (readable in the dark) */}
-            <div
-              className="absolute inset-0 opacity-90"
-              style={{
-                backgroundImage: 'radial-gradient(rgba(255,255,255,0.18) 1.25px, transparent 1.25px)',
-                backgroundSize: '26px 26px',
-                backgroundPosition: 'center',
-                WebkitMaskImage:
-                  'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0) 100%)',
-                maskImage:
-                  'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 60%, rgba(0,0,0,0) 100%)',
-              }}
-            />
-            {/* Black dots (stay visible as we approach paper) */}
-            <div
-              className="absolute inset-0 opacity-95"
-              style={{
-                backgroundImage: 'radial-gradient(rgba(0,0,0,0.18) 1.25px, transparent 1.25px)',
-                backgroundSize: '26px 26px',
-                backgroundPosition: 'center',
-                WebkitMaskImage:
-                  'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 24%, rgba(0,0,0,0.75) 72%, rgba(0,0,0,1) 100%)',
-                maskImage:
-                  'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 24%, rgba(0,0,0,0.75) 72%, rgba(0,0,0,1) 100%)',
-              }}
-            />
-          </div>
-
+            <div className="absolute inset-0 bg-black">
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: 'radial-gradient(rgba(255,255,255,0.10) 1px, transparent 1px)',
+                  backgroundSize: '26px 26px',
+                  backgroundPosition: 'center',
+                  opacity: 0.35,
+                }}
+              />
+              {/* Hard edge + shadow (tab feel) */}
+              <div
+                className="absolute inset-x-0 bottom-0 h-px"
+                style={{
+                  background: 'rgba(255,255,255,0.10)',
+                  boxShadow: '0 18px 60px rgba(0,0,0,0.55)',
+                }}
+              />
+            </div>
           </div>
 
           {/* Dotted background (keep) */}
@@ -987,9 +717,6 @@ export default function Home() {
                             type="button"
                             onClick={() => {
                               setWorkflowHasInteracted(true);
-                              workflowAdvanceRef.current = 0;
-                              workflowAdvanceDirRef.current = 0;
-                              workflowWheelAccumRef.current = 0;
                               setWorkflowAdvance(0);
                               setWorkflowIdx(idx);
                             }}
@@ -1126,9 +853,6 @@ export default function Home() {
                             type="button"
                             onClick={() => {
                               setWorkflowHasInteracted(true);
-                              workflowAdvanceRef.current = 0;
-                              workflowAdvanceDirRef.current = 0;
-                              workflowWheelAccumRef.current = 0;
                               setWorkflowAdvance(0);
                               setWorkflowIdx(idx);
                             }}
