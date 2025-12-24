@@ -326,15 +326,14 @@ const WORKFLOW_STEPS = [
 const WORKFLOW_SCROLLS_PER_STEP = 3;
 const WORKFLOW_SCROLL_PX = 120; // ~one wheel "tick" (used to map scroll distance to the 3-step peel)
 const WORKFLOW_SCROLL_PX_PER_STEP = WORKFLOW_SCROLL_PX * WORKFLOW_SCROLLS_PER_STEP;
+const WORKFLOW_DOOR_SCROLL_PX = 520; // scroll distance to lift the “hero door” and reveal the workflow
 
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
   const firstWhiteRef = useRef<HTMLElement | null>(null);
-  const workflowRevealRef = useRef<HTMLDivElement | null>(null);
-  const workflowRevealLastPxRef = useRef<number>(-1);
-  const workflowRevealContentRef = useRef<HTMLDivElement | null>(null);
-  const workflowRevealContentLastPxRef = useRef<number>(-1);
+  const workflowDoorRef = useRef<HTMLDivElement | null>(null);
+  const workflowDoorLastYRef = useRef<number>(Number.NaN);
   const philosophyRef = useRef<HTMLElement | null>(null);
   const [lowPowerMode, setLowPowerMode] = useState(false);
   const [openCapabilityIdx, setOpenCapabilityIdx] = useState<number | null>(null);
@@ -362,7 +361,9 @@ export default function Home() {
 
       const rect = el.getBoundingClientRect();
       const vh = window.innerHeight;
-      const pinned = rect.top <= 0 && rect.bottom >= vh;
+      // Hysteresis to avoid “pin flapping” around 0px due to subpixel scroll.
+      const EPS = 1;
+      const pinned = rect.top <= EPS && rect.bottom >= vh - EPS;
 
       if (workflowAutoLockedRef.current !== pinned) {
         workflowAutoLockedRef.current = pinned;
@@ -374,29 +375,26 @@ export default function Home() {
 
       const scrolled = Math.min(scrollable, Math.max(0, -rect.top));
 
-      // Reveal the workflow like it’s sliding out from under the hero (no gradient).
-      // We “unclip” the black overlay over the first ~220px of scroll within the section.
-      const REVEAL_PX = 220;
-      const coverPx =
-        rect.top <= 0 ? Math.max(0, Math.min(REVEAL_PX, REVEAL_PX - scrolled)) : 0;
-      if (workflowRevealRef.current) {
-        const prev = workflowRevealLastPxRef.current;
-        if (prev < 0 || Math.abs(prev - coverPx) >= 1) {
-          workflowRevealLastPxRef.current = coverPx;
-          workflowRevealRef.current.style.height = `${coverPx}px`;
-        }
-      }
-      if (workflowRevealContentRef.current) {
-        const prev = workflowRevealContentLastPxRef.current;
-        if (prev < 0 || Math.abs(prev - coverPx) >= 1) {
-          workflowRevealContentLastPxRef.current = coverPx;
-          workflowRevealContentRef.current.style.transform =
-            coverPx > 0 ? `translate3d(0, ${coverPx}px, 0)` : 'translate3d(0, 0, 0)';
+      // “Garage door” transition: the dark hero panel lifts up with scroll, revealing the workflow.
+      // Use transforms only (no layout changes) to keep scrolling perfectly smooth.
+      const doorT = Math.max(0, Math.min(1, scrolled / WORKFLOW_DOOR_SCROLL_PX));
+      const doorY = -doorT * vh; // lift the panel fully out of view
+      if (workflowDoorRef.current) {
+        const prevY = workflowDoorLastYRef.current;
+        if (!Number.isFinite(prevY) || Math.abs(prevY - doorY) >= 0.5) {
+          workflowDoorLastYRef.current = doorY;
+          workflowDoorRef.current.style.transform = `translate3d(0, ${doorY}px, 0)`;
         }
       }
 
-      const idx = Math.min(WORKFLOW_STEPS.length - 1, Math.floor(scrolled / WORKFLOW_SCROLL_PX_PER_STEP));
-      const within = scrolled - idx * WORKFLOW_SCROLL_PX_PER_STEP; // 0..WORKFLOW_SCROLL_PX_PER_STEP
+      // Workflow step scroll should begin only after the door is fully opened.
+      const scrolledForSteps = Math.max(0, scrolled - WORKFLOW_DOOR_SCROLL_PX);
+
+      const idx = Math.min(
+        WORKFLOW_STEPS.length - 1,
+        Math.floor(scrolledForSteps / WORKFLOW_SCROLL_PX_PER_STEP),
+      );
+      const within = scrolledForSteps - idx * WORKFLOW_SCROLL_PX_PER_STEP; // 0..WORKFLOW_SCROLL_PX_PER_STEP
       const advance = Math.min(WORKFLOW_SCROLLS_PER_STEP - 1, Math.floor(within / WORKFLOW_SCROLL_PX));
 
       if (workflowAutoIdxRef.current !== idx) {
@@ -408,7 +406,7 @@ export default function Home() {
         setWorkflowAdvance(advance);
       }
 
-      if (!workflowHasInteractedRef.current && scrolled > 18) {
+      if (!workflowHasInteractedRef.current && scrolledForSteps > 18) {
         workflowHasInteractedRef.current = true;
         setWorkflowHasInteracted(true);
       }
@@ -435,6 +433,7 @@ export default function Home() {
   // Switch the 3D scene into low-power mode once the first white block starts entering view.
   // This keeps the hero silky when you're up top, and saves GPU/CPU when you're scrolling content.
   useEffect(() => {
+    let last = false;
     let raf = 0;
     let ticking = false;
 
@@ -446,7 +445,10 @@ export default function Home() {
       const rect = el.getBoundingClientRect();
       // Only kick in once the hero is fully off-screen, and the first white block is entering view.
       const next = window.scrollY >= window.innerHeight && rect.top <= window.innerHeight;
-      setLowPowerMode(next);
+      if (next !== last) {
+        last = next;
+        setLowPowerMode(next);
+      }
     };
 
     const onScroll = () => {
@@ -558,34 +560,12 @@ export default function Home() {
         <CameraScene lowPowerMode={lowPowerMode} variant="full" />
       </section>
 
-      {/* What Cutline does (quick clarity beat before the workflow demo) */}
-      <section className="relative bg-black border-b border-white/5">
-        <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 py-32 md:py-44">
-          <div className="max-w-4xl">
-            <div className="flex items-center gap-3">
-              <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
-              <p className="text-[10px] tracking-[0.55em] text-white/35 font-light">
-                AI WEDDING VIDEO EDITOR
-              </p>
-            </div>
-
-            <h2 className="mt-10 font-display text-[clamp(32px,3.4vw,56px)] font-extralight tracking-[-0.04em] leading-[1.08]">
-              Cutline turns raw wedding footage into a timeline you can finish.
-            </h2>
-            <p className="mt-8 text-[15px] md:text-[17px] leading-[1.9] text-white/55 font-light max-w-[62ch]">
-              Sync cameras + lavs, find vows and speeches, rank reactions, shape pacing — then export a clean rough cut to
-              Premiere or Resolve.
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* Workflow */}
       <section id="workflow" ref={firstWhiteRef} className="bg-paper text-black border-b border-black/5">
         <div
           className="relative overflow-hidden"
           style={{
-            height: `calc(100vh + ${WORKFLOW_SCROLL_PX_PER_STEP * (WORKFLOW_STEPS.length - 1)}px)`,
+            height: `calc(100vh + ${WORKFLOW_DOOR_SCROLL_PX + WORKFLOW_SCROLL_PX_PER_STEP * (WORKFLOW_STEPS.length - 1)}px)`,
           }}
         >
           {/* Dotted background (keep) */}
@@ -604,48 +584,67 @@ export default function Home() {
             />
           </div>
 
-          <div className="sticky top-0 h-screen">
+          <div className="sticky top-0 h-screen overflow-hidden">
             <div className="relative h-full">
-              {/* “Under the hero” reveal: black overlay tab that stays with the viewport */}
+              {/* Garage-door panel (sticks to viewport, slides up with scroll) */}
               <div
-                ref={workflowRevealRef}
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-x-0 top-0 z-30 overflow-hidden"
-                style={{ height: 0 }}
-              >
-                <div className="absolute inset-0 bg-black">
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      backgroundImage: 'radial-gradient(rgba(255,255,255,0.10) 1px, transparent 1px)',
-                      backgroundSize: '26px 26px',
-                      backgroundPosition: 'center',
-                      opacity: 0.35,
-                    }}
-                  />
-                  {/* Hard edge + shadow (tab feel) */}
-                  <div
-                    className="absolute inset-x-0 bottom-0 h-px"
-                    style={{
-                      background: 'rgba(255,255,255,0.10)',
-                      boxShadow: '0 18px 60px rgba(0,0,0,0.55)',
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div
-                ref={workflowRevealContentRef}
-                className="relative h-full pt-32 pb-4 flex flex-col"
+                ref={workflowDoorRef}
+                className="pointer-events-none absolute inset-0 z-30 bg-black"
                 style={{ transform: 'translate3d(0, 0, 0)', willChange: 'transform' }}
               >
-              {/* Title (gallery rhythm: aligned to content grid) */}
-              <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 flex-none">
-                <h2 className="font-display text-[clamp(64px,6.5vw,110px)] font-light tracking-[-0.06em] leading-[0.92]">
-                  The Workflow
-                  <BleepDot className="ml-4" />
-                </h2>
+                {/* Subtle dot field (matches hero language) */}
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0"
+                  style={{
+                    backgroundImage: 'radial-gradient(rgba(255,255,255,0.10) 1px, transparent 1px)',
+                    backgroundSize: '26px 26px',
+                    backgroundPosition: 'center',
+                    opacity: 0.35,
+                  }}
+                />
+
+                {/* Content that “rides” up like the hero widget */}
+                <div className="relative h-full">
+                  <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 h-full flex items-end pb-20 md:pb-24">
+                    <div className="max-w-4xl">
+                      <div className="flex items-center gap-3">
+                        <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+                        <p className="text-[10px] tracking-[0.55em] text-white/35 font-light">
+                          AI WEDDING VIDEO EDITOR
+                        </p>
+                      </div>
+
+                      <h2 className="mt-10 font-display text-[clamp(32px,3.4vw,56px)] font-extralight tracking-[-0.04em] leading-[1.08] text-white">
+                        Cutline turns raw wedding footage into a timeline you can finish.
+                      </h2>
+                      <p className="mt-8 text-[15px] md:text-[17px] leading-[1.9] text-white/55 font-light max-w-[62ch]">
+                        Sync cameras + lavs, find vows and speeches, rank reactions, shape pacing — then export a clean rough cut
+                        to Premiere or Resolve.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom edge + shadow so the “door” reads as a panel */}
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-x-0 bottom-0 h-px"
+                  style={{
+                    background: 'rgba(255,255,255,0.10)',
+                    boxShadow: '0 18px 60px rgba(0,0,0,0.55)',
+                  }}
+                />
               </div>
+
+              <div className="relative h-full pt-32 pb-4 flex flex-col">
+                {/* Title (gallery rhythm: aligned to content grid) */}
+                <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 flex-none">
+                  <h2 className="font-display text-[clamp(64px,6.5vw,110px)] font-light tracking-[-0.06em] leading-[0.92]">
+                    The Workflow
+                    <BleepDot className="ml-4" />
+                  </h2>
+                </div>
 
               {/* Videos */}
               <div className="flex-1 mt-8 flex items-end">
@@ -915,10 +914,9 @@ export default function Home() {
                 </div>
               </div>
               </div>
-              </div>
-
             </div>
           </div>
+        </div>
         </div>
       </section>
 
