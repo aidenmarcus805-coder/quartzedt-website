@@ -807,55 +807,22 @@ export default function Home() {
 
       {/* What Cutline does (quick clarity beat before the workflow demo) */}
       <section className="relative bg-black border-b border-white/5">
-        <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 py-24 md:py-28">
-          <div className="grid grid-cols-12 gap-12 items-start">
-            <div className="col-span-12 lg:col-span-7">
-              <div className="flex items-center gap-3">
-                <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
-                <p className="text-[10px] tracking-[0.55em] text-white/35 font-light">
-                  AI WEDDING VIDEO EDITOR
-                </p>
-              </div>
-
-              <h2 className="mt-10 font-display text-[clamp(32px,3.4vw,56px)] font-extralight tracking-[-0.04em] leading-[1.08] max-w-[22ch]">
-                Cutline turns raw wedding footage into a timeline you can finish.
-              </h2>
-              <p className="mt-8 text-[15px] md:text-[17px] leading-[1.9] text-white/55 font-light max-w-[60ch]">
-                Sync cameras + lavs, find vows and speeches, rank reactions, shape pacing — then export a clean rough cut
-                to Premiere or Resolve.
+        <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 py-32 md:py-44">
+          <div className="max-w-4xl">
+            <div className="flex items-center gap-3">
+              <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+              <p className="text-[10px] tracking-[0.55em] text-white/35 font-light">
+                AI WEDDING VIDEO EDITOR
               </p>
             </div>
 
-            <div className="col-span-12 lg:col-span-5">
-              <div className="grid gap-8">
-                {[
-                  {
-                    title: 'Auto-sync everything',
-                    desc: 'Waveforms aligned, drift corrected — no claps, no guesswork.',
-                  },
-                  {
-                    title: 'Find the moments',
-                    desc: 'Vows, laughter, speeches, applause — surfaced and ranked by feeling.',
-                  },
-                  {
-                    title: 'Assemble a first pass',
-                    desc: 'A story-arc timeline that you refine — not a template you fight.',
-                  },
-                ].map((item) => (
-                  <div key={item.title} className="flex gap-5">
-                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-white/30" aria-hidden="true" />
-                    <div>
-                      <div className="text-[12px] tracking-[0.35em] text-white/75 font-light">
-                        {item.title.toUpperCase()}
-                      </div>
-                      <p className="mt-2 text-[14px] leading-[1.8] text-white/45 font-light">
-                        {item.desc}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <h2 className="mt-10 font-display text-[clamp(32px,3.4vw,56px)] font-extralight tracking-[-0.04em] leading-[1.08]">
+              Cutline turns raw wedding footage into a timeline you can finish.
+            </h2>
+            <p className="mt-8 text-[15px] md:text-[17px] leading-[1.9] text-white/55 font-light max-w-[62ch]">
+              Sync cameras + lavs, find vows and speeches, rank reactions, shape pacing — then export a clean rough cut to
+              Premiere or Resolve.
+            </p>
           </div>
         </div>
       </section>
