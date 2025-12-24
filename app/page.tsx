@@ -517,6 +517,7 @@ export default function Home() {
   useEffect(() => {
     const onWheel = (e: WheelEvent) => {
       if (!workflowBlockForwardWheelRef.current) return;
+      if (performance.now() >= workflowStepLockUntilRef.current) return; // auto-unlock even if no scroll events fire
       if (e.deltaY <= 0) return; // allow scrolling back/up
       e.preventDefault();
       e.stopPropagation();
@@ -533,6 +534,7 @@ export default function Home() {
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (!workflowBlockForwardWheelRef.current) return;
+      if (performance.now() >= workflowStepLockUntilRef.current) return; // auto-unlock even if no scroll events fire
       if (!(e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ')) return;
       e.preventDefault();
       e.stopPropagation();
