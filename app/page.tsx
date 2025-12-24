@@ -326,7 +326,7 @@ const WORKFLOW_STEPS = [
 const WORKFLOW_SCROLLS_PER_STEP = 2;
 const WORKFLOW_SCROLL_PX = 100; // ~one wheel "tick" (used to map scroll distance to step peel)
 const WORKFLOW_SCROLL_PX_PER_STEP = WORKFLOW_SCROLL_PX * WORKFLOW_SCROLLS_PER_STEP;
-const WORKFLOW_DOOR_SCROLL_PX = 200; // scroll distance to lift the "hero door" and reveal the workflow
+const WORKFLOW_DOOR_SCROLL_PX = 600; // scroll distance to lift the "hero door" and reveal the workflow
 
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
