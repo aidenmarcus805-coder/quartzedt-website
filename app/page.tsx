@@ -376,16 +376,11 @@ export default function Home() {
       const scrolled = Math.min(scrollable, Math.max(0, -rect.top));
 
       // "Garage door" transition: the dark hero panel lifts up with scroll, revealing the workflow.
-      // Use transforms only (no layout changes) to keep scrolling perfectly smooth.
-      // The door is position:fixed, so we show it only when the section is in view and not past the reveal.
+      // The door is now position:sticky, so it naturally pins at top=0 and we translate it upward.
       const doorT = Math.max(0, Math.min(1, scrolled / WORKFLOW_DOOR_SCROLL_PX));
       const doorY = -doorT * vh; // lift the panel fully out of view
-      const doorVisible = rect.top <= vh && rect.bottom >= 0 && doorT < 1;
       if (workflowDoorRef.current) {
         const prevY = workflowDoorLastYRef.current;
-        // Show/hide the door based on scroll position
-        workflowDoorRef.current.style.visibility = doorVisible ? 'visible' : 'hidden';
-        workflowDoorRef.current.style.pointerEvents = 'none';
         if (!Number.isFinite(prevY) || Math.abs(prevY - doorY) >= 0.5) {
           workflowDoorLastYRef.current = doorY;
           workflowDoorRef.current.style.transform = `translate3d(0, ${doorY}px, 0)`;
@@ -565,13 +560,49 @@ export default function Home() {
         <CameraScene lowPowerMode={lowPowerMode} variant="full" />
       </section>
 
+      {/* What Cutline Does - scrollable bridge section */}
+      <section className="relative bg-black">
+        <div className="min-h-screen flex items-end">
+          <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 pb-24 md:pb-32">
+            <div className="max-w-4xl">
+              <div className="flex items-center gap-3">
+                <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+                <p className="text-[10px] tracking-[0.55em] text-white/35 font-light">
+                  AI WEDDING VIDEO EDITOR
+                </p>
+              </div>
+
+              <h2 className="mt-10 font-display text-[clamp(32px,3.4vw,56px)] font-extralight tracking-[-0.04em] leading-[1.08] text-white">
+                Cutline turns raw wedding footage into a timeline you can finish.
+              </h2>
+              <p className="mt-8 text-[15px] md:text-[17px] leading-[1.9] text-white/55 font-light max-w-[62ch]">
+                Sync cameras + lavs, find vows and speeches, rank reactions, shape pacing — then export a clean rough cut
+                to Premiere or Resolve.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Subtle dot field */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage: 'radial-gradient(rgba(255,255,255,0.10) 1px, transparent 1px)',
+            backgroundSize: '26px 26px',
+            backgroundPosition: 'center',
+            opacity: 0.35,
+          }}
+        />
+      </section>
+
       {/* Workflow */}
       <section id="workflow" ref={firstWhiteRef} className="relative bg-paper text-black border-b border-black/5">
-        {/* Garage-door panel (fixed to viewport, slides up with scroll) */}
+        {/* Garage-door panel (sticks to viewport, slides up with scroll to reveal workflow) */}
         <div
           ref={workflowDoorRef}
-          className="pointer-events-none fixed inset-x-0 top-0 z-40 bg-black"
-          style={{ height: '100vh', transform: 'translate3d(0, 0, 0)', willChange: 'transform', visibility: 'hidden' }}
+          className="pointer-events-none sticky top-0 z-40 bg-black -mb-screen"
+          style={{ height: '100vh', transform: 'translate3d(0, 0, 0)', willChange: 'transform', marginBottom: '-100vh' }}
         >
           {/* Subtle dot field (matches hero language) */}
           <div
@@ -584,28 +615,6 @@ export default function Home() {
               opacity: 0.35,
             }}
           />
-
-          {/* Content that "rides" up like the hero widget */}
-          <div className="relative h-full">
-            <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 h-full flex items-end pb-20 md:pb-24">
-              <div className="max-w-4xl">
-                <div className="flex items-center gap-3">
-                  <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
-                  <p className="text-[10px] tracking-[0.55em] text-white/35 font-light">
-                    AI WEDDING VIDEO EDITOR
-                  </p>
-                </div>
-
-                <h2 className="mt-10 font-display text-[clamp(32px,3.4vw,56px)] font-extralight tracking-[-0.04em] leading-[1.08] text-white">
-                  Cutline turns raw wedding footage into a timeline you can finish.
-                </h2>
-                <p className="mt-8 text-[15px] md:text-[17px] leading-[1.9] text-white/55 font-light max-w-[62ch]">
-                  Sync cameras + lavs, find vows and speeches, rank reactions, shape pacing — then export a clean rough cut
-                  to Premiere or Resolve.
-                </p>
-              </div>
-            </div>
-          </div>
 
           {/* Bottom edge + shadow so the "door" reads as a panel */}
           <div
