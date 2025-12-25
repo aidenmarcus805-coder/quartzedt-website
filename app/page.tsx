@@ -515,6 +515,9 @@ export default function Home() {
       } else if (workflowLenisStoppedRef.current) {
         // Don’t restart if some other part of the app has intentionally locked scroll.
         if (document.body.style.overflow !== 'hidden') {
+          // Important: reset Lenis target to the *current* scroll before resuming,
+          // otherwise it may continue animating toward a stale momentum target (causes “teleport” jumps).
+          lenis?.scrollTo(window.scrollY, { immediate: true, force: true });
           lenis?.start();
         }
         workflowLenisStoppedRef.current = false;
@@ -545,6 +548,7 @@ export default function Home() {
         // Auto-unlock even if no scroll events fire.
         if (workflowLenisStoppedRef.current) {
           if (document.body.style.overflow !== 'hidden') {
+            window.__lenis?.scrollTo(window.scrollY, { immediate: true, force: true });
             window.__lenis?.start();
           }
           workflowLenisStoppedRef.current = false;
@@ -577,6 +581,7 @@ export default function Home() {
       if (performance.now() >= workflowStepLockUntilRef.current) {
         if (workflowLenisStoppedRef.current) {
           if (document.body.style.overflow !== 'hidden') {
+            window.__lenis?.scrollTo(window.scrollY, { immediate: true, force: true });
             window.__lenis?.start();
           }
           workflowLenisStoppedRef.current = false;
