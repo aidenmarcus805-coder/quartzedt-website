@@ -372,6 +372,9 @@ export default function Home() {
       // Hysteresis to avoid “pin flapping” around 0px due to subpixel scroll.
       const EPS = 1;
       const pinned = rect.top <= EPS && rect.bottom >= vh - EPS;
+      // “Active” includes the pinned band + the exit band (when you’ve scrolled past pinned but the section
+      // is still partially on-screen). We use this for clamps so fast wheel deltas can’t dump you into blank space.
+      const active = rect.top <= EPS && rect.bottom > 0;
 
       if (workflowAutoLockedRef.current !== pinned) {
         workflowAutoLockedRef.current = pinned;
@@ -417,7 +420,8 @@ export default function Home() {
       let blockForwardWheel = false;
 
       // Rate-limit forward progress: you must “dwell” on each step before you can scroll into the next.
-      if (doorOpen && pinned) {
+      // IMPORTANT: use `active` (not just `pinned`) so large scroll deltas can’t skip past the pinned band.
+      if (doorOpen && active) {
         const lockUntil = workflowStepLockUntilRef.current;
 
         if (idxRaw > currentIdx && currentIdx < lastIdx) {
@@ -481,7 +485,7 @@ export default function Home() {
       // Clamp forward scroll while locked (prevents Lenis momentum + wheel flicks from skipping steps).
       workflowBlockForwardWheelRef.current = false;
       workflowHoldScrollYRef.current = null;
-      if (doorOpen && pinned && shouldClampScroll) {
+      if (doorOpen && active && shouldClampScroll) {
         const sectionTopY = window.scrollY + rect.top;
         const desiredScrolled = Math.min(scrollable, Math.max(0, WORKFLOW_DOOR_SCROLL_PX + scrolledForSteps));
         const desiredY = sectionTopY + desiredScrolled;
