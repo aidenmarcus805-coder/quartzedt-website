@@ -355,8 +355,11 @@ export default function Home() {
   const workflowWheelControlRef = useRef(false);
   const workflowWheelClampMinYRef = useRef(0);
   const workflowWheelClampMaxYRef = useRef(0);
+  const workflowWheelSectionMaxYRef = useRef(0);
   const workflowWheelAllowExitDownRef = useRef(false);
   const workflowWheelTargetYRef = useRef<number | null>(null);
+  const workflowWheelDesiredYRef = useRef<number | null>(null);
+  const workflowWheelPumpRafRef = useRef(0);
 
   // Workflow is now scroll-driven (no snap, no wall, no scroll hijack).
   // We map normal scroll progress through the sticky section to:
@@ -519,6 +522,7 @@ export default function Home() {
       workflowWheelClampMinYRef.current = sectionTopY;
       workflowWheelAllowExitDownRef.current = false;
       workflowWheelClampMaxYRef.current = sectionMaxY;
+      workflowWheelSectionMaxYRef.current = sectionMaxY;
 
       if (active) {
         // Default max is the section’s natural end.
@@ -549,6 +553,11 @@ export default function Home() {
         if (workflowWheelTargetYRef.current == null) workflowWheelTargetYRef.current = window.scrollY;
       } else {
         workflowWheelTargetYRef.current = null;
+        workflowWheelDesiredYRef.current = null;
+        if (workflowWheelPumpRafRef.current) {
+          window.cancelAnimationFrame(workflowWheelPumpRafRef.current);
+          workflowWheelPumpRafRef.current = 0;
+        }
       }
     };
 
@@ -577,12 +586,82 @@ export default function Home() {
       return e.deltaY;
     };
 
+    const computeWorkflowWheelClamp = (now: number) => {
+      const topY = workflowWheelClampMinYRef.current;
+      const sectionMaxY = workflowWheelSectionMaxYRef.current || workflowWheelClampMaxYRef.current;
+      const scrollable = Math.max(0, sectionMaxY - topY);
+      const scrolled = Math.min(scrollable, Math.max(0, window.scrollY - topY));
+
+      const doorOpen = scrolled >= WORKFLOW_DOOR_SCROLL_PX * 0.999;
+      let maxY = sectionMaxY;
+      let allowExitDown = false;
+
+      if (doorOpen) {
+        const idxForClamp = workflowAutoIdxRef.current;
+        const lastIdx = WORKFLOW_STEPS.length - 1;
+        const perStep = WORKFLOW_SCROLL_PX_PER_STEP;
+        const canAdvance = now >= workflowStepLockUntilRef.current;
+
+        const maxSteps =
+          idxForClamp >= lastIdx
+            ? (idxForClamp + 1) * perStep - WORKFLOW_STEP_CLAMP_EPS_PX
+            : (canAdvance ? idxForClamp + 2 : idxForClamp + 1) * perStep - WORKFLOW_STEP_CLAMP_EPS_PX;
+
+        maxY = Math.min(maxY, topY + WORKFLOW_DOOR_SCROLL_PX + maxSteps);
+
+        const atEnd = scrolled >= scrollable - 1;
+        allowExitDown = idxForClamp === lastIdx && atEnd && canAdvance;
+      }
+
+      workflowWheelClampMaxYRef.current = maxY;
+      workflowWheelAllowExitDownRef.current = allowExitDown;
+      return { topY, maxY, allowExitDown };
+    };
+
+    const pumpWorkflowWheel = (now: number) => {
+      workflowWheelPumpRafRef.current = 0;
+      if (!workflowWheelControlRef.current) return;
+
+      const desired = workflowWheelDesiredYRef.current;
+      if (desired == null) return;
+
+      const { topY, maxY } = computeWorkflowWheelClamp(now);
+      const clamped = Math.min(maxY, Math.max(topY, desired));
+
+      const prevTarget = workflowWheelTargetYRef.current;
+      if (typeof prevTarget !== 'number' || Math.abs(prevTarget - clamped) > 0.5) {
+        workflowWheelTargetYRef.current = clamped;
+        const lenis = window.__lenis;
+        if (lenis?.scrollTo) {
+          lenis.scrollTo(clamped, { lerp: 0.22, force: true });
+        } else {
+          window.scrollTo({ top: clamped, left: 0, behavior: 'auto' });
+        }
+      }
+
+      // Keep pumping while we're constrained (desired beyond clamp). This allows a single “fast scroll”
+      // to continue advancing as soon as the dwell timer expires, without requiring timed wheel ticks.
+      const constrained = clamped !== desired;
+      if (constrained) {
+        workflowWheelPumpRafRef.current = window.requestAnimationFrame(() => pumpWorkflowWheel(performance.now()));
+      }
+    };
+
+    const schedulePump = () => {
+      if (workflowWheelPumpRafRef.current) return;
+      workflowWheelPumpRafRef.current = window.requestAnimationFrame(() => pumpWorkflowWheel(performance.now()));
+    };
+
     const onWheel = (e: WheelEvent) => {
       // While workflow is “active”, we take control of wheel deltas to prevent overshoot/jitter on rapid scroll.
       if (workflowWheelControlRef.current) {
+        const now = performance.now();
+        const { allowExitDown } = computeWorkflowWheelClamp(now);
+
         // If we’re allowed to exit downwards (final dwell done), let the page scroll normally.
-        if (workflowWheelAllowExitDownRef.current && e.deltaY > 0) {
+        if (allowExitDown && e.deltaY > 0) {
           workflowWheelTargetYRef.current = null;
+          workflowWheelDesiredYRef.current = null;
           return;
         }
 
@@ -592,26 +671,12 @@ export default function Home() {
 
         const rawPx = deltaToPx(e);
         // Cap large deltas (mouse wheels can emit huge spikes; this is what caused the “jump everywhere” feeling).
-        const CAP = 140;
+        const CAP = 240;
         const px = Math.max(-CAP, Math.min(CAP, rawPx));
 
-        const minY = workflowWheelClampMinYRef.current;
-        const maxY = workflowWheelClampMaxYRef.current;
-        const base = workflowWheelTargetYRef.current ?? window.scrollY;
-        const next = Math.min(maxY, Math.max(minY, base + px));
-        workflowWheelTargetYRef.current = next;
-
-        const lenis = window.__lenis;
-        if (lenis?.scrollTo) {
-          if (lenis.isStopped && document.body.style.overflow !== 'hidden') {
-            lenis.scrollTo(window.scrollY, { immediate: true, force: true });
-            lenis.start();
-          }
-          // Tight lerp keeps it responsive but prevents “teleport” snaps.
-          lenis.scrollTo(next, { lerp: 0.22, force: true });
-        } else {
-          window.scrollTo({ top: next, left: 0, behavior: 'auto' });
-        }
+        const base = workflowWheelDesiredYRef.current ?? window.scrollY;
+        workflowWheelDesiredYRef.current = base + px;
+        schedulePump();
         return;
       }
 
@@ -1080,7 +1145,7 @@ export default function Home() {
                           exit={{ opacity: 0, y: 10 }}
                           transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                           className="pointer-events-none absolute left-4 bottom-4 z-10"
-                        >
+            >
                           <div className="inline-flex items-center gap-3 border border-black/10 bg-white/80 backdrop-blur-sm px-4 py-2">
                             <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
                             <span className="text-[10px] tracking-[0.45em] text-black/55 font-light">
@@ -1190,7 +1255,7 @@ export default function Home() {
                           </button>
                         );
                       })}
-                    </div>
+        </div>
                   </div>
                 </div>
               </div>
