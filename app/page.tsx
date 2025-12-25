@@ -352,7 +352,11 @@ export default function Home() {
   const workflowDoorFullyOpenRef = useRef(false);
   const workflowBlockForwardWheelRef = useRef(false);
   const workflowHoldScrollYRef = useRef<number | null>(null);
-  const workflowLenisStoppedRef = useRef(false);
+  const workflowWheelControlRef = useRef(false);
+  const workflowWheelClampMinYRef = useRef(0);
+  const workflowWheelClampMaxYRef = useRef(0);
+  const workflowWheelAllowExitDownRef = useRef(false);
+  const workflowWheelTargetYRef = useRef<number | null>(null);
 
   // Workflow is now scroll-driven (no snap, no wall, no scroll hijack).
   // We map normal scroll progress through the sticky section to:
@@ -385,6 +389,8 @@ export default function Home() {
       if (scrollable <= 0) return;
 
       const scrolled = Math.min(scrollable, Math.max(0, -rect.top));
+      const sectionTopY = window.scrollY + rect.top;
+      const sectionMaxY = sectionTopY + scrollable;
 
       // "Garage door" transition: the dark hero panel lifts up with scroll, revealing the workflow.
       // The door is now position:sticky, so it naturally pins at top=0 and we translate it upward.
@@ -486,7 +492,6 @@ export default function Home() {
       workflowBlockForwardWheelRef.current = false;
       workflowHoldScrollYRef.current = null;
       if (doorOpen && active && shouldClampScroll) {
-        const sectionTopY = window.scrollY + rect.top;
         const desiredScrolled = Math.min(scrollable, Math.max(0, WORKFLOW_DOOR_SCROLL_PX + scrolledForSteps));
         const desiredY = sectionTopY + desiredScrolled;
 
@@ -508,23 +513,42 @@ export default function Home() {
         }
       }
 
-      // If we’re actively blocking forward scroll, pause Lenis to kill momentum (prevents “dead scroll” feeling).
-      // Resume automatically once we’re no longer blocking.
-      const lenis = window.__lenis;
-      if (workflowBlockForwardWheelRef.current) {
-        if (lenis && !workflowLenisStoppedRef.current) {
-          lenis.stop();
-          workflowLenisStoppedRef.current = true;
+      // Workflow wheel governor: while active, cap wheel deltas and clamp max scroll so fast flicks
+      // can’t overshoot and then “snap back” (the source of the freak-out feeling).
+      workflowWheelControlRef.current = active;
+      workflowWheelClampMinYRef.current = sectionTopY;
+      workflowWheelAllowExitDownRef.current = false;
+      workflowWheelClampMaxYRef.current = sectionMaxY;
+
+      if (active) {
+        // Default max is the section’s natural end.
+        let maxY = sectionMaxY;
+
+        // After the door is open, also cap maxY to the step boundary (dwell lock) and to at most ONE step ahead
+        // (prevents multi-step skipping on huge deltas).
+        if (doorOpen) {
+          const idxForClamp = workflowAutoIdxRef.current;
+          const lockUntil = workflowStepLockUntilRef.current;
+          const canAdvance = now >= lockUntil;
+          const maxSteps =
+            idxForClamp >= lastIdx
+              ? (idxForClamp + 1) * perStep - WORKFLOW_STEP_CLAMP_EPS_PX
+              : (canAdvance ? idxForClamp + 2 : idxForClamp + 1) * perStep - WORKFLOW_STEP_CLAMP_EPS_PX;
+
+          maxY = Math.min(maxY, sectionTopY + WORKFLOW_DOOR_SCROLL_PX + maxSteps);
+
+          // Allow exiting the workflow only when the final dwell has elapsed and we’re at the end.
+          const atEnd = scrolled >= scrollable - EPS;
+          if (idxForClamp === lastIdx && atEnd && canAdvance) {
+            workflowWheelAllowExitDownRef.current = true;
+          }
         }
-      } else if (workflowLenisStoppedRef.current) {
-        // Don’t restart if some other part of the app has intentionally locked scroll.
-        if (document.body.style.overflow !== 'hidden') {
-          // Important: reset Lenis target to the *current* scroll before resuming,
-          // otherwise it may continue animating toward a stale momentum target (causes “teleport” jumps).
-          lenis?.scrollTo(window.scrollY, { immediate: true, force: true });
-          lenis?.start();
-        }
-        workflowLenisStoppedRef.current = false;
+
+        workflowWheelClampMaxYRef.current = maxY;
+        // Reset target whenever constraints change drastically (prevents target “lag” on rapid flicks).
+        if (workflowWheelTargetYRef.current == null) workflowWheelTargetYRef.current = window.scrollY;
+      } else {
+        workflowWheelTargetYRef.current = null;
       }
     };
 
@@ -546,17 +570,53 @@ export default function Home() {
 
   // Prevent “flick to finish”: when a dwell clamp is active, block forward wheel/keys so it can’t brute-force past.
   useEffect(() => {
+    const deltaToPx = (e: WheelEvent) => {
+      // deltaMode: 0=pixels, 1=lines, 2=pages
+      if (e.deltaMode === 1) return e.deltaY * 16;
+      if (e.deltaMode === 2) return e.deltaY * window.innerHeight;
+      return e.deltaY;
+    };
+
     const onWheel = (e: WheelEvent) => {
+      // While workflow is “active”, we take control of wheel deltas to prevent overshoot/jitter on rapid scroll.
+      if (workflowWheelControlRef.current) {
+        // If we’re allowed to exit downwards (final dwell done), let the page scroll normally.
+        if (workflowWheelAllowExitDownRef.current && e.deltaY > 0) {
+          workflowWheelTargetYRef.current = null;
+          return;
+        }
+
+        e.preventDefault();
+        // Important: stop other wheel listeners (including Lenis' own wheel handler) from also processing this delta.
+        e.stopImmediatePropagation();
+
+        const rawPx = deltaToPx(e);
+        // Cap large deltas (mouse wheels can emit huge spikes; this is what caused the “jump everywhere” feeling).
+        const CAP = 140;
+        const px = Math.max(-CAP, Math.min(CAP, rawPx));
+
+        const minY = workflowWheelClampMinYRef.current;
+        const maxY = workflowWheelClampMaxYRef.current;
+        const base = workflowWheelTargetYRef.current ?? window.scrollY;
+        const next = Math.min(maxY, Math.max(minY, base + px));
+        workflowWheelTargetYRef.current = next;
+
+        const lenis = window.__lenis;
+        if (lenis?.scrollTo) {
+          if (lenis.isStopped && document.body.style.overflow !== 'hidden') {
+            lenis.scrollTo(window.scrollY, { immediate: true, force: true });
+            lenis.start();
+          }
+          // Tight lerp keeps it responsive but prevents “teleport” snaps.
+          lenis.scrollTo(next, { lerp: 0.22, force: true });
+        } else {
+          window.scrollTo({ top: next, left: 0, behavior: 'auto' });
+        }
+        return;
+      }
+
       if (!workflowBlockForwardWheelRef.current) return;
       if (performance.now() >= workflowStepLockUntilRef.current) {
-        // Auto-unlock even if no scroll events fire.
-        if (workflowLenisStoppedRef.current) {
-          if (document.body.style.overflow !== 'hidden') {
-            window.__lenis?.scrollTo(window.scrollY, { immediate: true, force: true });
-            window.__lenis?.start();
-          }
-          workflowLenisStoppedRef.current = false;
-        }
         workflowBlockForwardWheelRef.current = false;
         workflowHoldScrollYRef.current = null;
         return;
@@ -564,11 +624,6 @@ export default function Home() {
       if (e.deltaY <= 0) return; // allow scrolling back/up
       e.preventDefault();
       e.stopPropagation();
-      // Ensure Lenis momentum is paused while we’re blocking.
-      if (!workflowLenisStoppedRef.current) {
-        window.__lenis?.stop();
-        workflowLenisStoppedRef.current = true;
-      }
       const y = workflowHoldScrollYRef.current;
       if (typeof y === 'number') {
         const lenis = window.__lenis;
@@ -583,13 +638,6 @@ export default function Home() {
     const onKeyDown = (e: KeyboardEvent) => {
       if (!workflowBlockForwardWheelRef.current) return;
       if (performance.now() >= workflowStepLockUntilRef.current) {
-        if (workflowLenisStoppedRef.current) {
-          if (document.body.style.overflow !== 'hidden') {
-            window.__lenis?.scrollTo(window.scrollY, { immediate: true, force: true });
-            window.__lenis?.start();
-          }
-          workflowLenisStoppedRef.current = false;
-        }
         workflowBlockForwardWheelRef.current = false;
         workflowHoldScrollYRef.current = null;
         return;
@@ -814,7 +862,8 @@ export default function Home() {
         <div
           className="relative"
           style={{
-            height: `calc(100vh + ${WORKFLOW_DOOR_SCROLL_PX + WORKFLOW_SCROLL_PX_PER_STEP * (WORKFLOW_STEPS.length - 1)}px)`,
+            // Include a full step window for the last step as well (avoids “instant exit” + blank space on fast scroll).
+            height: `calc(100vh + ${WORKFLOW_DOOR_SCROLL_PX + WORKFLOW_SCROLL_PX_PER_STEP * WORKFLOW_STEPS.length}px)`,
           }}
         >
           {/* Dotted background (keep) */}
