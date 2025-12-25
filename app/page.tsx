@@ -352,6 +352,7 @@ export default function Home() {
   const workflowDoorFullyOpenRef = useRef(false);
   const workflowBlockForwardWheelRef = useRef(false);
   const workflowHoldScrollYRef = useRef<number | null>(null);
+  const workflowLenisStoppedRef = useRef(false);
 
   // Workflow is now scroll-driven (no snap, no wall, no scroll hijack).
   // We map normal scroll progress through the sticky section to:
@@ -502,6 +503,22 @@ export default function Home() {
           }
         }
       }
+
+      // If we’re actively blocking forward scroll, pause Lenis to kill momentum (prevents “dead scroll” feeling).
+      // Resume automatically once we’re no longer blocking.
+      const lenis = window.__lenis;
+      if (workflowBlockForwardWheelRef.current) {
+        if (lenis && !workflowLenisStoppedRef.current) {
+          lenis.stop();
+          workflowLenisStoppedRef.current = true;
+        }
+      } else if (workflowLenisStoppedRef.current) {
+        // Don’t restart if some other part of the app has intentionally locked scroll.
+        if (document.body.style.overflow !== 'hidden') {
+          lenis?.start();
+        }
+        workflowLenisStoppedRef.current = false;
+      }
     };
 
     const schedule = () => {
@@ -524,10 +541,26 @@ export default function Home() {
   useEffect(() => {
     const onWheel = (e: WheelEvent) => {
       if (!workflowBlockForwardWheelRef.current) return;
-      if (performance.now() >= workflowStepLockUntilRef.current) return; // auto-unlock even if no scroll events fire
+      if (performance.now() >= workflowStepLockUntilRef.current) {
+        // Auto-unlock even if no scroll events fire.
+        if (workflowLenisStoppedRef.current) {
+          if (document.body.style.overflow !== 'hidden') {
+            window.__lenis?.start();
+          }
+          workflowLenisStoppedRef.current = false;
+        }
+        workflowBlockForwardWheelRef.current = false;
+        workflowHoldScrollYRef.current = null;
+        return;
+      }
       if (e.deltaY <= 0) return; // allow scrolling back/up
       e.preventDefault();
       e.stopPropagation();
+      // Ensure Lenis momentum is paused while we’re blocking.
+      if (!workflowLenisStoppedRef.current) {
+        window.__lenis?.stop();
+        workflowLenisStoppedRef.current = true;
+      }
       const y = workflowHoldScrollYRef.current;
       if (typeof y === 'number') {
         const lenis = window.__lenis;
@@ -541,7 +574,17 @@ export default function Home() {
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (!workflowBlockForwardWheelRef.current) return;
-      if (performance.now() >= workflowStepLockUntilRef.current) return; // auto-unlock even if no scroll events fire
+      if (performance.now() >= workflowStepLockUntilRef.current) {
+        if (workflowLenisStoppedRef.current) {
+          if (document.body.style.overflow !== 'hidden') {
+            window.__lenis?.start();
+          }
+          workflowLenisStoppedRef.current = false;
+        }
+        workflowBlockForwardWheelRef.current = false;
+        workflowHoldScrollYRef.current = null;
+        return;
+      }
       if (!(e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ')) return;
       e.preventDefault();
       e.stopPropagation();
