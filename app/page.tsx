@@ -323,7 +323,7 @@ const WORKFLOW_STEPS = [
   { label: 'Export', desc: 'Premiere / Resolve ready.', icon: Download, start: 16.5, end: 22.0 },
 ] as const;
 
-const WORKFLOW_SCROLLS_PER_STEP = 2;
+const WORKFLOW_SCROLLS_PER_STEP = 3;
 const WORKFLOW_SCROLL_PX = 100; // ~one wheel "tick" (used to map scroll distance to step peel)
 const WORKFLOW_SCROLL_PX_PER_STEP = WORKFLOW_SCROLL_PX * WORKFLOW_SCROLLS_PER_STEP;
 const WORKFLOW_DOOR_SCROLL_PX = 600; // scroll distance to lift the "hero door" and reveal the workflow
@@ -468,22 +468,41 @@ export default function Home() {
       const idx = Math.min(lastIdx, Math.max(0, nextIdx));
       const withinRaw = scrolledForSteps - idx * perStep;
       const within = Math.max(0, Math.min(perStep - 0.001, withinRaw)); // clamp to avoid negative / overflow due to float + clamps
-      const advance = Math.min(WORKFLOW_SCROLLS_PER_STEP - 1, Math.floor(within / WORKFLOW_SCROLL_PX));
 
-      if (workflowAutoIdxRef.current !== idx) {
+      // Discrete peel steps can "flap" when scroll hovers around a threshold (subpixel jitter / Lenis easing),
+      // causing the exact 1/3 <-> 2/3 loop you're seeing. Add hysteresis so it only flips once you cross
+      // the boundary by a few px.
+      const ADVANCE_HYSTERESIS_PX = 10;
+      const rawAdvance = Math.min(
+        WORKFLOW_SCROLLS_PER_STEP - 1,
+        Math.max(0, Math.floor(within / WORKFLOW_SCROLL_PX))
+      );
+
+      const prevIdx = workflowAutoIdxRef.current;
+      const idxChanged = prevIdx !== idx;
+
+      let nextAdvance = rawAdvance;
+      if (!idxChanged) {
+        const prevAdvance = workflowAutoAdvanceRef.current;
+        nextAdvance = prevAdvance;
+        if (rawAdvance > prevAdvance) {
+          const minWithin = rawAdvance * WORKFLOW_SCROLL_PX + ADVANCE_HYSTERESIS_PX;
+          if (within >= minWithin) nextAdvance = rawAdvance;
+        } else if (rawAdvance < prevAdvance) {
+          const maxWithin = prevAdvance * WORKFLOW_SCROLL_PX - ADVANCE_HYSTERESIS_PX;
+          if (within <= maxWithin) nextAdvance = rawAdvance;
+        }
+      }
+
+      if (idxChanged) {
         workflowAutoIdxRef.current = idx;
         setWorkflowIdx(idx);
         // Reset dwell timer on every step change so you can’t spam through.
         workflowStepLockUntilRef.current = now + WORKFLOW_STEP_MIN_DWELL_MS;
-        // Snap peel progress to the start when you land on a step.
-        if (workflowAutoAdvanceRef.current !== 0) {
-          workflowAutoAdvanceRef.current = 0;
-          setWorkflowAdvance(0);
-        }
       }
-      if (workflowAutoAdvanceRef.current !== advance) {
-        workflowAutoAdvanceRef.current = advance;
-        setWorkflowAdvance(advance);
+      if (workflowAutoAdvanceRef.current !== nextAdvance) {
+        workflowAutoAdvanceRef.current = nextAdvance;
+        setWorkflowAdvance(nextAdvance);
       }
 
       if (!workflowHasInteractedRef.current && scrolledForStepsRaw > 18) {
@@ -491,28 +510,16 @@ export default function Home() {
         setWorkflowHasInteracted(true);
       }
 
-      // Clamp forward scroll while locked (prevents Lenis momentum + wheel flicks from skipping steps).
+      // Legacy forward-wheel clamp (kept as state only). Actual wheel control + clamping is handled by the
+      // workflow wheel governor below to avoid “fighting scrollTo” jitter loops.
       workflowBlockForwardWheelRef.current = false;
       workflowHoldScrollYRef.current = null;
       if (doorOpen && active && shouldClampScroll) {
         const desiredScrolled = Math.min(scrollable, Math.max(0, WORKFLOW_DOOR_SCROLL_PX + scrolledForSteps));
         const desiredY = sectionTopY + desiredScrolled;
-
-        // Keep a “hold” target for the wheel guard below ONLY when we’re actively blocking forward progress.
-        // (We still snap to step starts, but don’t freeze scrolling within the step.)
         if (blockForwardWheel && now < workflowStepLockUntilRef.current) {
           workflowBlockForwardWheelRef.current = true;
           workflowHoldScrollYRef.current = desiredY;
-        }
-
-        // Snap immediately so scroll position can’t drift past the clamp.
-        if (Math.abs(window.scrollY - desiredY) > 0.5) {
-          const lenis = window.__lenis;
-          if (lenis?.scrollTo) {
-            lenis.scrollTo(desiredY, { immediate: true, force: true });
-          } else {
-            window.scrollTo({ top: desiredY, left: 0, behavior: 'auto' });
-          }
         }
       }
 
@@ -670,8 +677,9 @@ export default function Home() {
         e.stopImmediatePropagation();
 
         const rawPx = deltaToPx(e);
-        // Cap large deltas (mouse wheels can emit huge spikes; this is what caused the “jump everywhere” feeling).
-        const CAP = 240;
+        // Cap large deltas (mouse wheels can emit huge spikes). Keep it under one “peel tick”
+        // to avoid skipping directly to 2/3 and then flapping around the threshold.
+        const CAP = 160;
         const px = Math.max(-CAP, Math.min(CAP, rawPx));
 
         const base = workflowWheelDesiredYRef.current ?? window.scrollY;
