@@ -1544,10 +1544,10 @@ export default function Home() {
                   <h2 className="font-display text-[42px] md:text-[64px] font-extralight tracking-[-0.04em] leading-[1.05]">
                     Simple pricing.<BleepDot className="ml-4" />
                     <br />
-                    <span className="text-black/20">No subscriptions.</span>
+                    <span className="text-black/20">Two tiers. Per seat.</span>
                   </h2>
                   <p className="text-[15px] leading-[1.9] text-black/55 font-light max-w-[52ch]">
-                    Own it outright. No monthly fees. Built for working wedding filmmakers.
+                    Start monthly. Save 2 months with annual billing. A limited founders offer fuels word-of-mouth.
                   </p>
                 </div>
               </Reveal>
@@ -1555,24 +1555,24 @@ export default function Home() {
 
             <div className="col-span-12 lg:col-span-8">
               <div className="grid md:grid-cols-2 gap-px bg-black/5 border border-black/5">
-                {/* Lite */}
+                {/* Starter */}
                 <Reveal delay={0.1}>
                   <div className="bg-paper p-12 md:p-16 hover:bg-gray-50 transition-colors duration-300">
                     <div className="space-y-10">
                       <div>
                         <p className="text-[10px] tracking-[0.4em] text-black/30 mb-8">
-                          LITE
+                          STARTER
                         </p>
                         <div className="text-[64px] md:text-[80px] font-extralight tracking-[-0.04em] leading-none">
                           $79
                         </div>
                         <p className="text-[14px] text-black/40 mt-4 font-light">
-                          One-time purchase
+                          /mo · per seat
                         </p>
                       </div>
                       
                       <p className="text-[15px] font-light leading-[1.7] text-black/60">
-                        Essential tools for getting started with AI-powered workflows.
+                        Organize scenes + transcripts. Triage selects fast. Export clean XML.
                       </p>
                       
                       <button className="group inline-flex items-center justify-center gap-3 w-full rounded-full border border-black/15 py-5 text-[10px] tracking-[0.4em] hover:bg-black hover:text-white transition-all font-light">
@@ -1580,13 +1580,13 @@ export default function Home() {
                           className="h-2 w-2 rounded-full bg-accent opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 group-focus-visible:opacity-100 group-focus-visible:scale-100 transition-all duration-200"
                           aria-hidden="true"
                         />
-                        BUY LITE
+                        START TRIAL
                       </button>
                     </div>
                   </div>
                 </Reveal>
   
-                {/* Max */}
+                {/* Pro */}
                 <Reveal delay={0.2}>
                   <div className="bg-black text-white p-12 md:p-16 relative group hover:bg-paper hover:text-black transition-all duration-500">
                     <div className="absolute top-8 right-8 w-2 h-2 bg-accent rounded-full" />
@@ -1594,26 +1594,35 @@ export default function Home() {
                     <div className="space-y-10">
                       <div>
                         <p className="text-[10px] tracking-[0.4em] text-white/30 group-hover:text-black/30 mb-8">
-                          MAX
+                          PRO
                         </p>
                         <div className="text-[64px] md:text-[80px] font-extralight tracking-[-0.04em] leading-none">
-                          $149
+                          $199
                         </div>
                         <p className="text-[14px] text-white/40 group-hover:text-black/40 mt-4 font-light">
-                          One-time purchase
+                          /mo · per seat
                         </p>
                       </div>
                       
                       <p className="text-[15px] font-light leading-[1.7] text-white/60 group-hover:text-black/60">
-                        Full professional suite with all features and priority support.
+                        Deliverables pack, multicam + audio stacks, baseline auto color, and templates.
                       </p>
+
+                      <div className="rounded-xl border border-white/10 group-hover:border-black/10 bg-white/[0.02] group-hover:bg-black/[0.03] px-5 py-4">
+                        <p className="text-[10px] tracking-[0.3em] text-white/50 group-hover:text-black/50">
+                          FOUNDERS OFFER
+                        </p>
+                        <p className="mt-2 text-[13px] text-white/70 group-hover:text-black/70 font-light leading-relaxed">
+                          Founding Pro — <span className="font-normal">$149/mo</span> per seat, locked for life (limited).
+                        </p>
+                      </div>
                       
                       <button className="group inline-flex items-center justify-center gap-3 w-full rounded-full border border-white/20 group-hover:border-black/15 py-5 text-[10px] tracking-[0.4em] hover:bg-paper hover:text-black group-hover:hover:bg-black group-hover:hover:text-white transition-all font-light">
                         <span
                           className="h-2 w-2 rounded-full bg-accent opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 group-focus-visible:opacity-100 group-focus-visible:scale-100 transition-all duration-200"
                           aria-hidden="true"
                         />
-                        BUY MAX
+                        START TRIAL
                       </button>
                     </div>
                   </div>
@@ -1627,7 +1636,7 @@ export default function Home() {
                     className="inline-flex items-center gap-4 text-[10px] tracking-[0.4em] text-black/35 hover:text-black transition-colors group"
                   >
                     <Minus className="w-8 h-[1px] text-black/25 group-hover:text-black/45 transition-colors" />
-                    VIEW FULL COMPARISON
+                    VIEW FULL DETAILS
                   </Link>
                 </div>
               </Reveal>
