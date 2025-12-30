@@ -2,7 +2,7 @@
 
 import { motion, useInView } from 'framer-motion';
 import { ArrowRight, Minus } from 'lucide-react';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -32,6 +32,9 @@ const SectionNum = ({ num }: { num: string }) => (
 );
 
 export default function About() {
+  const navRef = useRef<HTMLElement | null>(null);
+  const [navOnLight, setNavOnLight] = useState(false);
+
   const videographerStories = [
     {
       name: 'Marcus Chen',
@@ -75,15 +78,59 @@ export default function About() {
     { feature: 'Chaos → Order', desc: '500GB of footage, organized in minutes' },
   ];
 
+  // Nav text color: switch to black when content under the nav is a "light" section.
+  useEffect(() => {
+    let raf = 0;
+    let last = false;
+
+    const update = () => {
+      raf = 0;
+      const navH = navRef.current?.getBoundingClientRect().height ?? 96;
+      const x = Math.round(window.innerWidth * 0.5);
+      const y = Math.min(window.innerHeight - 1, Math.round(navH + 6));
+      const el = document.elementFromPoint(x, y) as HTMLElement | null;
+
+      let node: HTMLElement | null = el;
+      let onLight = false;
+      while (node && node !== document.body) {
+        if (node.dataset?.nav === 'light') {
+          onLight = true;
+          break;
+        }
+        node = node.parentElement;
+      }
+
+      if (onLight !== last) {
+        last = onLight;
+        setNavOnLight(onLight);
+      }
+    };
+
+    const schedule = () => {
+      if (raf) return;
+      raf = window.requestAnimationFrame(update);
+    };
+
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    update();
+    return () => {
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+      if (raf) window.cancelAnimationFrame(raf);
+    };
+  }, []);
+
   return (
     <div className="bg-black text-white min-h-screen selection:bg-white selection:text-black antialiased">
       
       {/* Navigation */}
       <motion.nav
+        ref={navRef}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed top-0 left-0 right-0 z-[100] mix-blend-difference"
+        className="fixed top-0 left-0 right-0 z-[100]"
       >
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 h-24 flex items-center justify-between">
           <Link href="/" className="inline-flex items-center">
@@ -98,12 +145,20 @@ export default function About() {
             />
           </Link>
           
-          <div className="hidden md:flex items-center gap-16 text-[10px] tracking-[0.4em] font-light">
+          <div
+            className={`hidden md:flex items-center gap-16 text-[10px] tracking-[0.4em] font-light ${
+              navOnLight ? 'text-black' : 'text-white'
+            }`}
+          >
             <Link href="/#work" className="hover:opacity-50 transition-opacity">WORK</Link>
             <Link href="/pricing" className="hover:opacity-50 transition-opacity">PRICING</Link>
           </div>
 
-          <button className="text-[10px] tracking-[0.4em] font-light hover:opacity-50 transition-opacity">
+          <button
+            className={`text-[10px] tracking-[0.4em] font-light hover:opacity-50 transition-opacity ${
+              navOnLight ? 'text-black' : 'text-white'
+            }`}
+          >
             CONTACT
           </button>
         </div>
@@ -176,7 +231,7 @@ export default function About() {
       </section>
 
       {/* ② The Problem We Saw */}
-      <section className="bg-paper text-black">
+      <section data-nav="light" className="bg-paper text-black">
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-32 md:py-48">
           <Reveal>
             <div className="mb-20">
@@ -303,7 +358,7 @@ export default function About() {
       </section>
 
       {/* ⑤ Our Mission Today */}
-      <section className="bg-paper text-black">
+      <section data-nav="light" className="bg-paper text-black">
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-40 md:py-56">
           <div className="max-w-4xl mx-auto text-center">
             <Reveal>
@@ -418,7 +473,7 @@ export default function About() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-paper text-black">
+      <section data-nav="light" className="bg-paper text-black">
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 py-40 md:py-56">
           <div className="max-w-4xl mx-auto text-center space-y-12">
             <Reveal>

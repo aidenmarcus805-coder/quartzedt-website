@@ -334,6 +334,7 @@ export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
   const firstWhiteRef = useRef<HTMLElement | null>(null);
+  const navRef = useRef<HTMLElement | null>(null);
   const workflowDoorRef = useRef<HTMLDivElement | null>(null);
   const workflowDoorLastYRef = useRef<number>(Number.NaN);
   const philosophyRef = useRef<HTMLElement | null>(null);
@@ -344,6 +345,7 @@ export default function Home() {
   const [workflowLocked, setWorkflowLocked] = useState(false);
   const [workflowHasInteracted, setWorkflowHasInteracted] = useState(false);
   const [workflowAdvance, setWorkflowAdvance] = useState(0); // 0..(WORKFLOW_SCROLLS_PER_STEP-1)
+  const [navOnLight, setNavOnLight] = useState(false);
   const workflowAutoIdxRef = useRef(0);
   const workflowAutoAdvanceRef = useRef(0);
   const workflowAutoLockedRef = useRef(false);
@@ -730,6 +732,50 @@ export default function Home() {
 
   // (Removed useScroll parallax here — it causes noisy dev warnings and isn’t core to the blueprint.)
 
+  // Nav text color: switch to black when the content under the nav is a "light" section.
+  // This is deterministic and avoids browser-specific quirks with mix-blend.
+  useEffect(() => {
+    let raf = 0;
+    let last = false;
+
+    const update = () => {
+      raf = 0;
+      const navH = navRef.current?.getBoundingClientRect().height ?? 96;
+      const x = Math.round(window.innerWidth * 0.5);
+      const y = Math.min(window.innerHeight - 1, Math.round(navH + 6));
+      const el = document.elementFromPoint(x, y) as HTMLElement | null;
+
+      let node: HTMLElement | null = el;
+      let onLight = false;
+      while (node && node !== document.body) {
+        if (node.dataset?.nav === 'light') {
+          onLight = true;
+          break;
+        }
+        node = node.parentElement;
+      }
+
+      if (onLight !== last) {
+        last = onLight;
+        setNavOnLight(onLight);
+      }
+    };
+
+    const schedule = () => {
+      if (raf) return;
+      raf = window.requestAnimationFrame(update);
+    };
+
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    update();
+    return () => {
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+      if (raf) window.cancelAnimationFrame(raf);
+    };
+  }, []);
+
   // Switch the 3D scene into low-power mode once the first white block starts entering view.
   // This keeps the hero silky when you're up top, and saves GPU/CPU when you're scrolling content.
   useEffect(() => {
@@ -816,15 +862,16 @@ export default function Home() {
       
       {/* Navigation - minimal, aligned to grid */}
       <motion.nav
+        ref={navRef}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.2, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed top-0 left-0 right-0 z-[100] mix-blend-difference"
+        className="fixed top-0 left-0 right-0 z-[100]"
       >
         <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 h-24 flex items-center justify-between">
           <Link href="/" className="flex items-center">
         <Image
-              src="/logo.png?v=20251223"
+              src="/cutlineLogo.png"
               alt="Cutline"
               width={256}
               height={65}
@@ -834,7 +881,11 @@ export default function Home() {
             />
           </Link>
           
-          <div className="hidden md:flex items-center gap-16 text-[10px] tracking-[0.4em] font-light">
+          <div
+            className={`hidden md:flex items-center gap-16 text-[10px] tracking-[0.4em] font-light ${
+              navOnLight ? 'text-black' : 'text-white'
+            }`}
+          >
             <a
               href="#work"
               onClick={(e) => {
@@ -854,7 +905,11 @@ export default function Home() {
             <Link href="/pricing" className="link-underline hover:opacity-60 transition-opacity">PRICING</Link>
           </div>
 
-          <button className="link-underline text-[10px] tracking-[0.4em] font-light hover:opacity-60 transition-opacity">
+          <button
+            className={`link-underline text-[10px] tracking-[0.4em] font-light hover:opacity-60 transition-opacity ${
+              navOnLight ? 'text-black' : 'text-white'
+            }`}
+          >
             CONTACT
           </button>
         </div>
@@ -874,8 +929,8 @@ export default function Home() {
                 <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
                 <p className="text-[10px] tracking-[0.55em] text-white/35 font-light">
                   AI WEDDING VIDEO EDITOR
-                </p>
-              </div>
+          </p>
+        </div>
 
               <h2 className="mt-10 font-display text-[clamp(32px,3.4vw,56px)] font-extralight tracking-[-0.04em] leading-[1.08] text-white">
                 Cutline turns raw wedding footage into a timeline you can finish.
@@ -902,7 +957,12 @@ export default function Home() {
       </section>
 
       {/* Workflow */}
-      <section id="workflow" ref={firstWhiteRef} className="relative bg-paper text-black border-b border-black/5">
+      <section
+        id="workflow"
+        ref={firstWhiteRef}
+        data-nav="light"
+        className="relative bg-paper text-black border-b border-black/5"
+      >
         {/* Garage-door panel (sticks to viewport, slides up with scroll to reveal workflow) */}
         <div
           ref={workflowDoorRef}
@@ -971,7 +1031,7 @@ export default function Home() {
                 <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 w-full">
                   {/* One “video row”: active expands (main), others stay as shutters on the right.
                       Advancing tabs expands the next shutter into the main video (per blueprint). */}
-                  <div className="relative overflow-hidden border border-black/12 bg-white shadow-[0_70px_160px_rgba(0,0,0,0.10)]">
+                  <div className="relative overflow-hidden bg-white shadow-[0_70px_160px_rgba(0,0,0,0.10)]">
                   {/* Workflow HUD (makes the scroll hijack feel intentional) */}
                   <div className="pointer-events-none absolute inset-x-0 top-0 z-10">
                     <div className="flex items-start justify-between p-6">
@@ -1022,7 +1082,6 @@ export default function Home() {
                         const baseZ = isActive ? 0 : shutterZ;
                         const baseScale = isActive ? 1 : 0.975;
                         const baseOpacity = isActive ? 1 : 0.86;
-                        const baseFilter = isActive ? 'contrast(1.25) brightness(0.98)' : 'contrast(1.15) brightness(0.92)';
 
                         let rotateY = baseRotateY;
                         let rotateZ = baseRotateZ;
@@ -1030,7 +1089,6 @@ export default function Home() {
                         let z = baseZ;
                         let scale = baseScale;
                         let opacity = baseOpacity;
-                        let filter = baseFilter;
 
                         // “Animate on each scroll”: gradually “peek” the next/prev shutter open across 3 scrolls.
                         if (!isActive && peekTarget) {
@@ -1041,7 +1099,6 @@ export default function Home() {
                           z = shutterZ * (1 - open * 0.35);
                           scale = 0.975 + (1 - 0.975) * (peekT * 0.55);
                           opacity = 0.86 + (1 - 0.86) * (peekT * 0.8);
-                          filter = `contrast(${(1.15 + peekT * 0.18).toFixed(3)}) brightness(${(0.92 + peekT * 0.1).toFixed(3)})`;
                         }
 
                         return (
@@ -1071,14 +1128,15 @@ export default function Home() {
                                 }
                               }
                             }}
-                            className={`relative h-full overflow-hidden border border-black/15 bg-[#f4f4f5] focus:outline-none ${
+                            className={`relative h-full overflow-hidden rounded-[18px] bg-gray-100 focus:outline-none ${
                               isActive ? 'flex-1 min-w-0' : 'w-[44px] md:w-[52px] shrink-0'
                             }`}
                             style={{
                               order: rel,
                               transformStyle: 'preserve-3d',
                               transformOrigin: 'left center',
-                              willChange: 'transform, opacity, filter',
+                              backfaceVisibility: 'hidden',
+                              WebkitBackfaceVisibility: 'hidden',
                             }}
                             animate={{
                               rotateY,
@@ -1087,13 +1145,12 @@ export default function Home() {
                               z,
                               scale,
                               opacity,
-                              filter,
                             }}
                             transition={{ type: 'spring', stiffness: 170, damping: 26, mass: 1.1 }}
                             aria-label={`Select ${step.label}`}
                           >
-                            {/* Display glass (slight inset bezel) */}
-                            <div className="absolute inset-[3px] overflow-hidden bg-white">
+                            {/* Screen (no inset rings/lines; avoids the "glass border" look) */}
+                            <div className="absolute inset-[6px] overflow-hidden rounded-[14px] bg-white">
                               <SegmentVideo
                                 src="/videoplayback1.mp4"
                                 start={step.start}
@@ -1101,41 +1158,27 @@ export default function Home() {
                                 play={isActive}
                                 className="absolute inset-0 w-full h-full object-cover"
                               />
-
-                              {/* Depth / lighting */}
-                              <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/0 to-black/14" />
-
-                              {/* Subtle glass sheen */}
-                              <div
-                                aria-hidden="true"
-                                className="absolute inset-0"
-                                style={{
-                                  background: isActive
-                                    ? 'linear-gradient(120deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.00) 35%, rgba(0,0,0,0.10) 100%)'
-                                    : 'linear-gradient(120deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.00) 42%, rgba(0,0,0,0.12) 100%)',
-                                }}
-                              />
                             </div>
 
-                            {/* Bezel + shadow (Apple-ish display frame) */}
+                            {/* Bezel + depth (single-material, iPhone-ish bevel; no fake lighting gradients) */}
                             <div
                               aria-hidden="true"
                               className="absolute inset-0 pointer-events-none"
                               style={{
                                 boxShadow: isActive
-                                  ? 'inset 0 0 0 1px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.65), 0 40px 110px rgba(0,0,0,0.12)'
-                                  : 'inset 0 0 0 1px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.65), 0 18px 60px rgba(0,0,0,0.10)',
+                                  ? 'inset 0 1px 2px rgba(255,255,255,0.88), inset 0 -8px 18px rgba(0,0,0,0.06), 0 34px 92px rgba(0,0,0,0.12)'
+                                  : 'inset 0 1px 2px rgba(255,255,255,0.86), inset 0 -8px 18px rgba(0,0,0,0.05), 0 18px 54px rgba(0,0,0,0.10)',
                               }}
                             />
 
-                            {/* Right edge (makes the stacked shutters read like displays) */}
+                            {/* Right edge (simple material break — no gradient) */}
                             <div
                               aria-hidden="true"
-                              className="absolute inset-y-0 right-0 w-[12px] pointer-events-none"
+                              className="absolute inset-y-0 right-0 w-px pointer-events-none"
                               style={{
-                                background: isActive
-                                  ? 'linear-gradient(to left, rgba(0,0,0,0.10), rgba(0,0,0,0.00))'
-                                  : 'linear-gradient(to left, rgba(0,0,0,0.18), rgba(0,0,0,0.00))',
+                                opacity: isActive ? 0 : 1,
+                                background: 'rgba(255,255,255,0.55)',
+                                boxShadow: 'none',
                               }}
                             />
                           </motion.button>
@@ -1535,7 +1578,7 @@ export default function Home() {
       </section>
 
       {/* Pricing - Minimal Grid */}
-      <section className="bg-paper text-black border-y border-black/5">
+      <section data-nav="light" className="bg-paper text-black border-y border-black/5">
         <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 py-32">
           <div className="grid grid-cols-12 gap-12 items-start">
             <div className="col-span-12 lg:col-span-4">
