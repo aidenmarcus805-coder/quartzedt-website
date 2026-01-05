@@ -518,6 +518,9 @@ export default function Home() {
 
       const { topY, maxY } = computeWorkflowWheelClamp(now);
       const clamped = Math.min(maxY, Math.max(topY, desired));
+      // Kill "queued" wheel intent: never keep a desiredY beyond the current clamp,
+      // otherwise it will apply later (after dwell unlock) and push you into the next sections.
+      workflowWheelDesiredYRef.current = clamped;
 
       const prevTarget = workflowWheelTargetYRef.current;
       if (typeof prevTarget !== 'number' || Math.abs(prevTarget - clamped) > 0.5) {
@@ -528,13 +531,6 @@ export default function Home() {
         } else {
           window.scrollTo({ top: clamped, left: 0, behavior: 'auto' });
         }
-      }
-
-      // Keep pumping while we're constrained (desired beyond clamp). This allows a single “fast scroll”
-      // to continue advancing as soon as the dwell timer expires, without requiring timed wheel ticks.
-      const constrained = clamped !== desired;
-      if (constrained) {
-        workflowWheelPumpRafRef.current = window.requestAnimationFrame(() => pumpWorkflowWheel(performance.now()));
       }
     };
 
@@ -547,7 +543,7 @@ export default function Home() {
       // While workflow is “active”, we take control of wheel deltas to prevent overshoot/jitter on rapid scroll.
       if (workflowWheelControlRef.current) {
         const now = performance.now();
-        const { allowExitDown } = computeWorkflowWheelClamp(now);
+        const { topY, maxY, allowExitDown } = computeWorkflowWheelClamp(now);
 
         // If we’re allowed to exit downwards (final dwell done), let the page scroll normally.
         if (allowExitDown && e.deltaY > 0) {
@@ -567,7 +563,10 @@ export default function Home() {
         const px = Math.max(-CAP, Math.min(CAP, rawPx));
 
         const base = workflowWheelDesiredYRef.current ?? window.scrollY;
-        workflowWheelDesiredYRef.current = base + px;
+        // Never accumulate a "desiredY" beyond the current clamp — that creates the feeling of
+        // postponed scrolls that apply later after the dwell unlock.
+        const unclamped = base + px;
+        workflowWheelDesiredYRef.current = Math.min(maxY, Math.max(topY, unclamped));
         schedulePump();
         return;
       }
