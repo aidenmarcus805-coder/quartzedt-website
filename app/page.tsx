@@ -872,7 +872,7 @@ export default function Home() {
           <Link href="/" className="flex items-center">
         <Image
               src="/cutlineLogo.png"
-              alt="Cutline"
+              alt="Quartz Editor"
               width={256}
               height={65}
           priority
@@ -933,7 +933,7 @@ export default function Home() {
         </div>
 
               <h2 className="mt-10 font-display text-[clamp(32px,3.4vw,56px)] font-extralight tracking-[-0.04em] leading-[1.08] text-white">
-                Cutline turns raw wedding footage into a timeline you can finish.
+                Quartz turns raw wedding footage into a timeline you can finish.
               </h2>
               <p className="mt-8 text-[15px] md:text-[17px] leading-[1.9] text-white/55 font-light max-w-[62ch]">
                 Sync cameras + lavs, find vows and speeches, rank reactions, shape pacing — then export a clean rough cut
@@ -1733,7 +1733,7 @@ export default function Home() {
               <Link href="/" className="inline-flex items-center">
                 <Image
                   src="/logo.png?v=20251223"
-                  alt="Cutline"
+                  alt="Quartz"
                   width={256}
                   height={65}
                   className="h-6 w-auto"
@@ -1778,7 +1778,7 @@ export default function Home() {
           {/* Bottom Bar */}
           <div className="mt-24 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <p className="text-[10px] tracking-[0.3em] text-white/20 font-light">
-              © 2024 CUTLINE
+              © 2024 QUARTZ
             </p>
             <div className="flex items-center gap-8 text-[10px] tracking-[0.3em] text-white/20 font-light">
               <a href="#" className="hover:text-white/40 transition-colors">INSTAGRAM</a>

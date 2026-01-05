@@ -18,7 +18,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'CUTLINE — AI Video Editing for Wedding Filmmakers',
+  title: 'Quartz Editor — AI Video Editing for Wedding Filmmakers',
   description: 'AI-powered precision editing that transforms hours of wedding footage into cinematic stories. Edit less. Create more.',
 };
 
