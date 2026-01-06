@@ -169,15 +169,17 @@ export default function About() {
           >
             <Link href="/#workflow" className="hover:opacity-50 transition-opacity">WORK</Link>
             <Link href="/pricing" className="hover:opacity-50 transition-opacity">PRICING</Link>
+            <Link href="/download" className="hover:opacity-50 transition-opacity">DOWNLOAD</Link>
           </div>
 
-          <button
+          <Link
+            href="/signin?next=/download"
             className={`text-[10px] tracking-[0.4em] font-light hover:opacity-50 transition-opacity ${
               navOnLight ? 'text-black' : 'text-white'
             }`}
           >
-            CONTACT
-          </button>
+            SIGN IN
+          </Link>
         </div>
       </motion.nav>
 

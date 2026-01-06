@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Syne, DM_Sans } from 'next/font/google';
 import './globals.css';
+import { AuthProvider } from './components/AuthProvider';
 import { ScrollToTopOnLoad } from './components/ScrollToTopOnLoad';
 import { SmoothScroll } from './components/SmoothScroll';
 
@@ -34,9 +35,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${syne.variable} ${dmSans.variable}`} suppressHydrationWarning>
       <body className="font-sans antialiased">
-        <ScrollToTopOnLoad />
-        <SmoothScroll />
-        {children}
+        <AuthProvider>
+          <ScrollToTopOnLoad />
+          <SmoothScroll />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

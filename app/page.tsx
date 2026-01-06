@@ -200,12 +200,12 @@ const SegmentVideo = ({
 
 
 const WORKFLOW_STEPS = [
-  { label: 'Import', desc: 'Done', icon: Upload, start: 0.0, end: 5.5 },
-  { label: 'Analyse', desc: 'Ready', icon: Search, start: 5.5, end: 8.25 },
-  { label: 'Rough Cut', desc: 'Locked', icon: Scissors, start: 8.25, end: 11.0 },
-  { label: 'Timeline', desc: 'Locked', icon: Film, start: 11.0, end: 16.5 },
-  { label: 'Color', desc: 'Locked', icon: Palette, start: 16.5, end: 19.25 },
-  { label: 'Export', desc: 'Locked', icon: Download, start: 19.25, end: 22.0 },
+  { label: 'Import', desc: 'Done · Bring footage in. Auto-organize.', icon: Upload, start: 0.0, end: 5.5 },
+  { label: 'Analyse', desc: 'Ready · Detect scenes and key beats.', icon: Search, start: 5.5, end: 8.25 },
+  { label: 'Rough Cut', desc: 'Locked · Assemble a first-pass cut.', icon: Scissors, start: 8.25, end: 11.0 },
+  { label: 'Timeline', desc: 'Locked · Tighten pacing and structure.', icon: Film, start: 11.0, end: 16.5 },
+  { label: 'Color', desc: 'Locked · Baseline color and exposure match.', icon: Palette, start: 16.5, end: 19.25 },
+  { label: 'Export', desc: 'Locked · Premiere / Resolve ready.', icon: Download, start: 19.25, end: 22.0 },
 ] as const;
 
 const WORKFLOW_SCROLLS_PER_STEP = 3;
@@ -798,17 +798,21 @@ export default function Home() {
             </a>
             <Link href="/about" className="link-underline hover:opacity-60 transition-opacity">ABOUT</Link>
             <Link href="/pricing" className="link-underline hover:opacity-60 transition-opacity">PRICING</Link>
+            <Link href="/download" className="link-underline hover:opacity-60 transition-opacity">DOWNLOAD</Link>
           </div>
 
           <div
-            className={`flex items-center gap-10 text-[10px] tracking-[0.4em] font-light ${
+            className={`flex items-center gap-8 text-[10px] tracking-[0.4em] font-light ${
               navOnLight ? 'text-black' : 'text-white'
             }`}
           >
+            <Link href="/signin?next=/download" className="link-underline hover:opacity-60 transition-opacity">
+              SIGN IN
+            </Link>
             <Link href={START_TRIAL_HREF} className="link-underline hover:opacity-60 transition-opacity">
               START TRIAL
             </Link>
-            <a href={BOOK_DEMO_HREF} className="link-underline hover:opacity-60 transition-opacity">
+            <a href={BOOK_DEMO_HREF} className="link-underline hover:opacity-60 transition-opacity hidden sm:inline">
               BOOK DEMO
             </a>
           </div>
@@ -1141,7 +1145,7 @@ export default function Home() {
 
                   {/* Step dock: full-width extension (no inset / no outer padding) */}
                   <div className="border-t border-black/10 bg-black/10">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-px">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-px">
                       {WORKFLOW_STEPS.map((step, idx) => {
                         const active = idx === workflowIdx;
                         const Icon = step.icon;
@@ -1171,7 +1175,7 @@ export default function Home() {
                                 }
                               }
                             }}
-                            className={`group w-full text-left px-5 py-4 transition-colors ${
+                            className={`group w-full text-left px-4 py-4 transition-colors ${
                               active ? 'bg-white' : 'bg-[#f4f4f5] hover:bg-white/80'
                             }`}
                             aria-label={`Select ${step.label}`}
@@ -1185,7 +1189,7 @@ export default function Home() {
                                   aria-hidden="true"
                                 />
                                 <span
-                                  className={`text-[10px] tracking-[0.45em] font-light transition-colors ${
+                                  className={`text-[10px] tracking-[0.32em] md:tracking-[0.45em] font-light transition-colors whitespace-nowrap ${
                                     active ? 'text-black/80' : 'text-black/55 group-hover:text-black/70'
                                   }`}
                                 >

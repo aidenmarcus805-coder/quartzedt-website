@@ -108,8 +108,8 @@ export default function PricingPage() {
             </Link>
           </div>
           <div className="flex items-center justify-end gap-8">
-            <a href="#" className="hover:opacity-50 transition-opacity">LOG IN</a>
-            <a href="#" className="hover:opacity-50 transition-opacity">START TRIAL</a>
+            <Link href="/download" className="hover:opacity-50 transition-opacity">DOWNLOAD</Link>
+            <Link href="/signin?next=/download" className="hover:opacity-50 transition-opacity">SIGN IN</Link>
           </div>
         </div>
       </motion.nav>
