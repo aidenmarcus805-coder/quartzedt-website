@@ -6,11 +6,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn, signOut, useSession } from 'next-auth/react';
-import { useMemo, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 
 const DESKTOP_SCHEME = process.env.NEXT_PUBLIC_DESKTOP_SCHEME || 'quartz';
 
-export default function SignInPage() {
+function SignInInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, status } = useSession();
@@ -283,6 +283,15 @@ export default function SignInPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  // Next.js requires a Suspense boundary when using `useSearchParams()` (CSR bailout).
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black" />}>
+      <SignInInner />
+    </Suspense>
   );
 }
 
