@@ -214,6 +214,23 @@ const WORKFLOW_DOOR_SCROLL_PX = 600; // scroll distance to lift the "hero door" 
 const WORKFLOW_STEP_MIN_DWELL_MS = 500; // minimum time per step before allowing forward scroll into the next one
 const WORKFLOW_STEP_CLAMP_EPS_PX = 0.75; // tiny epsilon to stay inside the current step range when locked
 
+// Primary CTAs (keep deterministic + lightweight: internal link + mailto).
+const START_TRIAL_HREF = '/pricing';
+// Leave blank to open an email draft without a recipient. Set to your inbox when ready.
+const BOOK_DEMO_EMAIL = '';
+const BOOK_DEMO_BODY = `Hi,
+
+I'd like to book a demo.
+
+Name:
+Studio:
+Weddings/year:
+Preferred times:
+`;
+const BOOK_DEMO_HREF = `mailto:${BOOK_DEMO_EMAIL}?subject=${encodeURIComponent(
+  'Book a demo'
+)}&body=${encodeURIComponent(BOOK_DEMO_BODY)}`;
+
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
@@ -272,11 +289,13 @@ export default function Home() {
         setWorkflowLocked(pinned);
       }
 
-      const scrollable = el.offsetHeight - vh;
-      if (scrollable <= 0) return;
+      // Use a fixed scroll budget for workflow logic (matches the explicit height we set in JSX).
+      // This avoids edge cases where DOM/layout changes make `el.offsetHeight` drift and can trap exit scrolling.
+      const scrollable =
+        WORKFLOW_DOOR_SCROLL_PX + WORKFLOW_SCROLL_PX_PER_STEP * WORKFLOW_STEPS.length;
 
-      const scrolled = Math.min(scrollable, Math.max(0, -rect.top));
       const sectionTopY = window.scrollY + rect.top;
+      const scrolled = Math.min(scrollable, Math.max(0, window.scrollY - sectionTopY));
       const sectionMaxY = sectionTopY + scrollable;
 
       // "Garage door" transition: the dark hero panel lifts up with scroll, revealing the workflow.
@@ -636,6 +655,16 @@ export default function Home() {
         node = node.parentElement;
       }
 
+      // Workflow "garage door" is a black overlay that uses `pointer-events-none`,
+      // so `elementFromPoint` can "see through" it and flip the nav to dark too early.
+      // If the door still visually covers our sample point, keep the nav in dark mode (white text).
+      const doorEl = workflowDoorRef.current;
+      if (doorEl) {
+        const r = doorEl.getBoundingClientRect();
+        const coversSample = r.top <= y && r.bottom >= y && r.left <= x && r.right >= x;
+        if (coversSample) onLight = false;
+      }
+
       if (onLight !== last) {
         last = onLight;
         setNavOnLight(onLight);
@@ -709,15 +738,32 @@ export default function Home() {
       >
         <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 h-24 flex items-center justify-between">
           <Link href="/" className="flex items-center">
-        <Image
-              src="/cutlineLogo.png"
-              alt="Quartz Editor"
-              width={256}
-              height={65}
-          priority
-              className="h-5 w-auto"
-              unoptimized
-            />
+            {/* Preload both logo variants so switching on light sections is instant (no "lag-behind"). */}
+            <span className="relative h-5 w-auto aspect-[256/65] shrink-0">
+              <Image
+                src="/logo.png"
+                alt="Quartz Editor"
+                fill
+                sizes="80px"
+                priority
+                unoptimized
+                className={`object-contain transition-opacity duration-150 ${
+                  navOnLight ? 'opacity-0' : 'opacity-100'
+                }`}
+              />
+              <Image
+                src="/logoBlack.png"
+                alt=""
+                aria-hidden="true"
+                fill
+                sizes="80px"
+                priority
+                unoptimized
+                className={`object-contain transition-opacity duration-150 ${
+                  navOnLight ? 'opacity-100' : 'opacity-0'
+                }`}
+              />
+            </span>
           </Link>
           
           <div
@@ -726,31 +772,36 @@ export default function Home() {
             }`}
           >
             <a
-              href="#work"
+              href="#workflow"
               onClick={(e) => {
                 e.preventDefault();
                 const lenis = window.__lenis;
                 if (lenis?.scrollTo) {
-                  lenis.scrollTo('#work', { duration: 1.15, offset: 0 });
+                  lenis.scrollTo('#workflow', { duration: 1.15, offset: 0 });
                 } else {
-                  document.getElementById('work')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  document.getElementById('workflow')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
               }}
               className="link-underline hover:opacity-60 transition-opacity"
             >
-              WORK
+              WORKFLOW
             </a>
             <Link href="/about" className="link-underline hover:opacity-60 transition-opacity">ABOUT</Link>
             <Link href="/pricing" className="link-underline hover:opacity-60 transition-opacity">PRICING</Link>
           </div>
 
-          <button
-            className={`link-underline text-[10px] tracking-[0.4em] font-light hover:opacity-60 transition-opacity ${
+          <div
+            className={`flex items-center gap-10 text-[10px] tracking-[0.4em] font-light ${
               navOnLight ? 'text-black' : 'text-white'
             }`}
           >
-            CONTACT
-          </button>
+            <Link href={START_TRIAL_HREF} className="link-underline hover:opacity-60 transition-opacity">
+              START TRIAL
+            </Link>
+            <a href={BOOK_DEMO_HREF} className="link-underline hover:opacity-60 transition-opacity">
+              BOOK DEMO
+            </a>
+          </div>
         </div>
       </motion.nav>
 
@@ -778,6 +829,35 @@ export default function Home() {
                 Sync cameras + lavs, find vows and speeches, rank reactions, shape pacing — then export a clean rough cut
                 to Premiere or Resolve.
               </p>
+
+              {/* What you get (fast context before the interactive workflow) */}
+              <div className="mt-14">
+                <div className="flex items-center gap-3">
+                  <span className="h-2 w-2 rounded-full bg-white/20" aria-hidden="true" />
+                  <p className="text-[10px] tracking-[0.55em] text-white/35 font-light">WHAT YOU GET</p>
+                </div>
+
+                <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-px bg-white/10 border border-white/10">
+                  <div className="bg-black/60 p-10 md:p-12">
+                    <p className="text-[10px] tracking-[0.45em] text-white/40 font-light">TIMELINE</p>
+                    <p className="mt-6 text-[14px] md:text-[15px] leading-[1.85] text-white/55 font-light">
+                      A rough cut assembled and organized — ready to finesse, not start from scratch.
+                    </p>
+                  </div>
+                  <div className="bg-black/60 p-10 md:p-12">
+                    <p className="text-[10px] tracking-[0.45em] text-white/40 font-light">TRANSCRIPT</p>
+                    <p className="mt-6 text-[14px] md:text-[15px] leading-[1.85] text-white/55 font-light">
+                      Speaker-labeled vows + speeches you can search, select, and build around.
+                    </p>
+                  </div>
+                  <div className="bg-black/60 p-10 md:p-12">
+                    <p className="text-[10px] tracking-[0.45em] text-white/40 font-light">SELECTS</p>
+                    <p className="mt-6 text-[14px] md:text-[15px] leading-[1.85] text-white/55 font-light">
+                      Ranked moments + reactions as markers — so pacing decisions happen faster.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -805,7 +885,7 @@ export default function Home() {
         {/* Garage-door panel (sticks to viewport, slides up with scroll to reveal workflow) */}
         <div
           ref={workflowDoorRef}
-          className="pointer-events-none sticky top-0 z-40 bg-black -mb-screen"
+          className="pointer-events-none sticky top-0 z-40 bg-black -mb-screen rounded-3xl"
           style={{ height: '100vh', transform: 'translate3d(0, 0, 0)', willChange: 'transform', marginBottom: '-100vh' }}
         >
           {/* Subtle dot field (matches hero language) */}
@@ -855,7 +935,8 @@ export default function Home() {
           </div>
 
           <div className="sticky top-0 h-screen">
-            <div className="relative h-full pt-24 pb-6 flex flex-col">
+            {/* Keep pinned content comfortably within the viewport (avoid clipped dock on shorter screens). */}
+            <div className="relative h-full pt-24 pb-12 flex flex-col">
               {/* Title (gallery rhythm: aligned to content grid) */}
               <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 flex-none">
                 <h2 className="font-display text-[clamp(56px,5.5vw,96px)] font-light tracking-[-0.06em] leading-[0.92]">
@@ -865,7 +946,7 @@ export default function Home() {
               </div>
 
               {/* Videos */}
-              <div className="flex-1 mt-6 flex items-end">
+              <div className="flex-1 mt-4 md:mt-6 flex items-end">
                 {/* Stage (same width as the rest of the site) */}
                 <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 w-full">
                   {/* One “video row”: active expands (main), others stay as shutters on the right.
@@ -1055,7 +1136,9 @@ export default function Home() {
                     </AnimatePresence>
 
                     <AnimatePresence>
-                      {workflowLocked && workflowIdx === WORKFLOW_STEPS.length - 1 && (
+                      {workflowLocked &&
+                        workflowIdx === WORKFLOW_STEPS.length - 1 &&
+                        workflowAdvance === WORKFLOW_SCROLLS_PER_STEP - 1 && (
                         <motion.div
                           key="workflow-exit-hint"
                           initial={{ opacity: 0, y: 10 }}
@@ -1253,13 +1336,13 @@ export default function Home() {
                         Organize scenes + transcripts. Triage selects fast. Export clean XML.
                       </p>
                       
-                      <button className="group inline-flex items-center justify-center gap-3 w-full rounded-full border border-black/15 py-5 text-[10px] tracking-[0.4em] hover:bg-black hover:text-white transition-all font-light">
+                      <Link href={START_TRIAL_HREF} className="group inline-flex items-center justify-center gap-3 w-full rounded-full border border-black/15 py-5 text-[10px] tracking-[0.4em] hover:bg-black hover:text-white transition-all font-light">
                         <span
                           className="h-2 w-2 rounded-full bg-accent opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 group-focus-visible:opacity-100 group-focus-visible:scale-100 transition-all duration-200"
                           aria-hidden="true"
                         />
                         START TRIAL
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 </Reveal>
@@ -1295,13 +1378,13 @@ export default function Home() {
                         </p>
                       </div>
                       
-                      <button className="group inline-flex items-center justify-center gap-3 w-full rounded-full border border-white/20 group-hover:border-black/15 py-5 text-[10px] tracking-[0.4em] hover:bg-paper hover:text-black group-hover:hover:bg-black group-hover:hover:text-white transition-all font-light">
+                      <Link href={START_TRIAL_HREF} className="group inline-flex items-center justify-center gap-3 w-full rounded-full border border-white/20 group-hover:border-black/15 py-5 text-[10px] tracking-[0.4em] hover:bg-paper hover:text-black group-hover:hover:bg-black group-hover:hover:text-white transition-all font-light">
                         <span
                           className="h-2 w-2 rounded-full bg-accent opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 group-focus-visible:opacity-100 group-focus-visible:scale-100 transition-all duration-200"
                           aria-hidden="true"
                         />
                         START TRIAL
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 </Reveal>
@@ -1338,20 +1421,20 @@ export default function Home() {
             
             <Reveal delay={0.2}>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                <button className="group inline-flex items-center justify-center gap-3 px-12 py-5 rounded-full bg-paper text-black text-[10px] tracking-[0.4em] hover:bg-paper/95 transition-all font-light hover:-translate-y-[1px] active:translate-y-0">
+                <Link href={START_TRIAL_HREF} className="group inline-flex items-center justify-center gap-3 px-12 py-5 rounded-full bg-paper text-black text-[10px] tracking-[0.4em] hover:bg-paper/95 transition-all font-light hover:-translate-y-[1px] active:translate-y-0">
                   <span
                     className="h-2 w-2 rounded-full bg-accent opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 group-focus-visible:opacity-100 group-focus-visible:scale-100 transition-all duration-200"
                     aria-hidden="true"
                   />
                   START FREE TRIAL
-                </button>
-                <button className="group inline-flex items-center justify-center gap-3 px-12 py-5 rounded-full border border-white/10 text-[10px] tracking-[0.4em] text-white/60 hover:text-white hover:border-accent/50 transition-all font-light hover:-translate-y-[1px] active:translate-y-0">
+                </Link>
+                <a href={BOOK_DEMO_HREF} className="group inline-flex items-center justify-center gap-3 px-12 py-5 rounded-full border border-white/10 text-[10px] tracking-[0.4em] text-white/60 hover:text-white hover:border-accent/50 transition-all font-light hover:-translate-y-[1px] active:translate-y-0">
                   <span
                     className="h-2 w-2 rounded-full bg-accent/70 opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 group-focus-visible:opacity-100 group-focus-visible:scale-100 transition-all duration-200"
                     aria-hidden="true"
                   />
                   SCHEDULE DEMO
-                </button>
+                </a>
               </div>
             </Reveal>
           </div>
@@ -1385,7 +1468,7 @@ export default function Home() {
               <div className="space-y-6">
                 <span className="text-[10px] tracking-[0.4em] text-white/20 font-light">PRODUCT</span>
                 <nav className="space-y-4 text-[13px] font-light">
-                  <a href="#work" className="block text-white/40 hover:text-white transition-colors">Features</a>
+                  <a href="#workflow" className="block text-white/40 hover:text-white transition-colors">Workflow</a>
                   <Link href="/pricing" className="block text-white/40 hover:text-white transition-colors">Pricing</Link>
                   <a href="#" className="block text-white/40 hover:text-white transition-colors">Changelog</a>
                 </nav>

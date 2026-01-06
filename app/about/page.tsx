@@ -134,15 +134,32 @@ export default function About() {
       >
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 h-24 flex items-center justify-between">
           <Link href="/" className="inline-flex items-center">
-            <Image
-              src="/logo.png?v=20251223"
-              alt="Cutline"
-              width={256}
-              height={65}
-              priority
-              className="h-5 w-auto"
-              unoptimized
-            />
+            {/* Preload both logo variants so switching on light sections is instant (no "lag-behind"). */}
+            <span className="relative h-5 w-auto aspect-[256/65] shrink-0">
+              <Image
+                src="/logo.png?v=20251223"
+                alt="Cutline"
+                fill
+                sizes="80px"
+                priority
+                unoptimized
+                className={`object-contain transition-opacity duration-150 ${
+                  navOnLight ? 'opacity-0' : 'opacity-100'
+                }`}
+              />
+              <Image
+                src="/logoBlack.png?v=20251223"
+                alt=""
+                aria-hidden="true"
+                fill
+                sizes="80px"
+                priority
+                unoptimized
+                className={`object-contain transition-opacity duration-150 ${
+                  navOnLight ? 'opacity-100' : 'opacity-0'
+                }`}
+              />
+            </span>
           </Link>
           
           <div
@@ -150,7 +167,7 @@ export default function About() {
               navOnLight ? 'text-black' : 'text-white'
             }`}
           >
-            <Link href="/#work" className="hover:opacity-50 transition-opacity">WORK</Link>
+            <Link href="/#workflow" className="hover:opacity-50 transition-opacity">WORK</Link>
             <Link href="/pricing" className="hover:opacity-50 transition-opacity">PRICING</Link>
           </div>
 
@@ -525,7 +542,7 @@ export default function About() {
               <div className="space-y-6">
                 <span className="text-[10px] tracking-[0.4em] text-white/20 font-light">PRODUCT</span>
                 <nav className="space-y-4 text-[13px] font-light">
-                  <Link href="/#work" className="block text-white/40 hover:text-white transition-colors">Features</Link>
+                  <Link href="/#workflow" className="block text-white/40 hover:text-white transition-colors">Workflow</Link>
                   <Link href="/pricing" className="block text-white/40 hover:text-white transition-colors">Pricing</Link>
                   <a href="#" className="block text-white/40 hover:text-white transition-colors">Changelog</a>
                 </nav>
