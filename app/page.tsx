@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion, useInView } from 'framer-motion';
-import { ArrowRight, Download, Film, Minus, Search, Upload } from 'lucide-react';
+import { ArrowRight, Download, Film, Minus, Palette, Scissors, Search, Upload } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -200,11 +200,12 @@ const SegmentVideo = ({
 
 
 const WORKFLOW_STEPS = [
-  { label: 'Import', desc: 'Bring footage in. Auto-organize.', icon: Upload, start: 0.0, end: 5.5 },
-  { label: 'Scenes', desc: 'Detect scenes and key beats.', icon: Search, start: 5.5, end: 8.25 },
-  { label: 'Transcribe', desc: 'Vows + speeches transcribed with speakers.', icon: Search, start: 8.25, end: 11.0 },
-  { label: 'Timeline', desc: 'Assemble the rough cut.', icon: Film, start: 11.0, end: 16.5 },
-  { label: 'Export', desc: 'Premiere / Resolve ready.', icon: Download, start: 16.5, end: 22.0 },
+  { label: 'Import', desc: 'Done', icon: Upload, start: 0.0, end: 5.5 },
+  { label: 'Analyse', desc: 'Ready', icon: Search, start: 5.5, end: 8.25 },
+  { label: 'Rough Cut', desc: 'Locked', icon: Scissors, start: 8.25, end: 11.0 },
+  { label: 'Timeline', desc: 'Locked', icon: Film, start: 11.0, end: 16.5 },
+  { label: 'Color', desc: 'Locked', icon: Palette, start: 16.5, end: 19.25 },
+  { label: 'Export', desc: 'Locked', icon: Download, start: 19.25, end: 22.0 },
 ] as const;
 
 const WORKFLOW_SCROLLS_PER_STEP = 3;
@@ -564,6 +565,15 @@ export default function Home() {
         const now = performance.now();
         const { topY, maxY, allowExitDown } = computeWorkflowWheelClamp(now);
 
+        // Allow exiting upwards: if we're at the very top edge of the workflow section and the user scrolls up,
+        // don't clamp — let the page scroll back to the previous section.
+        const atTop = window.scrollY <= topY + 1;
+        if (atTop && e.deltaY < 0) {
+          workflowWheelTargetYRef.current = null;
+          workflowWheelDesiredYRef.current = null;
+          return;
+        }
+
         // If we’re allowed to exit downwards (final dwell done), let the page scroll normally.
         if (allowExitDown && e.deltaY > 0) {
           workflowWheelTargetYRef.current = null;
@@ -819,8 +829,8 @@ export default function Home() {
                 <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
                 <p className="text-[10px] tracking-[0.55em] text-white/35 font-light">
                   AI WEDDING VIDEO EDITOR
-          </p>
-        </div>
+                </p>
+              </div>
 
               <h2 className="mt-10 font-display text-[clamp(32px,3.4vw,56px)] font-extralight tracking-[-0.04em] leading-[1.08] text-white">
                 Quartz turns raw wedding footage into a timeline you can finish.
@@ -829,35 +839,6 @@ export default function Home() {
                 Sync cameras + lavs, find vows and speeches, rank reactions, shape pacing — then export a clean rough cut
                 to Premiere or Resolve.
               </p>
-
-              {/* What you get (fast context before the interactive workflow) */}
-              <div className="mt-14">
-                <div className="flex items-center gap-3">
-                  <span className="h-2 w-2 rounded-full bg-white/20" aria-hidden="true" />
-                  <p className="text-[10px] tracking-[0.55em] text-white/35 font-light">WHAT YOU GET</p>
-                </div>
-
-                <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-px bg-white/10 border border-white/10">
-                  <div className="bg-black/60 p-10 md:p-12">
-                    <p className="text-[10px] tracking-[0.45em] text-white/40 font-light">TIMELINE</p>
-                    <p className="mt-6 text-[14px] md:text-[15px] leading-[1.85] text-white/55 font-light">
-                      A rough cut assembled and organized — ready to finesse, not start from scratch.
-                    </p>
-                  </div>
-                  <div className="bg-black/60 p-10 md:p-12">
-                    <p className="text-[10px] tracking-[0.45em] text-white/40 font-light">TRANSCRIPT</p>
-                    <p className="mt-6 text-[14px] md:text-[15px] leading-[1.85] text-white/55 font-light">
-                      Speaker-labeled vows + speeches you can search, select, and build around.
-                    </p>
-                  </div>
-                  <div className="bg-black/60 p-10 md:p-12">
-                    <p className="text-[10px] tracking-[0.45em] text-white/40 font-light">SELECTS</p>
-                    <p className="mt-6 text-[14px] md:text-[15px] leading-[1.85] text-white/55 font-light">
-                      Ranked moments + reactions as markers — so pacing decisions happen faster.
-                    </p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -885,7 +866,7 @@ export default function Home() {
         {/* Garage-door panel (sticks to viewport, slides up with scroll to reveal workflow) */}
         <div
           ref={workflowDoorRef}
-          className="pointer-events-none sticky top-0 z-40 bg-black -mb-screen rounded-3xl"
+          className="pointer-events-none sticky top-0 z-40 bg-black -mb-screen rounded-b-3xl"
           style={{ height: '100vh', transform: 'translate3d(0, 0, 0)', willChange: 'transform', marginBottom: '-100vh' }}
         >
           {/* Subtle dot field (matches hero language) */}
@@ -1198,8 +1179,8 @@ export default function Home() {
                             <div className="flex items-center justify-between gap-4">
                               <div className="flex items-center gap-3">
                                 <span
-                                  className={`h-1.5 w-1.5 rounded-full transition-colors ${
-                                    active ? 'bg-accent' : 'bg-black/25 group-hover:bg-black/35'
+                                  className={`h-1.5 w-1.5 rounded-full transition-all duration-200 ${
+                                    active ? 'bg-accent opacity-100 scale-100' : 'bg-black/25 opacity-0 scale-75'
                                   }`}
                                   aria-hidden="true"
                                 />
@@ -1219,8 +1200,8 @@ export default function Home() {
                               />
                             </div>
                             <p
-                              className={`mt-2 text-[12px] leading-[1.55] font-light transition-colors ${
-                                active ? 'text-black/50' : 'text-black/35 group-hover:text-black/45'
+                              className={`overflow-hidden text-[12px] leading-[1.55] font-light transition-all duration-200 ${
+                                active ? 'mt-2 max-h-24 opacity-100 text-black/50' : 'mt-0 max-h-0 opacity-0 text-black/35'
                               }`}
                             >
                               {step.desc}
