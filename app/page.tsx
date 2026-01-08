@@ -215,10 +215,13 @@ const WORKFLOW_DOOR_SCROLL_PX = 600; // scroll distance to lift the "hero door" 
 const WORKFLOW_STEP_MIN_DWELL_MS = 500; // minimum time per step before allowing forward scroll into the next one
 const WORKFLOW_STEP_CLAMP_EPS_PX = 0.75; // tiny epsilon to stay inside the current step range when locked
 
-// Primary CTAs (keep deterministic + lightweight: internal link + mailto).
-const START_TRIAL_HREF = '/pricing';
-// Leave blank to open an email draft without a recipient. Set to your inbox when ready.
-const BOOK_DEMO_EMAIL = '';
+// Primary CTAs
+// - Start trial: send people through sign-in then to downloads (so it actually does something).
+const START_TRIAL_HREF = '/signin?next=/download';
+
+// Book demo: prefer a URL (Calendly/etc). Fallback to email if provided.
+const BOOK_DEMO_URL = process.env.NEXT_PUBLIC_BOOK_DEMO_URL || '';
+const BOOK_DEMO_EMAIL = process.env.NEXT_PUBLIC_BOOK_DEMO_EMAIL || '';
 const BOOK_DEMO_BODY = `Hi,
 
 I'd like to book a demo.
@@ -228,9 +231,12 @@ Studio:
 Weddings/year:
 Preferred times:
 `;
-const BOOK_DEMO_HREF = `mailto:${BOOK_DEMO_EMAIL}?subject=${encodeURIComponent(
-  'Book a demo'
-)}&body=${encodeURIComponent(BOOK_DEMO_BODY)}`;
+const BOOK_DEMO_HREF = BOOK_DEMO_URL
+  ? BOOK_DEMO_URL
+  : `mailto:${BOOK_DEMO_EMAIL}?subject=${encodeURIComponent('Book a demo')}&body=${encodeURIComponent(
+      BOOK_DEMO_BODY
+    )}`;
+const SHOW_BOOK_DEMO = Boolean(BOOK_DEMO_URL || BOOK_DEMO_EMAIL);
 
 export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -777,7 +783,7 @@ export default function Home() {
           </Link>
           
           <div
-            className={`hidden md:flex items-center gap-16 text-[10px] tracking-[0.4em] font-light ${
+            className={`hidden md:flex items-center gap-12 text-[10px] tracking-[0.32em] font-light ${
               navOnLight ? 'text-black' : 'text-white'
             }`}
           >
@@ -802,7 +808,7 @@ export default function Home() {
           </div>
 
           <div
-            className={`flex items-center gap-8 text-[10px] tracking-[0.4em] font-light ${
+            className={`flex items-center gap-6 text-[10px] tracking-[0.32em] font-light ${
               navOnLight ? 'text-black' : 'text-white'
             }`}
           >
@@ -812,9 +818,11 @@ export default function Home() {
             <Link href={START_TRIAL_HREF} className="link-underline hover:opacity-60 transition-opacity">
               START TRIAL
             </Link>
-            <a href={BOOK_DEMO_HREF} className="link-underline hover:opacity-60 transition-opacity hidden sm:inline">
-              BOOK DEMO
-            </a>
+            {SHOW_BOOK_DEMO && (
+              <a href={BOOK_DEMO_HREF} className="link-underline hover:opacity-60 transition-opacity hidden xl:inline">
+                BOOK DEMO
+              </a>
+            )}
           </div>
         </div>
       </motion.nav>
@@ -1413,13 +1421,15 @@ export default function Home() {
                   />
                   START FREE TRIAL
                 </Link>
-                <a href={BOOK_DEMO_HREF} className="group inline-flex items-center justify-center gap-3 px-12 py-5 rounded-full border border-white/10 text-[10px] tracking-[0.4em] text-white/60 hover:text-white hover:border-accent/50 transition-all font-light hover:-translate-y-[1px] active:translate-y-0">
-                  <span
-                    className="h-2 w-2 rounded-full bg-accent/70 opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 group-focus-visible:opacity-100 group-focus-visible:scale-100 transition-all duration-200"
-                    aria-hidden="true"
-                  />
-                  SCHEDULE DEMO
-                </a>
+                {SHOW_BOOK_DEMO && (
+                  <a href={BOOK_DEMO_HREF} className="group inline-flex items-center justify-center gap-3 px-12 py-5 rounded-full border border-white/10 text-[10px] tracking-[0.4em] text-white/60 hover:text-white hover:border-accent/50 transition-all font-light hover:-translate-y-[1px] active:translate-y-0">
+                    <span
+                      className="h-2 w-2 rounded-full bg-accent/70 opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 group-focus-visible:opacity-100 group-focus-visible:scale-100 transition-all duration-200"
+                      aria-hidden="true"
+                    />
+                    SCHEDULE DEMO
+                  </a>
+                )}
               </div>
             </Reveal>
           </div>

@@ -173,6 +173,21 @@ export default function DownloadPage() {
               </div>
             </div>
 
+            {(!MAC_URL || !WINDOWS_URL) && (
+              <div className="text-[12px] leading-[1.8] text-white/35 font-light">
+                Add your installer links in your host env:
+                <span className="text-white/50">
+                  {' '}
+                  NEXT_PUBLIC_DESKTOP_DOWNLOAD_MAC_URL
+                </span>
+                <span className="text-white/25"> / </span>
+                <span className="text-white/50">
+                  NEXT_PUBLIC_DESKTOP_DOWNLOAD_WINDOWS_URL
+                </span>
+                .
+              </div>
+            )}
+
             <div className="border border-white/10 bg-white/[0.02] p-10 md:p-12">
               <div className="flex items-center justify-between gap-8 flex-wrap">
                 <div>

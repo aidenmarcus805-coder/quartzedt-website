@@ -20,6 +20,21 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Environment variables (production)
+
+Set these in your host (Render/Vercel/etc.):
+
+- **NextAuth**
+  - `NEXTAUTH_URL`: your deployed site URL (e.g. `https://your-app.onrender.com`)
+  - `NEXTAUTH_SECRET`: a long random secret string
+- **Desktop app integration**
+  - `NEXT_PUBLIC_DESKTOP_SCHEME`: custom URL scheme your desktop app registers (e.g. `quartz`)
+  - `NEXT_PUBLIC_DESKTOP_DOWNLOAD_MAC_URL`: macOS installer download URL (optional; shows “Coming soon” if empty)
+  - `NEXT_PUBLIC_DESKTOP_DOWNLOAD_WINDOWS_URL`: Windows installer download URL (optional; shows “Coming soon” if empty)
+- **Book demo (optional)**
+  - `NEXT_PUBLIC_BOOK_DEMO_URL`: a URL like Calendly (preferred)
+  - `NEXT_PUBLIC_BOOK_DEMO_EMAIL`: fallback email for `mailto:` if no URL is set
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

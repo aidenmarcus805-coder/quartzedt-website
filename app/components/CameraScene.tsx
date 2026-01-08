@@ -371,12 +371,11 @@ function MonitorModel({
     const currentScale = startScale + (endScale - startScale) * scrollEase; // Inline lerp
     groupRef.current.scale.setScalar(currentScale);
     
-    // Position
-    // Subtle left nudge (requested)
+
     groupRef.current.position.x = -0.01 + floatX;
     // Drop the whole monitor slightly at the end of the scroll (scrollEase=1)
     // Nudge down a touch (~20px perceived) to give the hero typography more breathing room.
-    groupRef.current.position.y = -5.3 + (3.35) * scrollEase - 0.4 * scrollEase + floatY;
+    groupRef.current.position.y = -5.45 + (3.35) * scrollEase - 0.4 * scrollEase + floatY;
     
     // Rotation
     groupRef.current.rotation.y = -Math.PI / 2 + floatRot + mouseRotY;
@@ -694,6 +693,8 @@ export default function CameraScene({
   const targetProgress = useRef(initialProgress);
   const progressRef = useRef(initialProgress);
   const domIntroRef = useRef<HTMLDivElement | null>(null);
+  const domTitleWrapRef = useRef<HTMLDivElement | null>(null);
+  const domTitleH1Ref = useRef<HTMLHeadingElement | null>(null);
   const isCompleteRef = useRef(variant === 'gallery'); // Ref for immediate checking
   const hasUserScrolledRef = useRef(false);
   const lowPowerModeRef = useRef(lowPowerMode);
@@ -759,6 +760,21 @@ export default function CameraScene({
       const y = p * 30;
       intro.style.opacity = `${opacity}`;
       intro.style.transform = `translate3d(0, ${y}px, 0)`;
+    }
+
+    // Title overlay fades in after halfway.
+    const titleWrap = domTitleWrapRef.current;
+    if (titleWrap) {
+      const opacity = p > 0.5 ? Math.min((p - 0.5) * 2, 1) : 0;
+      titleWrap.style.opacity = `${opacity}`;
+    }
+
+    // Title line slides up (garage-door typography feel).
+    const h1 = domTitleH1Ref.current;
+    if (h1) {
+      const t = p > 0.6 ? Math.min((p - 0.6) * 3, 1) : 0;
+      const pct = (1 - t) * 100;
+      h1.style.transform = `translate3d(0, ${pct}%, 0)`;
     }
   }, []);
 
@@ -1093,6 +1109,42 @@ export default function CameraScene({
               </div>
             </div>
 
+            {/* Hero text overlay - Bottom anchored (reference-style) */}
+            <div 
+              ref={domTitleWrapRef}
+              className="absolute inset-0 flex items-end pointer-events-none z-10"
+              style={{ 
+                paddingBottom: '10vh',
+                opacity: 0,
+                willChange: 'opacity',
+              }}
+            >
+              {/* Text with subtle dark gradient for legibility */}
+              <div className="absolute inset-0 pointer-events-none" style={{
+                background: 'linear-gradient(to top, rgba(0,0,0,0.70) 0%, rgba(0,0,0,0.25) 34%, transparent 66%)',
+              }} />
+              
+              {/* Content aligned to grid */}
+              <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 w-full relative z-10">
+                <div className="mx-auto text-center w-full">
+                  {/* Main title */}
+                  <div className="overflow-hidden">
+                    <h1 
+                      ref={domTitleH1Ref}
+                      className="text-[clamp(56px,10vw,140px)] font-extralight leading-[0.9] tracking-[-0.05em] text-white md:whitespace-nowrap"
+                      style={{
+                        transform: 'translate3d(0, 100%, 0)',
+                        textShadow: '0 2px 40px rgba(0,0,0,0.3)',
+                        willChange: 'transform',
+                      }}
+                    >
+                      From Weeks to{' '}
+                      <span className="text-white/60">Hours.</span>
+                    </h1>
+                  </div>
+                </div>
+              </div>
+            </div>
           </>
         )}
       </div>

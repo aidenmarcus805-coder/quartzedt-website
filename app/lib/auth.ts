@@ -8,6 +8,9 @@ import CredentialsProvider from 'next-auth/providers/credentials';
  * Replace `authorize()` with a real user lookup + password verification before production.
  */
 export const authOptions: NextAuthOptions = {
+  // IMPORTANT: Set NEXTAUTH_SECRET in production (Render/Vercel/etc.).
+  // Fallback keeps local/dev working but is NOT safe for real users.
+  secret: process.env.NEXTAUTH_SECRET || 'dev-unsafe-secret',
   session: { strategy: 'jwt' },
   providers: [
     CredentialsProvider({
