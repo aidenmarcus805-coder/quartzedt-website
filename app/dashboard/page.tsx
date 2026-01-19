@@ -2,10 +2,8 @@
 
 import { motion } from 'framer-motion';
 import {
-    ArrowLeft,
     Download,
     Monitor,
-    Settings,
     LogOut,
     ExternalLink,
     Plus,
@@ -29,10 +27,13 @@ export default function DashboardPage() {
 
     useEffect(() => {
         setMounted(true);
-        if (status === 'unauthenticated') {
+    }, []);
+
+    useEffect(() => {
+        if (mounted && status === 'unauthenticated') {
             router.push('/signin');
         }
-    }, [status, router]);
+    }, [mounted, status, router]);
 
     if (!mounted || status === 'loading') return null;
     if (!session) return null;

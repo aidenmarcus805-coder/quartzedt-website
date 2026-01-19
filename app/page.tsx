@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion, useInView } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Download, Film, Minus, Palette, Scissors, Search, Upload, Check, User } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Film, Minus, Scissors, Search, Upload, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
@@ -698,14 +698,13 @@ export default function Home() {
                               key={step.label}
                               type="button"
                               onClick={() => {
-                                const now = performance.now();
                                 workflowHasInteractedRef.current = true;
                                 setWorkflowHasInteracted(true);
                                 workflowAutoIdxRef.current = idx;
                                 workflowAutoAdvanceRef.current = 0;
                                 setWorkflowAdvance(0);
                                 setWorkflowIdx(idx);
-                                // workflowStepLockUntilRef.current = now + WORKFLOW_STEP_MIN_DWELL_MS;
+                                // workflowStepLockUntilRef.current = performance.now() + WORKFLOW_STEP_MIN_DWELL_MS;
 
                                 const el = firstWhiteRef.current;
                                 if (el) {

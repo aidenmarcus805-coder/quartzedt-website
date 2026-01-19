@@ -25,7 +25,7 @@ function SignInContent() {
     setError(null);
     try {
       await signIn('google', { callbackUrl });
-    } catch (err) {
+    } catch {
       setError('Connection failed.');
       setIsLoading(null);
     }
@@ -52,7 +52,7 @@ function SignInContent() {
       } else {
         router.push(callbackUrl);
       }
-    } catch (err) {
+    } catch {
       setError('Internal error.');
       setIsLoading(null);
     }

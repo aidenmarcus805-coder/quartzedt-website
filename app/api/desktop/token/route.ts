@@ -4,10 +4,18 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import crypto from 'crypto';
 
+interface SessionUser {
+  id: string;
+  email?: string | null;
+  name?: string | null;
+  image?: string | null;
+}
+
 export async function GET() {
   const session = await getServerSession(authOptions);
-  const email = session?.user?.email ?? null;
-  const userId = (session?.user as any)?.id;
+  const user = session?.user as SessionUser | undefined;
+  const email = user?.email ?? null;
+  const userId = user?.id;
 
   if (!email || !userId) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
