@@ -10,24 +10,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 function SignInContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
+  // const router = useRouter(); // Removed unused router
   const isDesktopFlow = searchParams.get('desktop') === 'true';
   const callbackUrl = searchParams.get('callbackUrl') || (isDesktopFlow ? '/api/desktop/token' : '/');
 
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(() => {
+    // Initialize error directly from params to avoid useEffect setState
+    const errorParam = searchParams.get('error');
+    if (errorParam === 'OAuthSignin') return 'Error connecting to Google. Check your redirect URIs.';
+    if (errorParam === 'OAuthCallback') return 'Error during Google authentication.';
+    if (errorParam) return 'Authentication failed.';
+    return null;
+  });
   const [isFocused, setIsFocused] = useState<string | null>(null);
 
   useEffect(() => {
-    const errorParam = searchParams.get('error');
-    if (errorParam) {
-      if (errorParam === 'OAuthSignin') setError('Error connecting to Google. Check your redirect URIs.');
-      else if (errorParam === 'OAuthCallback') setError('Error during Google authentication.');
-      else setError('Authentication failed.');
-    }
-  }, [searchParams]);
+    // router prefetching if needed
+  }, []);
 
   const handleGoogleSignIn = async () => {
     setIsLoading('google');
