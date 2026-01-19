@@ -76,6 +76,7 @@ body {
   html:focus-within {
     scroll-behavior: auto;
   }
+
   *,
   *::before,
   *::after {
@@ -148,10 +149,13 @@ body {
 
 /* Atmospheric animations */
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.6;
     transform: scale(1);
   }
+
   50% {
     opacity: 1;
     transform: scale(1.1);
@@ -159,42 +163,56 @@ body {
 }
 
 @keyframes grain {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate(0, 0);
   }
+
   10% {
     transform: translate(-1%, -1%);
   }
+
   20% {
     transform: translate(1%, 1%);
   }
+
   30% {
     transform: translate(-1%, 1%);
   }
+
   40% {
     transform: translate(1%, -1%);
   }
+
   50% {
     transform: translate(-1%, 0%);
   }
+
   60% {
     transform: translate(1%, 0%);
   }
+
   70% {
     transform: translate(0%, 1%);
   }
+
   80% {
     transform: translate(0%, -1%);
   }
+
   90% {
     transform: translate(1%, 1%);
   }
 }
 
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-10px);
   }
@@ -204,6 +222,7 @@ body {
   0% {
     background-position: -200% center;
   }
+
   100% {
     background-position: 200% center;
   }
@@ -211,12 +230,10 @@ body {
 
 /* Luxury Autofill Reset */
 input:-webkit-autofill,
-input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus, 
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 1000px #050505 inset !important;
-  -webkit-text-fill-color: white !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  transition: background-color 5000s ease-in-out 0s;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #ffffff;
 }

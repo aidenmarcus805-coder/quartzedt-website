@@ -23,19 +23,14 @@ const DESKTOP_SCHEME = process.env.NEXT_PUBLIC_DESKTOP_SCHEME || 'quartz';
 export default function DashboardPage() {
     const { data: session, status } = useSession();
     const router = useRouter();
-    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    useEffect(() => {
-        if (mounted && status === 'unauthenticated') {
+        if (status === 'unauthenticated') {
             router.push('/signin');
         }
-    }, [mounted, status, router]);
+    }, [status, router]);
 
-    if (!mounted || status === 'loading') return null;
+    if (status === 'loading') return null;
     if (!session) return null;
 
     return (
