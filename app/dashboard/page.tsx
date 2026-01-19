@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     Download,
     Monitor,
@@ -10,19 +10,22 @@ import {
     Clock,
     ChevronRight,
     ShieldCheck,
-    Zap
+    Zap,
+    Settings,
+    HelpCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const DESKTOP_SCHEME = process.env.NEXT_PUBLIC_DESKTOP_SCHEME || 'quartz';
 
 export default function DashboardPage() {
     const { data: session, status } = useSession();
     const router = useRouter();
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
 
     useEffect(() => {
         if (status === 'unauthenticated') {
@@ -49,20 +52,76 @@ export default function DashboardPage() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => signOut()}
-                            className="p-2 rounded-full hover:bg-white/5 text-white/40 hover:text-white transition-all"
-                            title="Sign Out"
-                        >
-                            <LogOut className="w-4 h-4" />
-                        </button>
-                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-accent/20 to-accent/5 border border-white/10 flex items-center justify-center overflow-hidden">
-                            {session.user?.image ? (
-                                <Image src={session.user.image} alt="" width={32} height={32} />
-                            ) : (
-                                <span className="text-[10px] font-medium text-accent">{session.user?.email?.[0].toUpperCase()}</span>
-                            )}
+                    <div className="flex items-center gap-4 relative">
+                        {/* Profile Dropdown */}
+                        <div className="relative">
+                            <button
+                                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                                className="flex items-center gap-3 p-1 pr-4 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 transition-all group"
+                            >
+                                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-accent/20 to-accent/5 border border-white/10 flex items-center justify-center overflow-hidden">
+                                    {session.user?.image ? (
+                                        <Image src={session.user.image} alt="" width={32} height={32} />
+                                    ) : (
+                                        <span className="text-[10px] font-medium text-accent">{session.user?.email?.[0].toUpperCase()}</span>
+                                    )}
+                                </div>
+                                <span className="text-[11px] tracking-[0.1em] text-white/60 group-hover:text-white transition-colors">
+                                    {session.user?.name?.split(' ')[0] || 'ACCOUNT'}
+                                </span>
+                                <motion.div
+                                    animate={{ rotate: isProfileOpen ? 180 : 0 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    <ChevronRight className="w-3 h-3 text-white/20 rotate-90" />
+                                </motion.div>
+                            </button>
+
+                            <AnimatePresence>
+                                {isProfileOpen && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                                        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                                        className="absolute top-full right-0 mt-2 w-56 bg-[#0A0A0A] border border-white/10 rounded-xl shadow-2xl shadow-black/50 overflow-hidden z-50 ring-1 ring-white/5"
+                                    >
+                                        <div className="p-2 space-y-px">
+                                            <div className="px-3 py-2 text-[10px] tracking-[0.2em] text-white/30 uppercase border-b border-white/5 mb-1">
+                                                {session.user?.email}
+                                            </div>
+
+                                            {[
+                                                { label: 'SETTINGS', icon: Settings, action: () => { } },
+                                                { label: 'SUBSCRIPTION', icon: ShieldCheck, action: () => { } },
+                                                { label: 'HELP & SUPPORT', icon: HelpCircle, action: () => { } },
+                                            ].map((item) => (
+                                                <button
+                                                    key={item.label}
+                                                    onClick={() => {
+                                                        item.action();
+                                                        setIsProfileOpen(false);
+                                                    }}
+                                                    className="w-full h-8 flex items-center gap-3 px-3 rounded-lg hover:bg-white/5 text-white/60 hover:text-white transition-colors group"
+                                                >
+                                                    <item.icon className="w-3.5 h-3.5 text-white/20 group-hover:text-accent transition-colors" />
+                                                    <span className="text-[10px] tracking-[0.15em]">{item.label}</span>
+                                                </button>
+                                            ))}
+
+                                            <div className="h-px bg-white/5 my-1" />
+
+                                            <button
+                                                onClick={() => signOut()}
+                                                className="w-full h-8 flex items-center gap-3 px-3 rounded-lg hover:bg-red-500/10 text-white/60 hover:text-red-400 transition-colors group"
+                                            >
+                                                <LogOut className="w-3.5 h-3.5 text-white/20 group-hover:text-red-400 transition-colors" />
+                                                <span className="text-[10px] tracking-[0.15em]">SIGN OUT</span>
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </div>
                 </div>
