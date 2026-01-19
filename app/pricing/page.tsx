@@ -1,10 +1,11 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowRight, Check, ArrowLeft } from 'lucide-react';
+import { ArrowRight, Check, ArrowLeft, User } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 
 type Billing = 'monthly' | 'annual';
 
@@ -76,6 +77,7 @@ const faqs = [
 ];
 
 export default function PricingPage() {
+  const { data: session } = useSession();
   const [billing, setBilling] = useState<Billing>('monthly');
 
   return (
@@ -109,7 +111,14 @@ export default function PricingPage() {
           </div>
           <div className="flex items-center justify-end gap-8">
             <Link href="/download" className="hover:opacity-50 transition-opacity">DOWNLOAD</Link>
-            <Link href="/signin?next=/download" className="hover:opacity-50 transition-opacity">SIGN IN</Link>
+            <Link
+              href={session ? "/dashboard" : "/signin?next=/download"}
+              className="p-2.5 rounded-full border border-white/20 hover:border-white hover:bg-white/10 transition-all duration-300 active:scale-95 flex items-center justify-center group/signin shadow-[0_0_20px_rgba(255,255,255,0.02)] relative"
+              aria-label={session ? "Go to Dashboard" : "Sign In"}
+            >
+              <User className="w-4 h-4 transition-colors duration-300 bg-transparent group-hover/signin:text-accent" />
+              <div className={`absolute top-0 right-0 w-1.5 h-1.5 rounded-full animate-pulse bg-accent ${session ? 'opacity-100' : 'opacity-0'}`} />
+            </Link>
           </div>
         </div>
       </motion.nav>
@@ -158,18 +167,16 @@ export default function PricingPage() {
               <button
                 type="button"
                 onClick={() => setBilling('monthly')}
-                className={`px-5 py-2 rounded-full text-[10px] tracking-[0.25em] transition-colors ${
-                  billing === 'monthly' ? 'bg-paper text-black' : 'text-white/50 hover:text-white'
-                }`}
+                className={`px-5 py-2 rounded-full text-[10px] tracking-[0.25em] transition-colors ${billing === 'monthly' ? 'bg-paper text-black' : 'text-white/50 hover:text-white'
+                  }`}
               >
                 MONTHLY
               </button>
               <button
                 type="button"
                 onClick={() => setBilling('annual')}
-                className={`px-5 py-2 rounded-full text-[10px] tracking-[0.25em] transition-colors ${
-                  billing === 'annual' ? 'bg-paper text-black' : 'text-white/50 hover:text-white'
-                }`}
+                className={`px-5 py-2 rounded-full text-[10px] tracking-[0.25em] transition-colors ${billing === 'annual' ? 'bg-paper text-black' : 'text-white/50 hover:text-white'
+                  }`}
               >
                 ANNUAL <span className="text-[9px] tracking-[0.2em] opacity-70">(2 MO FREE)</span>
               </button>
@@ -189,9 +196,8 @@ export default function PricingPage() {
                   initial={{ opacity: 0, y: 40 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.3 + idx * 0.15, ease: [0.16, 1, 0.3, 1] }}
-                  className={`relative p-10 md:p-12 rounded-2xl ${
-                    plan.featured ? 'bg-paper text-black' : 'bg-paper/[0.03] border border-white/10'
-                  }`}
+                  className={`relative p-10 md:p-12 rounded-2xl ${plan.featured ? 'bg-paper text-black' : 'bg-paper/[0.03] border border-white/10'
+                    }`}
                 >
                   {plan.featured && (
                     <div className="absolute -top-3 left-10">
@@ -239,9 +245,8 @@ export default function PricingPage() {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className={`mt-10 w-full py-4 rounded-full text-[11px] tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${
-                      plan.featured ? 'bg-black text-white hover:bg-black/80' : 'border border-white/20 hover:bg-paper hover:text-black'
-                    }`}
+                    className={`mt-10 w-full py-4 rounded-full text-[11px] tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${plan.featured ? 'bg-black text-white hover:bg-black/80' : 'border border-white/20 hover:bg-paper hover:text-black'
+                      }`}
                   >
                     START FREE TRIAL
                     <ArrowRight className="w-4 h-4" />
@@ -360,7 +365,7 @@ export default function PricingPage() {
               Common Questions
             </h2>
           </motion.div>
-          
+
           <div className="space-y-0">
             {faqs.map((faq, idx) => (
               <motion.div
@@ -428,7 +433,7 @@ export default function PricingPage() {
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-white/5 text-[10px] text-white/20 text-center md:text-left">
-            © 2024 Cutline. All rights reserved.
+            © 2024 Quartz. All rights reserved.
           </div>
         </div>
       </footer>

@@ -1,18 +1,32 @@
 import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import GoogleProvider from 'next-auth/providers/google';
+import { PrismaAdapter } from '@auth/prisma-adapter';
+import { prisma } from './prisma';
 
 /**
- * Minimal auth scaffold.
- *
- * NOTE: The Credentials provider below is intentionally permissive so the UI flows work in dev.
- * Replace `authorize()` with a real user lookup + password verification before production.
+ * NextAuth configuration with Google OAuth and Prisma adapter.
  */
 export const authOptions: NextAuthOptions = {
-  // IMPORTANT: Set NEXTAUTH_SECRET in production (Render/Vercel/etc.).
-  // Fallback keeps local/dev working but is NOT safe for real users.
+  // IMPORTANT: Set NEXTAUTH_SECRET in production (Render/Vercel/etc.)
   secret: process.env.NEXTAUTH_SECRET || 'dev-unsafe-secret',
-  session: { strategy: 'jwt' },
+
+  // Use Prisma adapter for database persistence
+  adapter: PrismaAdapter(prisma) as NextAuthOptions['adapter'],
+
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+
   providers: [
+    // Google OAuth
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+    }),
+
+    // Keep credentials for dev/testing
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
@@ -23,14 +37,49 @@ export const authOptions: NextAuthOptions = {
         const email = credentials?.email?.trim()?.toLowerCase();
         if (!email) return null;
 
-        // TODO: Replace with real auth. For now, accept any email so the desktop connection flow can be built.
-        return { id: email, email };
+        // Find or create user in database
+        let user = await prisma.user.findUnique({ where: { email } });
+        if (!user) {
+          user = await prisma.user.create({
+            data: { email, name: email.split('@')[0] },
+          });
+        }
+
+        return { id: user.id, email: user.email, name: user.name };
       },
     }),
   ],
+
+  callbacks: {
+    async jwt({ token, user, account }) {
+      // Add user ID and plan to token on sign in
+      if (user) {
+        token.userId = user.id;
+      }
+      if (account) {
+        token.provider = account.provider;
+      }
+      return token;
+    },
+
+    async session({ session, token }) {
+      // Add user ID to session
+      if (session.user && token.userId) {
+        (session.user as { id?: string }).id = token.userId as string;
+      }
+      return session;
+    },
+  },
+
   pages: {
     signIn: '/signin',
   },
+
+  events: {
+    async signIn({ user, isNewUser }) {
+      if (isNewUser) {
+        console.log(`New user signed up: ${user.email}`);
+      }
+    },
+  },
 };
-
-

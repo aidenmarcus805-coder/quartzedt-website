@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowLeft, Copy, ExternalLink, Minus } from 'lucide-react';
+import { ArrowLeft, Copy, ExternalLink, Minus, User } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
@@ -59,19 +59,17 @@ export default function DownloadPage() {
     return (
       <a
         href={disabled ? undefined : href}
-        className={`group inline-flex items-center justify-center gap-3 w-full rounded-full border border-white/15 py-4 text-[10px] tracking-[0.4em] font-light transition-all ${
-          disabled
-            ? 'opacity-40 cursor-not-allowed'
-            : 'hover:bg-paper hover:text-black hover:border-white/20'
-        }`}
+        className={`group inline-flex items-center justify-center gap-3 w-full rounded-full border border-white/15 py-4 text-[10px] tracking-[0.4em] font-light transition-all ${disabled
+          ? 'opacity-40 cursor-not-allowed'
+          : 'hover:bg-paper hover:text-black hover:border-white/20'
+          }`}
         aria-disabled={disabled}
       >
         <span
-          className={`h-2 w-2 rounded-full transition-all duration-200 ${
-            disabled
-              ? 'bg-white/15'
-              : 'bg-accent opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100'
-          }`}
+          className={`h-2 w-2 rounded-full transition-all duration-200 ${disabled
+            ? 'bg-white/15'
+            : 'bg-accent opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100'
+            }`}
           aria-hidden="true"
         />
         {disabled ? 'COMING SOON' : label}
@@ -110,7 +108,14 @@ export default function DownloadPage() {
           </div>
           <div className="flex items-center justify-end gap-8">
             <Link href="/pricing" className="hover:opacity-50 transition-opacity">PRICING</Link>
-            <Link href="/signin?next=/download" className="hover:opacity-50 transition-opacity">SIGN IN</Link>
+            <Link
+              href={session ? "/dashboard" : "/signin?next=/download"}
+              className="p-2.5 rounded-full border border-white/20 hover:border-white hover:bg-white/10 transition-all duration-300 active:scale-95 flex items-center justify-center group/signin shadow-[0_0_20px_rgba(255,255,255,0.02)] relative"
+              aria-label={session ? "Go to Dashboard" : "Sign In"}
+            >
+              <User className="w-4 h-4 transition-colors duration-300 bg-transparent group-hover/signin:text-accent" />
+              <div className={`absolute top-0 right-0 w-1.5 h-1.5 rounded-full animate-pulse bg-accent ${session ? 'opacity-100' : 'opacity-0'}`} />
+            </Link>
           </div>
         </div>
       </motion.nav>

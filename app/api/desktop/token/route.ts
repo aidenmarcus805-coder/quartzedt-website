@@ -1,33 +1,39 @@
 import { authOptions } from '@/app/lib/auth';
 import { getServerSession } from 'next-auth';
-import { encode } from 'next-auth/jwt';
 import { NextResponse } from 'next/server';
+import { prisma } from '@/app/lib/prisma';
+import crypto from 'crypto';
 
-export async function POST() {
+export async function GET() {
   const session = await getServerSession(authOptions);
   const email = session?.user?.email ?? null;
-  if (!email) {
+  const userId = (session?.user as any)?.id;
+
+  if (!email || !userId) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
-  // Short-lived token meant for the desktop app to consume immediately.
-  // The desktop app can exchange/validate this token against your backend.
-  const secret = process.env.NEXTAUTH_SECRET || 'dev-unsafe-secret';
-  const expiresInSeconds = 5 * 60;
+  // Create a secure random token for the desktop app
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiresInSeconds = 10 * 60; // 10 minutes to link
+  const expiresAt = new Date(Date.now() + expiresInSeconds * 1000);
 
-  const token = await encode({
-    secret,
-    maxAge: expiresInSeconds,
-    token: {
-      sub: email,
-      purpose: 'desktop',
-    },
-  });
+  try {
+    // Store in DB
+    await prisma.desktopToken.create({
+      data: {
+        token,
+        userId,
+        expiresAt,
+      },
+    });
 
-  return NextResponse.json({
-    token,
-    expiresInSeconds,
-  });
+    // Redirect back to custom protocol (Tauri is listening)
+    return NextResponse.redirect(`autocut://auth?token=${token}`);
+  } catch (error) {
+    console.error('Failed to create desktop token:', error);
+    return NextResponse.json({ error: 'internal_error' }, { status: 500 });
+  }
 }
 
 

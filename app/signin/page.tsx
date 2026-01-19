@@ -1,298 +1,230 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { ArrowLeft, Copy, ExternalLink, Minus } from 'lucide-react';
+import { signIn } from 'next-auth/react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { signIn, signOut, useSession } from 'next-auth/react';
-import { Suspense, useMemo, useState } from 'react';
+import { Chrome, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const DESKTOP_SCHEME = process.env.NEXT_PUBLIC_DESKTOP_SCHEME || 'quartz';
-
-function SignInInner() {
-  const router = useRouter();
+function SignInContent() {
   const searchParams = useSearchParams();
-  const { data: session, status } = useSession();
+  const router = useRouter();
+  const isDesktopFlow = searchParams.get('desktop') === 'true';
+  const callbackUrl = searchParams.get('callbackUrl') || (isDesktopFlow ? '/api/desktop/token' : '/');
 
-  const callbackUrl = useMemo(() => {
-    return (
-      searchParams.get('next') ||
-      searchParams.get('callbackUrl') ||
-      '/download'
-    );
-  }, [searchParams]);
-
+  const [isLoading, setIsLoading] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [desktopToken, setDesktopToken] = useState<string | null>(null);
-  const [tokenBusy, setTokenBusy] = useState(false);
+  const [isFocused, setIsFocused] = useState<string | null>(null);
 
-  const deepLink = desktopToken
-    ? `${DESKTOP_SCHEME}://auth?token=${encodeURIComponent(desktopToken)}`
-    : `${DESKTOP_SCHEME}://open`;
-
-  const copy = async (value: string) => {
+  const handleGoogleSignIn = async () => {
+    setIsLoading('google');
+    setError(null);
     try {
-      await navigator.clipboard.writeText(value);
-    } catch {
-      // ignore
+      await signIn('google', { callbackUrl });
+    } catch (err) {
+      setError('Connection failed.');
+      setIsLoading(null);
     }
   };
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const handleCredentialsSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitting(true);
+    if (!email || !password) return;
+
+    setIsLoading('credentials');
     setError(null);
-    setDesktopToken(null);
 
-    const res = await signIn('credentials', {
-      email,
-      password,
-      redirect: false,
-      callbackUrl,
-    });
-
-    setSubmitting(false);
-
-    if (!res) {
-      setError('Sign in failed.');
-      return;
-    }
-    if (res.error) {
-      setError('Sign in failed. Check your details.');
-      return;
-    }
-    router.push(res.url || callbackUrl);
-  };
-
-  const mintDesktopToken = async () => {
-    setTokenBusy(true);
-    setError(null);
     try {
-      const res = await fetch('/api/desktop/token', { method: 'POST' });
-      const data = (await res.json()) as { token?: string; error?: string };
-      if (!res.ok || !data.token) {
-        setError(data.error || 'Could not create desktop token.');
-        return;
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+        callbackUrl
+      });
+
+      if (result?.error) {
+        setError('Invalid credentials.');
+        setIsLoading(null);
+      } else {
+        router.push(callbackUrl);
       }
-      setDesktopToken(data.token);
-    } catch {
-      setError('Could not create desktop token.');
-    } finally {
-      setTokenBusy(false);
+    } catch (err) {
+      setError('Internal error.');
+      setIsLoading(null);
     }
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Nav */}
-      <motion.nav
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed top-0 left-0 right-0 z-50 bg-black/70 backdrop-blur-md border-b border-white/5"
+    <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-6 antialiased relative overflow-hidden">
+
+      {/* Background: Vignette only */}
+      <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#000_100%)] opacity-60" />
+
+      <motion.div
+        initial={{ opacity: 0, y: 5 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="w-full max-w-[360px] z-10"
       >
-        <div className="grid grid-cols-3 h-14 items-center px-8 text-[11px] tracking-[0.15em]">
-          <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-2 hover:opacity-50 transition-opacity">
-              <ArrowLeft className="w-3 h-3" />
-              BACK
-            </Link>
-          </div>
-          <div className="flex items-center justify-center">
-            <Link href="/" className="inline-flex items-center">
-              <Image
-                src="/logo.png"
-                alt="Quartz"
-                width={256}
-                height={65}
-                priority
-                className="h-5 w-auto"
-                unoptimized
-              />
-            </Link>
-          </div>
-          <div className="flex items-center justify-end gap-8">
-            <Link href="/download" className="hover:opacity-50 transition-opacity">DOWNLOAD</Link>
-          </div>
+        {/* Branding: Silent */}
+        <div className="text-center mb-10">
+          <Link href="/">
+            <Image
+              src="/logo.png"
+              alt="Quartz"
+              width={100}
+              height={25}
+              className="h-6 w-auto mx-auto brightness-[0.8]"
+            />
+          </Link>
         </div>
-      </motion.nav>
 
-      {/* Dots */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0"
-        style={{
-          backgroundImage: 'radial-gradient(rgba(255,255,255,0.10) 1px, transparent 1px)',
-          backgroundSize: '26px 26px',
-          backgroundPosition: 'center',
-          opacity: 0.18,
-        }}
-      />
+        {/* Auth Module: Radical Hierarchy */}
+        <div className="space-y-6">
+          <AnimatePresence mode="wait">
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500/90 text-[11px] text-center"
+              >
+                {error}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-      <main className="pt-28 pb-20 px-8">
-        <div className="max-w-[900px] mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            className="space-y-10"
-          >
-            <div className="flex items-center gap-3">
-              <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
-              <p className="text-[10px] tracking-[0.55em] text-white/35 font-light">SIGN IN</p>
+          <form onSubmit={handleCredentialsSignIn} className="space-y-4">
+            <div className="space-y-2">
+              <div className="relative overflow-hidden rounded-xl bg-white/[0.02] border border-white/[0.08] focus-within:border-white/20 transition-all h-[46px]">
+                <AnimatePresence>
+                  {isFocused === 'email' && (
+                    <motion.div
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      exit={{ x: -20, opacity: 0 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      className="absolute left-4 top-0 bottom-0 flex items-center z-10 pointer-events-none"
+                    >
+                      <Mail className="w-3.5 h-3.5 text-white/40" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onFocus={() => setIsFocused('email')}
+                  onBlur={() => setIsFocused(null)}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={`w-full h-full bg-transparent px-4 text-sm font-light placeholder:text-white/20 focus:outline-none transition-all ${isFocused === 'email' ? 'pl-10 text-white' : 'pl-4 text-white/90'}`}
+                  required
+                />
+              </div>
+
+              <div className="relative overflow-hidden rounded-xl bg-white/[0.02] border border-white/[0.08] focus-within:border-white/20 transition-all h-[46px]">
+                <AnimatePresence>
+                  {isFocused === 'password' && (
+                    <motion.div
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      exit={{ x: -20, opacity: 0 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      className="absolute left-4 top-0 bottom-0 flex items-center z-10 pointer-events-none"
+                    >
+                      <Lock className="w-3.5 h-3.5 text-white/40" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onFocus={() => setIsFocused('password')}
+                  onBlur={() => setIsFocused(null)}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className={`w-full h-full bg-transparent px-4 text-sm font-light placeholder:text-white/20 focus:outline-none transition-all ${isFocused === 'password' ? 'pl-10 text-white' : 'pl-4 text-white/90'}`}
+                  required
+                />
+              </div>
             </div>
 
-            <h1 className="font-display text-[clamp(44px,6vw,72px)] font-extralight tracking-[-0.05em] leading-[0.98]">
-              Your account.
-              <span className="text-white/25"> On desktop.</span>
-            </h1>
+            <button
+              type="submit"
+              disabled={!!isLoading}
+              className="w-full bg-white text-black rounded-xl py-3.5 text-[13px] font-bold hover:bg-[#eee] transition-all flex items-center justify-center gap-2 group shadow-xl"
+            >
+              {isLoading === 'credentials' ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  Sign In
+                  <ArrowRight className="w-3.5 h-3.5 opacity-30 group-hover:translate-x-0.5 transition-transform" />
+                </>
+              )}
+            </button>
+          </form>
 
-            {error && (
-              <div className="border border-white/10 bg-white/[0.03] px-5 py-4 text-[13px] text-white/65 font-light">
-                {error}
-              </div>
-            )}
+          {/* Secondary Action: Higher Visibility */}
+          <div className="pt-2">
+            <button
+              onClick={handleGoogleSignIn}
+              disabled={!!isLoading}
+              className="w-full bg-white/[0.02] border border-white/20 hover:border-white/40 rounded-xl py-3 text-[12px] font-semibold text-white/80 hover:text-white transition-all flex items-center justify-center gap-2.5 shadow-sm hover:shadow-md"
+            >
+              {isLoading === 'google' ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                <Chrome className="w-3.5 h-3.5 text-white" />
+              )}
+              Continue with Google
+            </button>
+          </div>
 
-            {status === 'authenticated' ? (
-              <div className="space-y-8">
-                <div className="border border-white/10 bg-white/[0.02] p-8">
-                  <p className="text-[10px] tracking-[0.4em] text-white/40 font-light">SIGNED IN</p>
-                  <p className="mt-4 text-[14px] text-white/60 font-light">
-                    {session?.user?.email}
-                  </p>
+          {/* Minimal Utilities */}
+          <div className="flex flex-col items-center gap-6 pt-6">
+            <Link href="/forgot" className="text-[10px] text-white/10 hover:text-white/30 transition-colors tracking-tight">
+              Forgot your password?
+            </Link>
 
-                  <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                    <button
-                      type="button"
-                      onClick={mintDesktopToken}
-                      disabled={tokenBusy}
-                      className="group inline-flex items-center justify-center gap-3 px-10 py-4 rounded-full bg-paper text-black text-[10px] tracking-[0.4em] hover:bg-paper/95 transition-all font-light disabled:opacity-60"
-                    >
-                      <span
-                        className="h-2 w-2 rounded-full bg-accent opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200"
-                        aria-hidden="true"
-                      />
-                      {desktopToken ? 'REFRESH DESKTOP TOKEN' : 'CONNECT DESKTOP'}
-                    </button>
-
-                    <a
-                      href={deepLink}
-                      className="group inline-flex items-center justify-center gap-3 px-10 py-4 rounded-full border border-white/10 text-[10px] tracking-[0.4em] text-white/60 hover:text-white hover:border-accent/50 transition-all font-light"
-                    >
-                      <ExternalLink className="h-4 w-4 text-white/30 group-hover:text-white/60 transition-colors" />
-                      OPEN APP
-                    </a>
-                  </div>
-
-                  {desktopToken && (
-                    <div className="mt-8 border border-white/10 bg-black/40 p-5">
-                      <div className="flex items-center justify-between gap-6">
-                        <p className="text-[10px] tracking-[0.4em] text-white/35 font-light">DESKTOP TOKEN</p>
-                        <button
-                          type="button"
-                          onClick={() => copy(desktopToken)}
-                          className="inline-flex items-center gap-2 text-[10px] tracking-[0.35em] text-white/40 hover:text-white/70 transition-colors"
-                        >
-                          <Copy className="h-4 w-4" />
-                          COPY
-                        </button>
-                      </div>
-                      <p className="mt-4 text-[12px] leading-[1.7] text-white/55 font-light break-all">
-                        {desktopToken}
-                      </p>
-                      <div className="mt-5 flex items-center gap-4 text-[10px] tracking-[0.3em] text-white/25 font-light">
-                        <Minus className="w-8 h-[1px] text-white/15" />
-                        Expires quickly. Use immediately.
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-6">
-                  <Link
-                    href="/download"
-                    className="inline-flex items-center gap-4 text-[10px] tracking-[0.4em] text-white/35 hover:text-white transition-colors group"
-                  >
-                    <Minus className="w-8 h-[1px] text-white/20 group-hover:text-white/45 transition-colors" />
-                    GO TO DOWNLOADS
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => signOut({ callbackUrl: '/' })}
-                    className="text-[10px] tracking-[0.4em] text-white/25 hover:text-white/45 transition-colors font-light"
-                  >
-                    SIGN OUT
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={onSubmit} className="max-w-[520px] border border-white/10 bg-white/[0.02] p-8">
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-[10px] tracking-[0.45em] text-white/35 font-light">
-                      EMAIL
-                    </label>
-                    <input
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      type="email"
-                      autoComplete="email"
-                      required
-                      className="mt-3 w-full bg-black/40 border border-white/10 px-4 py-3 text-[14px] text-white/70 outline-none focus:border-white/25 transition-colors"
-                      placeholder="you@studio.com"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] tracking-[0.45em] text-white/35 font-light">
-                      PASSWORD
-                    </label>
-                    <input
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      type="password"
-                      autoComplete="current-password"
-                      className="mt-3 w-full bg-black/40 border border-white/10 px-4 py-3 text-[14px] text-white/70 outline-none focus:border-white/25 transition-colors"
-                      placeholder="(dev placeholder)"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="group inline-flex w-full items-center justify-center gap-3 px-10 py-4 rounded-full bg-paper text-black text-[10px] tracking-[0.4em] hover:bg-paper/95 transition-all font-light disabled:opacity-60"
-                  >
-                    <span
-                      className="h-2 w-2 rounded-full bg-accent opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200"
-                      aria-hidden="true"
-                    />
-                    {submitting ? 'SIGNING IN' : 'SIGN IN'}
-                  </button>
-
-                  <p className="text-[12px] leading-[1.8] text-white/35 font-light">
-                    This is a minimal scaffold so the desktop connection flow can be built. Hook it to your real user
-                    system when ready.
-                  </p>
-                </div>
-              </form>
-            )}
-          </motion.div>
+            <div className="flex items-center gap-3 text-[9px] text-white/5 font-medium tracking-widest uppercase">
+              <Link href="/terms" className="hover:text-white/20">Terms</Link>
+              <span className="w-1 h-1 rounded-full bg-white/[0.02]" />
+              <Link href="/privacy" className="hover:text-white/20">Privacy</Link>
+            </div>
+          </div>
         </div>
-      </main>
+
+        {/* Desktop Context Link */}
+        {isDesktopFlow && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed bottom-8 w-full left-0 flex justify-center pointer-events-none"
+          >
+            <div className="flex items-center gap-2 border border-white/[0.03] bg-white/[0.01] px-4 py-1.5 rounded-full">
+              <div className="w-1.5 h-1.5 rounded-full bg-white/10 animate-pulse" />
+              <span className="text-[9px] font-bold tracking-[0.2em] text-white/10 uppercase">Editor Link Pending</span>
+            </div>
+          </motion.div>
+        )}
+      </motion.div>
     </div>
   );
 }
 
 export default function SignInPage() {
-  // Next.js requires a Suspense boundary when using `useSearchParams()` (CSR bailout).
   return (
-    <Suspense fallback={<div className="min-h-screen bg-black" />}>
-      <SignInInner />
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 text-white/5 animate-spin" />
+      </div>
+    }>
+      <SignInContent />
     </Suspense>
   );
 }
-
-

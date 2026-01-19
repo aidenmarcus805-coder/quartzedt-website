@@ -14,7 +14,7 @@ function createRoundedRectGeometry(width: number, height: number, radius: number
   const shape = new THREE.Shape();
   const x = -width / 2;
   const y = -height / 2;
-  
+
   shape.moveTo(x + radius, y);
   shape.lineTo(x + width - radius, y);
   shape.quadraticCurveTo(x + width, y, x + width, y + radius);
@@ -24,13 +24,13 @@ function createRoundedRectGeometry(width: number, height: number, radius: number
   shape.quadraticCurveTo(x, y + height, x, y + height - radius);
   shape.lineTo(x, y + radius);
   shape.quadraticCurveTo(x, y, x + radius, y);
-  
+
   const geometry = new THREE.ShapeGeometry(shape);
-  
+
   // Compute proper UVs for texture mapping
   const pos = geometry.attributes.position;
   const uvs = new Float32Array(pos.count * 2);
-  
+
   for (let i = 0; i < pos.count; i++) {
     const px = pos.getX(i);
     const py = pos.getY(i);
@@ -38,9 +38,9 @@ function createRoundedRectGeometry(width: number, height: number, radius: number
     uvs[i * 2] = (px + width / 2) / width;
     uvs[i * 2 + 1] = (py + height / 2) / height;
   }
-  
+
   geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
-  
+
   return geometry;
 }
 
@@ -53,7 +53,7 @@ function MonitorModel({
   hasUserScrolledRef,
   lowPowerMode,
   variant,
-}: { 
+}: {
   scrollProgressRef: React.MutableRefObject<number>;
   groupRef: React.RefObject<THREE.Group | null>;
   videoElement: HTMLVideoElement | null;
@@ -68,7 +68,7 @@ function MonitorModel({
     materials.preload();
     loader.setMaterials(materials);
   });
-  
+
   const screenMaterialRef = useRef<THREE.MeshBasicMaterial>(null);
   const videoTextureRef = useRef<THREE.VideoTexture | null>(null);
   const displayMeshRef = useRef<THREE.Mesh | null>(null);
@@ -111,7 +111,7 @@ function MonitorModel({
     vNormalPlus: new THREE.Vector3(),
     vNormalMinus: new THREE.Vector3(),
   }), []);
-  
+
   // Screen geometry - sized to match monitor1.obj display dimensions (1% smaller)
   const screenGeometry = useMemo(() => createRoundedRectGeometry(1.68, 0.96, 0.01), []);
   const lowPowerBasicMat = useMemo(
@@ -122,15 +122,15 @@ function MonitorModel({
   // Load textures for manual material application
   const textures = useMemo(() => {
     const loader = new THREE.TextureLoader();
-    
+
     const baseColor = loader.load('/TEX/basecolor.png');
     baseColor.colorSpace = THREE.SRGBColorSpace;
     baseColor.flipY = false;
-    
+
     const baseNormal = loader.load('/TEX/basenormal.png');
     baseNormal.colorSpace = THREE.LinearSRGBColorSpace;
     baseNormal.flipY = false;
-    
+
     return { baseColor, baseNormal };
   }, []);
 
@@ -141,9 +141,9 @@ function MonitorModel({
           if (child.geometry) {
             child.geometry.computeVertexNormals();
           }
-          
+
           const name = child.name;
-          
+
           // Store reference to display mesh and set rotation order once
           if (name.includes('material.001')) {
             displayMeshRef.current = child;
@@ -272,7 +272,7 @@ function MonitorModel({
               side: THREE.FrontSide,
             });
           }
-          
+
           // Apply materials based on mesh name
           if (name === 'macpro_monitor_001-material') {
             // Stand: textured black plastic (not metallic).
@@ -294,7 +294,7 @@ function MonitorModel({
           if (!child.userData.__hiMaterial) {
             child.userData.__hiMaterial = child.material;
           }
-          
+
           child.castShadow = false; // Disable for performance
           child.receiveShadow = true;
           child.frustumCulled = true; // Enable frustum culling
@@ -334,28 +334,28 @@ function MonitorModel({
       texture.generateMipmaps = false;
       texture.anisotropy = 4; // Reduced from 16 for performance
       videoTextureRef.current = texture;
-      
+
       if (screenMaterialRef.current) {
         screenMaterialRef.current.map = texture;
         screenMaterialRef.current.color.setHex(0xffffff);
         screenMaterialRef.current.needsUpdate = true;
       }
     }
-    
+
     // Skip heavy calculations if not needed
     if (!groupRef.current) return;
     if (lowPowerMode) return;
-    
+
     const scrollEase = scrollProgressRef.current;
     const time = performance.now() * 0.001; // Use performance.now() - faster than Date.now()
     const isInteractive = hasUserScrolledRef.current;
-    
+
     const allowFloat = variant === 'full';
     // Simplified floating animation (disabled in gallery mode so we can render on-demand)
     const floatY = allowFloat ? Math.sin(time * 0.5) * 0.02 : 0;
     const floatX = allowFloat ? Math.cos(time * 0.3) * 0.01 : 0;
     const floatRot = allowFloat && isInteractive ? Math.sin(time * 0.4) * 0.003 : 0;
-    
+
     // Mouse parallax effect (disabled until first scroll)
     const mouseInfluence = isInteractive ? 1 - scrollEase * 0.5 : 0;
     // Smooth mouse locally to avoid React re-renders.
@@ -364,24 +364,24 @@ function MonitorModel({
     smoothMouseRef.current.y += (rawMouse.y - smoothMouseRef.current.y) * 0.08;
     const mouseRotY = smoothMouseRef.current.x * 0.02 * mouseInfluence;
     const mouseRotX = smoothMouseRef.current.y * 0.014 * mouseInfluence;
-    
+
     // Scale (slightly larger overall per request)
     const startScale = 6.3;
     const endScale = 3.45;
     const currentScale = startScale + (endScale - startScale) * scrollEase; // Inline lerp
     groupRef.current.scale.setScalar(currentScale);
-    
+
 
     groupRef.current.position.x = -0.01 + floatX;
     // Drop the whole monitor slightly at the end of the scroll (scrollEase=1)
     // Nudge down a touch (~20px perceived) to give the hero typography more breathing room.
     groupRef.current.position.y = -5.45 + (3.35) * scrollEase - 0.4 * scrollEase + floatY;
-    
+
     // Rotation
     groupRef.current.rotation.y = -Math.PI / 2 + floatRot + mouseRotY;
     // No base tilt at scroll=0
     groupRef.current.rotation.x = scrollEase * 0.03 + mouseRotX;
-    
+
     // Tilt screens up based on scroll
     // NOTE: The model has a baked-in ~2.5° upward tilt from Blender; we cancel it at scroll=0.
     const blenderBaseTilt = THREE.MathUtils.degToRad(2.5);
@@ -515,35 +515,35 @@ function MonitorModel({
 
   // Glossy overlay geometry - same size as screen
   const glossGeometry = useMemo(() => createRoundedRectGeometry(1.68, 0.96, 0.01), []);
-  
+
   return (
     <group ref={groupRef} position={[0, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
       <primitive object={obj} />
-      
+
       {/* Video screen - positioned on the Pro Display XDR panel */}
-      <mesh 
+      <mesh
         ref={videoScreenRef}
         position={[0, 0, 0]}
         rotation={[0, 0, 0]}
         renderOrder={999}
         geometry={screenGeometry}
       >
-        <meshBasicMaterial 
+        <meshBasicMaterial
           ref={screenMaterialRef}
           color="#111111"
           toneMapped={false}
         />
       </mesh>
-      
+
       {/* Glossy screen overlay - subtle glass effect (optimized) */}
-      <mesh 
+      <mesh
         ref={glossScreenRef}
         position={[0, 0, 0]}
         rotation={[0, 0, 0]}
         renderOrder={1000}
         geometry={glossGeometry}
       >
-        <meshStandardMaterial 
+        <meshStandardMaterial
           transparent={true}
           opacity={0.03}
           roughness={0.1}
@@ -557,7 +557,7 @@ function MonitorModel({
 }
 
 // Scene
-function Scene({ scrollProgressRef, videoElement, mousePositionRef, hasUserScrolledRef, lowPowerMode, variant }: { 
+function Scene({ scrollProgressRef, videoElement, mousePositionRef, hasUserScrolledRef, lowPowerMode, variant }: {
   scrollProgressRef: React.MutableRefObject<number>;
   videoElement: HTMLVideoElement | null;
   mousePositionRef: React.MutableRefObject<{ x: number; y: number }>;
@@ -566,15 +566,15 @@ function Scene({ scrollProgressRef, videoElement, mousePositionRef, hasUserScrol
   variant?: 'full' | 'gallery';
 }) {
   const monitorGroupRef = useRef<THREE.Group>(null);
-  
+
   return (
     <group position={[0, 0, 0]}>
       {/* Environment for reflections */}
       {!lowPowerMode && <Environment preset="studio" environmentIntensity={0.28} />}
       {!lowPowerMode && <Lighting />}
-      <MonitorModel 
-        scrollProgressRef={scrollProgressRef} 
-        groupRef={monitorGroupRef} 
+      <MonitorModel
+        scrollProgressRef={scrollProgressRef}
+        groupRef={monitorGroupRef}
         videoElement={videoElement}
         mousePositionRef={mousePositionRef}
         hasUserScrolledRef={hasUserScrolledRef}
@@ -606,46 +606,46 @@ function Lighting() {
     <>
       {/* Soft ambient for visibility */}
       <ambientLight intensity={0.12} color="#ffffff" />
-      
+
       {/* KEY LIGHT - Main illumination from top-right */}
-      <directionalLight 
-        position={[6, 6, 7]} 
+      <directionalLight
+        position={[6, 6, 7]}
         intensity={1.15}
         color="#fff4ee"
       />
-      
+
       {/* RIM LIGHT - Subtle edge definition from back-left */}
-      <directionalLight 
-        position={[-6, 4, -4]} 
+      <directionalLight
+        position={[-6, 4, -4]}
         intensity={0.35}
         color="#ffffff"
       />
-      
+
       {/* FILL LIGHT - Soft from left side */}
-      <directionalLight 
-        position={[-6, 2, 6]} 
-        intensity={0.45} 
+      <directionalLight
+        position={[-6, 2, 6]}
+        intensity={0.45}
         color="#eef2ff"
       />
-      
+
       {/* TOP LIGHT - Even from above */}
       <directionalLight
         position={[0, 8, 2]}
         intensity={0.25}
         color="#ffffff"
       />
-      
+
       {/* FRONT ACCENT - Subtle face illumination */}
-      <pointLight 
-        position={[0, 1.2, 10]} 
-        intensity={0.9} 
-        color="#ffffff" 
+      <pointLight
+        position={[0, 1.2, 10]}
+        intensity={0.9}
+        color="#ffffff"
         distance={26}
         decay={2}
       />
-      
+
       {/* (Removed extra point lights to avoid harsh spec/hotspots) */}
-      
+
       {/* Soft gradient environment */}
       <hemisphereLight args={['#ffffff', '#0b0b0c', 0.25]} />
     </>
@@ -655,7 +655,7 @@ function Lighting() {
 // Loading fallback
 function LoadingFallback() {
   const meshRef = useRef<THREE.Mesh>(null);
-  
+
   useFrame(() => {
     if (meshRef.current) {
       meshRef.current.rotation.y += 0.02;
@@ -728,11 +728,11 @@ export default function CameraScene({
         setVideoElement(element);
         element.play().catch(console.error);
       });
-      element.play().catch(() => {});
+      element.play().catch(() => { });
       setVideoElement(element);
     }
   }, []);
-  
+
   // Mouse tracking for parallax effect
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -747,7 +747,7 @@ export default function CameraScene({
         invalidateRef.current?.();
       }
     };
-    
+
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [variant]);
@@ -784,7 +784,7 @@ export default function CameraScene({
     if (lowPowerMode) return;
     if (variant !== 'full') return;
     let animationFrame: number;
-    
+
     const animate = () => {
       const prev = progressRef.current;
       const diff = targetProgress.current - prev;
@@ -793,7 +793,7 @@ export default function CameraScene({
       applyProgressToDom(next);
       animationFrame = requestAnimationFrame(animate);
     };
-    
+
     animationFrame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animationFrame);
   }, [applyProgressToDom, lowPowerMode, variant]);
@@ -814,14 +814,14 @@ export default function CameraScene({
     }
 
     // Muted autoplay should be allowed; ignore any transient errors.
-    vid.play().catch(() => {});
+    vid.play().catch(() => { });
   }, [lowPowerMode, videoElement]);
 
   // Wheel, Touch, and Keyboard event handlers
   useEffect(() => {
     if (variant !== 'full') return;
     let touchStartY = 0;
-    
+
     const handleWheel = (e: WheelEvent) => {
       hasUserScrolledRef.current = true;
       // Check ref instead of state for immediate response
@@ -829,7 +829,7 @@ export default function CameraScene({
         // Scroll sensitivity - slightly more scrolling required
         const delta = e.deltaY * 0.0009;
         targetProgress.current = Math.max(0, Math.min(1, targetProgress.current + delta));
-        
+
         // Complete when close to end (avoid floating point issues)
         if (targetProgress.current >= 0.9999) {
           isCompleteRef.current = true; // Set ref immediately
@@ -849,7 +849,7 @@ export default function CameraScene({
           // Don't prevent this event - it continues to page scroll
           return;
         }
-        
+
         e.preventDefault();
       }
     };
@@ -866,10 +866,10 @@ export default function CameraScene({
         const touchY = e.touches[0].clientY;
         const deltaY = touchStartY - touchY;
         const delta = deltaY * 0.002; // Touch sensitivity
-        
+
         targetProgress.current = Math.max(0, Math.min(1, targetProgress.current + delta));
         touchStartY = touchY;
-        
+
         // Complete when close to end
         if (targetProgress.current >= 0.9999) {
           isCompleteRef.current = true;
@@ -885,7 +885,7 @@ export default function CameraScene({
           }
           return;
         }
-        
+
         e.preventDefault();
       }
     };
@@ -893,8 +893,8 @@ export default function CameraScene({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isCompleteRef.current) {
         let delta = 0;
-        
-        switch(e.key) {
+
+        switch (e.key) {
           case 'ArrowDown':
           case 'PageDown':
           case ' ': // Space bar
@@ -909,9 +909,9 @@ export default function CameraScene({
           default:
             return; // Don't prevent default for other keys
         }
-        
+
         targetProgress.current = Math.max(0, Math.min(1, targetProgress.current + delta));
-        
+
         // Complete when close to end
         if (targetProgress.current >= 0.9999) {
           isCompleteRef.current = true;
@@ -927,7 +927,7 @@ export default function CameraScene({
           }
           return;
         }
-        
+
         e.preventDefault();
       }
     };
@@ -948,7 +948,7 @@ export default function CameraScene({
     window.addEventListener('touchmove', handleTouchMove, { passive: false });
     window.addEventListener('keydown', handleKeyDown, { passive: false });
     window.addEventListener('scroll', handleScroll);
-    
+
     return () => {
       window.removeEventListener('wheel', handleWheel);
       window.removeEventListener('touchstart', handleTouchStart);
@@ -962,13 +962,13 @@ export default function CameraScene({
   useEffect(() => {
     if (variant !== 'full') return;
     const navbar = document.querySelector('nav');
-    
+
     if (!isCompleteRef.current) {
       // Calculate scrollbar width to prevent layout shift
       const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
       document.body.style.overflow = 'hidden';
       document.body.style.paddingRight = `${scrollbarWidth}px`;
-      
+
       // Also compensate fixed navbar
       if (navbar && navbar instanceof HTMLElement) {
         navbar.style.paddingRight = `${scrollbarWidth}px`;
@@ -976,13 +976,13 @@ export default function CameraScene({
     } else {
       document.body.style.overflow = '';
       document.body.style.paddingRight = '';
-      
+
       // Reset navbar padding
       if (navbar && navbar instanceof HTMLElement) {
         navbar.style.paddingRight = '';
       }
     }
-    
+
     return () => {
       document.body.style.overflow = '';
       document.body.style.paddingRight = '';
@@ -995,23 +995,23 @@ export default function CameraScene({
   return (
     <>
       {/* Monitor Scene with hero overlay - pure black background */}
-      <div 
+      <div
         className={`w-full bg-black overflow-hidden ${variant === 'full' ? 'h-screen' : 'h-full'} ${className ?? ''}`}
-        style={{ 
+        style={{
           position: 'relative',
           zIndex: 10,
         }}
       >
         {/* Minimal vignette for depth */}
-        <div 
+        <div
           className="absolute inset-0 pointer-events-none z-[5]"
           style={{
             background: 'radial-gradient(ellipse 70% 70% at 50% 50%, transparent 0%, rgba(0,0,0,0.4) 100%)',
           }}
         />
-        
+
         {/* Subtle ground anchor - suggests monitor has weight */}
-        <div 
+        <div
           className="absolute bottom-0 left-0 right-0 h-[40vh] pointer-events-none z-[4]"
           style={{
             background: 'radial-gradient(ellipse 50% 60% at 50% 100%, rgba(0,0,0,0.3) 0%, transparent 60%)',
@@ -1032,8 +1032,8 @@ export default function CameraScene({
         {/* 3D Canvas with optimized settings */}
         <Canvas
           camera={{ position: [0, 0, variant === 'gallery' ? 6 : 5], fov: variant === 'gallery' ? 45 : 50 }}
-          gl={{ 
-            antialias: true, 
+          gl={{
+            antialias: true,
             alpha: true,
             toneMapping: THREE.ACESFilmicToneMapping,
             toneMappingExposure: variant === 'gallery' ? 0.9 : 1.0,
@@ -1064,10 +1064,10 @@ export default function CameraScene({
         {showHeroOverlays && (
           <>
             {/* Initial hero text (bottom anchored) - CUTLINE (fades out as you scroll) */}
-            <div 
+            <div
               ref={domIntroRef}
               className="absolute inset-0 flex flex-col justify-end items-center text-center pointer-events-none z-10"
-              style={{ 
+              style={{
                 paddingBottom: '10vh',
                 willChange: 'opacity, transform',
               }}
@@ -1084,7 +1084,7 @@ export default function CameraScene({
                 <div className="flex justify-center pl-[26px] pr-0">
                   <Image
                     src="/logo.png?v=20251223"
-                    alt="Cutline"
+                    alt="Quartz"
                     width={1200}
                     height={305}
                     priority
@@ -1110,10 +1110,10 @@ export default function CameraScene({
             </div>
 
             {/* Hero text overlay - Bottom anchored (reference-style) */}
-            <div 
+            <div
               ref={domTitleWrapRef}
               className="absolute inset-0 flex items-end pointer-events-none z-10"
-              style={{ 
+              style={{
                 paddingBottom: '10vh',
                 opacity: 0,
                 willChange: 'opacity',
@@ -1123,13 +1123,13 @@ export default function CameraScene({
               <div className="absolute inset-0 pointer-events-none" style={{
                 background: 'linear-gradient(to top, rgba(0,0,0,0.70) 0%, rgba(0,0,0,0.25) 34%, transparent 66%)',
               }} />
-              
+
               {/* Content aligned to grid */}
               <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 w-full relative z-10">
                 <div className="mx-auto text-center w-full">
                   {/* Main title */}
                   <div className="overflow-hidden">
-                    <h1 
+                    <h1
                       ref={domTitleH1Ref}
                       className="text-[clamp(56px,10vw,140px)] font-extralight leading-[0.9] tracking-[-0.05em] text-white md:whitespace-nowrap"
                       style={{
