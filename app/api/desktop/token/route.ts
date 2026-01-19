@@ -36,8 +36,8 @@ export async function GET() {
       },
     });
 
-    // Redirect back to custom protocol (Tauri is listening)
-    return NextResponse.redirect(`autocut://auth?token=${token}`);
+    // Redirect to the handshake UI to attempt deep link + manual fallback
+    return NextResponse.redirect(new URL(`/dashboard/handshake?token=${token}`, process.env.NEXTAUTH_URL || 'https://quartzeditor.com'));
   } catch (error) {
     console.error('Failed to create desktop token:', error);
     return NextResponse.json({ error: 'internal_error' }, { status: 500 });
