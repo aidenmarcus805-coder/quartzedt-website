@@ -28,8 +28,11 @@ function SignInContent() {
   const [isFocused, setIsFocused] = useState<string | null>(null);
 
   useEffect(() => {
-    // router prefetching if needed
-  }, []);
+    const prompt = searchParams.get('prompt');
+    if (prompt === 'google' && !isLoading && !error) {
+      handleGoogleSignIn();
+    }
+  }, [searchParams, error]); // Handle auto-trigger once if param is present and no error
 
   const handleGoogleSignIn = async () => {
     setIsLoading('google');
@@ -95,7 +98,7 @@ function SignInContent() {
           </Link>
         </div>
 
-        {/* Auth Module: Radical Hierarchy */}
+        {/* Auth Module: Synchronized with Desktop */}
         <div className="space-y-6">
           <AnimatePresence mode="wait">
             {error && (
@@ -112,54 +115,24 @@ function SignInContent() {
 
           <form onSubmit={handleCredentialsSignIn} className="space-y-4">
             <div className="space-y-2">
-              <div className="relative overflow-hidden rounded-xl bg-white/[0.02] border border-white/[0.08] focus-within:border-white/20 transition-all h-[46px]">
-                <AnimatePresence>
-                  {isFocused === 'email' && (
-                    <motion.div
-                      initial={{ x: -20, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      exit={{ x: -20, opacity: 0 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                      className="absolute left-4 top-0 bottom-0 flex items-center z-10 pointer-events-none"
-                    >
-                      <Mail className="w-3.5 h-3.5 text-white/40" />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+              <div className="relative overflow-hidden rounded-lg bg-[#0A0A0A] border border-white/[0.08] focus-within:border-white/20 transition-all h-[46px]">
                 <input
                   type="email"
-                  placeholder="Email"
+                  placeholder="Email address"
                   value={email}
-                  onFocus={() => setIsFocused('email')}
-                  onBlur={() => setIsFocused(null)}
                   onChange={(e) => setEmail(e.target.value)}
-                  className={`w-full h-full bg-transparent px-4 text-sm font-light placeholder:text-white/20 focus:outline-none transition-all ${isFocused === 'email' ? 'pl-10 text-white' : 'pl-4 text-white/90'}`}
+                  className="w-full h-full bg-transparent px-4 text-sm font-light placeholder:text-white/20 focus:outline-none transition-all text-white/90"
                   required
                 />
               </div>
 
-              <div className="relative overflow-hidden rounded-xl bg-white/[0.02] border border-white/[0.08] focus-within:border-white/20 transition-all h-[46px]">
-                <AnimatePresence>
-                  {isFocused === 'password' && (
-                    <motion.div
-                      initial={{ x: -20, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      exit={{ x: -20, opacity: 0 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                      className="absolute left-4 top-0 bottom-0 flex items-center z-10 pointer-events-none"
-                    >
-                      <Lock className="w-3.5 h-3.5 text-white/40" />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+              <div className="relative overflow-hidden rounded-lg bg-[#0A0A0A] border border-white/[0.08] focus-within:border-white/20 transition-all h-[46px]">
                 <input
                   type="password"
                   placeholder="Password"
                   value={password}
-                  onFocus={() => setIsFocused('password')}
-                  onBlur={() => setIsFocused(null)}
                   onChange={(e) => setPassword(e.target.value)}
-                  className={`w-full h-full bg-transparent px-4 text-sm font-light placeholder:text-white/20 focus:outline-none transition-all ${isFocused === 'password' ? 'pl-10 text-white' : 'pl-4 text-white/90'}`}
+                  className="w-full h-full bg-transparent px-4 text-sm font-light placeholder:text-white/20 focus:outline-none transition-all text-white/90"
                   required
                 />
               </div>
@@ -168,37 +141,49 @@ function SignInContent() {
             <button
               type="submit"
               disabled={!!isLoading}
-              className="w-full bg-white text-black rounded-xl py-3.5 text-[13px] font-bold hover:bg-[#eee] transition-all flex items-center justify-center gap-2 group shadow-xl"
+              className="w-full bg-white text-black rounded-lg h-[46px] text-sm font-semibold hover:bg-[#eee] transition-all flex items-center justify-center gap-2 shadow-xl"
             >
               {isLoading === 'credentials' ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <>
-                  Sign In
-                  <ArrowRight className="w-3.5 h-3.5 opacity-30 group-hover:translate-x-0.5 transition-transform" />
-                </>
+                "Sign In"
               )}
             </button>
           </form>
 
-          {/* Secondary Action: Higher Visibility */}
-          <div className="pt-2">
+          {/* Divider */}
+          <div className="relative flex items-center justify-center py-2">
+            <div className="absolute inset-x-0 h-px bg-white/[0.05]" />
+            <span className="relative px-4 bg-[#050505] text-[10px] tracking-widest text-white/20 uppercase font-medium">
+              or continue with
+            </span>
+          </div>
+
+          {/* Google: Desktop Style */}
+          <div>
             <button
               onClick={handleGoogleSignIn}
               disabled={!!isLoading}
-              className="w-full bg-white/[0.02] border border-white/20 hover:border-white/40 rounded-xl py-3 text-[12px] font-semibold text-white/80 hover:text-white transition-all flex items-center justify-center gap-2.5 shadow-sm hover:shadow-md"
+              className="w-full bg-[#0A0A0A] border border-white/[0.08] hover:border-white/20 rounded-lg h-[46px] text-[13px] font-medium text-white transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
             >
               {isLoading === 'google' ? (
-                <Loader2 className="w-3 h-3 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <Chrome className="w-3.5 h-3.5 text-white" />
+                <>
+                  <svg width="18" height="18" viewBox="0 0 18 18">
+                    <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4" />
+                    <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853" />
+                    <path d="M3.964 10.711c-.18-.54-.282-1.117-.282-1.711 0-.594.102-1.17.282-1.711V4.957H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.043l3.007-2.332z" fill="#FBBC05" />
+                    <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.957L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335" />
+                  </svg>
+                  Google
+                </>
               )}
-              Continue with Google
             </button>
           </div>
 
           {/* Minimal Utilities */}
-          <div className="flex flex-col items-center gap-6 pt-6">
+          <div className="flex flex-col items-center gap-6 pt-4">
             <Link href="/forgot" className="text-[10px] text-white/10 hover:text-white/30 transition-colors tracking-tight">
               Forgot your password?
             </Link>

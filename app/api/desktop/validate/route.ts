@@ -18,6 +18,7 @@ export async function POST(req: Request) {
                         id: true,
                         email: true,
                         name: true,
+                        image: true,
                         plan: true,
                     },
                 },
