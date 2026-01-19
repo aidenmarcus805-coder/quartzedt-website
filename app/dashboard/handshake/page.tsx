@@ -7,7 +7,9 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, Copy, Check, ArrowRight } from 'lucide-react';
 
-export default function HandshakePage() {
+import { Suspense } from 'react';
+
+function HandshakeContent() {
     const searchParams = useSearchParams();
     const token = searchParams.get('token');
     const [copied, setCopied] = useState(false);
@@ -123,5 +125,17 @@ export default function HandshakePage() {
                 </div>
             </motion.div>
         </div>
+    );
+}
+
+export default function HandshakePage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+                <Loader2 className="w-6 h-6 text-white/5 animate-spin" />
+            </div>
+        }>
+            <HandshakeContent />
+        </Suspense>
     );
 }
