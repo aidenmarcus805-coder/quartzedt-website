@@ -73,12 +73,13 @@ export const authOptions: NextAuthOptions = {
 
   pages: {
     signIn: '/signin',
+    error: '/signin', // Redirect errors back to custom sign-in page
   },
 
   events: {
     async signIn({ user, isNewUser }) {
       if (isNewUser) {
-        console.log(`New user signed up: ${user.email}`);
+        // Analytics hook could go here
       }
     },
   },
