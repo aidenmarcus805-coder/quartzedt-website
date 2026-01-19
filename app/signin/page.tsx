@@ -2,7 +2,7 @@
 
 import { signIn } from 'next-auth/react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Chrome, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
@@ -19,6 +19,15 @@ function SignInContent() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isFocused, setIsFocused] = useState<string | null>(null);
+
+  useEffect(() => {
+    const errorParam = searchParams.get('error');
+    if (errorParam) {
+      if (errorParam === 'OAuthSignin') setError('Error connecting to Google. Check your redirect URIs.');
+      else if (errorParam === 'OAuthCallback') setError('Error during Google authentication.');
+      else setError('Authentication failed.');
+    }
+  }, [searchParams]);
 
   const handleGoogleSignIn = async () => {
     setIsLoading('google');
@@ -50,7 +59,8 @@ function SignInContent() {
         setError('Invalid credentials.');
         setIsLoading(null);
       } else {
-        router.push(callbackUrl);
+        // API routes require a hard navigation, not soft router push
+        window.location.href = callbackUrl;
       }
     } catch {
       setError('Internal error.');

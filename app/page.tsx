@@ -583,14 +583,12 @@ export default function Home() {
                                   }
                                 }
                               }}
-                              className={`relative h-full overflow-hidden rounded-[18px] bg-gray-100 focus:outline-none ${isActive ? 'flex-1 min-w-0' : 'w-[44px] md:w-[52px] shrink-0'
+                              className={`relative h-full focus:outline-none ${isActive ? 'flex-1 min-w-0' : 'w-[44px] md:w-[52px] shrink-0'
                                 }`}
                               style={{
                                 order: rel,
                                 transformStyle: 'preserve-3d',
                                 transformOrigin: 'left center',
-                                backfaceVisibility: 'hidden',
-                                WebkitBackfaceVisibility: 'hidden',
                               }}
                               animate={{
                                 rotateY,
@@ -603,23 +601,41 @@ export default function Home() {
                               transition={{ type: 'spring', stiffness: 170, damping: 26, mass: 1.1 }}
                               aria-label={`Select ${step.label}`}
                             >
-                              <div className="absolute inset-[6px] overflow-hidden rounded-[14px] bg-white">
-                                <SegmentVideo
-                                  src="/videoplayback1.mp4"
-                                  start={step.start}
-                                  end={step.end}
-                                  play={isActive}
-                                  className="absolute inset-0 w-full h-full object-cover"
+                              {/* Front Face */}
+                              <div
+                                className="absolute inset-0 overflow-hidden rounded-[18px] bg-gray-100"
+                                style={{ backfaceVisibility: 'hidden' }}
+                              >
+                                <div className="absolute inset-[6px] overflow-hidden rounded-[14px] bg-white">
+                                  <SegmentVideo
+                                    src="/videoplayback1.mp4"
+                                    start={step.start}
+                                    end={step.end}
+                                    play={isActive}
+                                    className="absolute inset-0 w-full h-full object-cover"
+                                  />
+                                </div>
+
+                                <div
+                                  aria-hidden="true"
+                                  className="absolute inset-0 pointer-events-none"
+                                  style={{
+                                    boxShadow: isActive
+                                      ? 'inset 0 1px 2px rgba(255,255,255,0.88), inset 0 -8px 18px rgba(0,0,0,0.06), 0 34px 92px rgba(0,0,0,0.12)'
+                                      : 'inset 0 1px 2px rgba(255,255,255,0.86), inset 0 -8px 18px rgba(0,0,0,0.05), 0 18px 54px rgba(0,0,0,0.10)',
+                                  }}
                                 />
                               </div>
 
+                              {/* Right Face (Thickness) */}
                               <div
                                 aria-hidden="true"
-                                className="absolute inset-0 pointer-events-none"
+                                className="absolute top-[2px] bottom-[2px] w-[24px] bg-[#1a1a1a] rounded-r-[4px]"
                                 style={{
-                                  boxShadow: isActive
-                                    ? 'inset 0 1px 2px rgba(255,255,255,0.88), inset 0 -8px 18px rgba(0,0,0,0.06), 0 34px 92px rgba(0,0,0,0.12)'
-                                    : 'inset 0 1px 2px rgba(255,255,255,0.86), inset 0 -8px 18px rgba(0,0,0,0.05), 0 18px 54px rgba(0,0,0,0.10)',
+                                  left: '100%',
+                                  transformOrigin: 'left center',
+                                  transform: 'rotateY(90deg)',
+                                  backfaceVisibility: 'hidden',
                                 }}
                               />
 
