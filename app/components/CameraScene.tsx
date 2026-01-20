@@ -788,7 +788,8 @@ export default function CameraScene({
     const animate = () => {
       const prev = progressRef.current;
       const diff = targetProgress.current - prev;
-      const next = Math.abs(diff) < 0.001 ? targetProgress.current : prev + diff * 0.18;
+      // Lower threshold for smoother settling (was 0.001)
+      const next = Math.abs(diff) < 0.0001 ? targetProgress.current : prev + diff * 0.18;
       progressRef.current = next;
       applyProgressToDom(next);
       animationFrame = requestAnimationFrame(animate);
@@ -835,10 +836,9 @@ export default function CameraScene({
           isCompleteRef.current = true; // Set ref immediately
           setIsAnimationComplete(true);
           targetProgress.current = 1;
-          progressRef.current = 1;
-          applyProgressToDom(1);
-          progressRef.current = 1;
-          applyProgressToDom(1);
+          // progressRef.current = 1; // Removed for smooth settling
+          // applyProgressToDom(1);   // Removed for smooth settling
+
           // Immediately release scroll lock and remove padding
           document.body.style.overflow = '';
           document.body.style.paddingRight = '';
@@ -875,8 +875,9 @@ export default function CameraScene({
           isCompleteRef.current = true;
           setIsAnimationComplete(true);
           targetProgress.current = 1;
-          progressRef.current = 1;
-          applyProgressToDom(1);
+          // progressRef.current = 1; // Removed for smooth settling
+          // applyProgressToDom(1);   // Removed for smooth settling
+
           document.body.style.overflow = '';
           document.body.style.paddingRight = '';
           const navbar = document.querySelector('nav');
@@ -917,8 +918,9 @@ export default function CameraScene({
           isCompleteRef.current = true;
           setIsAnimationComplete(true);
           targetProgress.current = 1;
-          progressRef.current = 1;
-          applyProgressToDom(1);
+          // progressRef.current = 1; // Removed for smooth settling
+          // applyProgressToDom(1);   // Removed for smooth settling
+
           document.body.style.overflow = '';
           document.body.style.paddingRight = '';
           const navbar = document.querySelector('nav');
