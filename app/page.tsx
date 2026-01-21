@@ -238,8 +238,8 @@ export default function Home() {
   const { data: session } = useSession();
 
   // Nav state management
-  // Nav state management
   const [navOnLight, setNavOnLight] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const firstWhiteRef = useRef<HTMLElement>(null);
   const firstDarkRef = useRef<HTMLElement>(null);
 
@@ -414,39 +414,65 @@ export default function Home() {
 
             {/* User Profile - Avatar dropdown for signed in, simple icon for signed out */}
             {session ? (
-              <div className="relative group">
+              <div className="relative">
                 <button
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
                   className={`flex items-center gap-2 p-1.5 pr-3 rounded-full border transition-all duration-300 active:scale-95 ${navOnLight
                     ? 'border-black/20 hover:border-black hover:bg-black/5'
                     : 'border-white/20 hover:border-white hover:bg-white/10'
                     }`}
                   aria-label="User menu"
                 >
-                  {/* User Avatar - first letter of email */}
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-medium ${navOnLight ? 'bg-black text-white' : 'bg-white text-black'}`}>
-                    {session.user?.email?.charAt(0).toUpperCase() || 'U'}
+                  {/* User Avatar - Google profile picture or first letter */}
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-medium overflow-hidden ${navOnLight ? 'bg-black/10' : 'bg-white/10'}`}>
+                    {session.user?.image ? (
+                      <img src={session.user.image} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className={navOnLight ? 'text-black/60' : 'text-white/60'}>
+                        {session.user?.email?.charAt(0).toUpperCase() || 'U'}
+                      </span>
+                    )}
                   </div>
-                  <ChevronDown className={`w-3 h-3 transition-transform group-hover:rotate-180 ${navOnLight ? 'text-black/50' : 'text-white/50'}`} />
+                  <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isMenuOpen ? 'rotate-180' : ''} ${navOnLight ? 'text-black/50' : 'text-white/50'}`} />
                 </button>
 
-                {/* Dropdown Menu */}
-                <div className="absolute top-full right-0 mt-2 w-48 py-2 bg-white text-black rounded-lg shadow-xl border border-black/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="px-4 py-2 border-b border-black/5">
-                    <p className="text-[11px] text-black/40 truncate">{session.user?.email}</p>
-                  </div>
-                  <Link href="/dashboard" className="block px-4 py-2.5 text-[11px] tracking-wider hover:bg-black/5 transition-colors">
-                    DASHBOARD
-                  </Link>
-                  <Link href="/download" className="block px-4 py-2.5 text-[11px] tracking-wider hover:bg-black/5 transition-colors">
-                    DOWNLOAD
-                  </Link>
-                  <button
-                    onClick={() => signOut()}
-                    className="w-full text-left px-4 py-2.5 text-[11px] tracking-wider hover:bg-black/5 transition-colors text-red-500"
-                  >
-                    SIGN OUT
-                  </button>
-                </div>
+                {/* Dropdown Menu - Click to toggle with AnimatePresence */}
+                <AnimatePresence>
+                  {isMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 4 }}
+                      className="absolute top-full right-0 mt-2 w-48 bg-white border border-black/10 rounded-xl shadow-lg overflow-hidden z-50"
+                    >
+                      <div className="p-1">
+                        <div className="px-3 py-2 text-[10px] text-black/40 border-b border-black/5 mb-1 truncate">
+                          {session.user?.email}
+                        </div>
+                        <Link
+                          href="/dashboard"
+                          className="flex items-center gap-2 px-3 py-2 text-xs text-black/60 hover:text-black hover:bg-black/5 rounded-lg transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Dashboard
+                        </Link>
+                        <Link
+                          href="/download"
+                          className="flex items-center gap-2 px-3 py-2 text-xs text-black/60 hover:text-black hover:bg-black/5 rounded-lg transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Download
+                        </Link>
+                        <button
+                          onClick={() => signOut()}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-xs text-black/60 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             ) : (
               <Link
