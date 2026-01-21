@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion, useInView } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Check, Film, Minus, Scissors, Search, Upload, User } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, ChevronDown, Film, MessageCircle, FileText, Map, Minus, Scissors, Search, Upload, User } from 'lucide-react';
 
 const PLAN = {
   price: 179,
@@ -17,7 +17,7 @@ const PLAN = {
   creemProductId: 'prod_founding_GF7xl',
 };
 import { useEffect, useRef, useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -238,8 +238,10 @@ export default function Home() {
   const { data: session } = useSession();
 
   // Nav state management
+  // Nav state management
   const [navOnLight, setNavOnLight] = useState(false);
   const firstWhiteRef = useRef<HTMLElement>(null);
+  const firstDarkRef = useRef<HTMLElement>(null);
 
   // Workflow state (blueprint logic)
   const [workflowIdx, setWorkflowIdx] = useState(0);
@@ -274,20 +276,61 @@ export default function Home() {
     };
     detectPerformance();
 
-    // Subtle scroll orchestration (blueprint)
     const onScroll = () => {
+      // Robust range-based nav color toggling:
+      // Black Nav Text active when over ANY white section (Workflow OR Problems we solve)
+      // White Nav Text active when over any black section
+      const NAV_THRESHOLD = 80; // pixels from top where nav sits
+
+      let inLightZone = false;
+
+      // Check if we're over the Workflow section (white)
+      if (firstWhiteRef.current) {
+        const workflowRect = firstWhiteRef.current.getBoundingClientRect();
+        // We're in Workflow if its top is above the nav threshold and its bottom is below
+        if (workflowRect.top <= NAV_THRESHOLD && workflowRect.bottom > NAV_THRESHOLD) {
+          inLightZone = true;
+        }
+      }
+
+      // Check if we're over the Problems we solve section (white)
+      if (!inLightZone && philosophyRef.current) {
+        const problemsRect = philosophyRef.current.getBoundingClientRect();
+        if (problemsRect.top <= NAV_THRESHOLD && problemsRect.bottom > NAV_THRESHOLD) {
+          inLightZone = true;
+        }
+      }
+
+      setNavOnLight(inLightZone);
+
       if (!firstWhiteRef.current) return;
       const rect = firstWhiteRef.current.getBoundingClientRect();
       const doorProgress = -rect.top / WORKFLOW_DOOR_SCROLL_PX;
       const isWorkflowLocked = rect.top <= 0 && -rect.top < rect.height - window.innerHeight;
 
-      setNavOnLight(rect.top <= 80 && -rect.top < rect.height - 80);
       setWorkflowLocked(isWorkflowLocked);
 
-      // Handle the "garage door" slide-up
+      // Handle the "garage door" slide-up and content reveal
       if (workflowDoorRef.current) {
         const slide = Math.max(0, Math.min(100, doorProgress * 100));
         workflowDoorRef.current.style.transform = `translate3d(0, -${slide}%, 0)`;
+
+        // Animate content reveal: Scale up from 0.95 and fade in as door clears
+        if (workflowContentRef.current) {
+          // Reveal starts earlier (at 40% door progress) for dramatic effect
+          const rawProgress = Math.max(0, Math.min(1, (doorProgress - 0.4) / 0.6));
+          // Ease-out cubic for cushiony deceleration (not too aggressive)
+          const revealProgress = 1 - Math.pow(1 - rawProgress, 2.5);
+          // Scale: 0.92 -> 1.0 (slightly more dramatic)
+          const scale = 0.92 + (revealProgress * 0.08);
+          // Opacity: 0 -> 1
+          const opacity = revealProgress;
+          // Y: 60px -> 0 (more travel distance)
+          const y = (1 - revealProgress) * 60;
+
+          workflowContentRef.current.style.transform = `scale(${scale}) translate3d(0, ${y}px, 0)`;
+          workflowContentRef.current.style.opacity = `${opacity}`;
+        }
       }
 
       // If we're in the workflow zone, calculate which step we should be on based on scroll
@@ -310,9 +353,10 @@ export default function Home() {
   }, []);
 
   const workflowDoorRef = useRef<HTMLDivElement>(null);
+  const workflowContentRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div ref={containerRef} className="bg-black text-white min-h-screen selection:bg-white selection:text-black antialiased">
+    <div ref={containerRef} className="bg-white text-black min-h-screen selection:bg-black selection:text-white antialiased">
 
       {/* Navigation - minimal, aligned to grid */}
       <motion.nav
@@ -324,8 +368,9 @@ export default function Home() {
       >
         <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 h-24 flex items-center justify-between">
           <Link href="/" className="flex items-center">
-            {/* Preload both logo variants so switching on light sections is instant (no "lag-behind"). */}
+            {/* Dual logo system: white logo for dark sections, black logo for light sections */}
             <span className="relative h-5 w-auto aspect-[256/65] shrink-0">
+              {/* White logo (shown on dark backgrounds) */}
               <Image
                 src="/logo.png"
                 alt="Quartz Editor"
@@ -333,9 +378,9 @@ export default function Home() {
                 sizes="80px"
                 priority
                 unoptimized
-                className={`object-contain transition-opacity duration-150 ${navOnLight ? 'opacity-0' : 'opacity-100'
-                  }`}
+                className={`object-contain transition-opacity duration-200 ${navOnLight ? 'opacity-0' : 'opacity-100'}`}
               />
+              {/* Black logo (shown on light backgrounds) */}
               <Image
                 src="/logoBlack.png"
                 alt=""
@@ -344,15 +389,13 @@ export default function Home() {
                 sizes="80px"
                 priority
                 unoptimized
-                className={`object-contain transition-opacity duration-150 ${navOnLight ? 'opacity-100' : 'opacity-0'
-                  }`}
+                className={`object-contain transition-opacity duration-200 ${navOnLight ? 'opacity-100' : 'opacity-0'}`}
               />
             </span>
           </Link>
 
           <div
-            className={`hidden md:flex items-center gap-12 text-[10px] tracking-[0.32em] font-light ${navOnLight ? 'text-black' : 'text-white'
-              }`}
+            className={`hidden md:flex items-center gap-12 text-[10px] tracking-[0.32em] font-light ${navOnLight ? 'text-black' : 'text-white'}`}
           >
             <Link href="/about" className="link-underline hover:opacity-60 transition-opacity">ABOUT</Link>
             <Link href="/pricing" className="link-underline hover:opacity-60 transition-opacity">PRICING</Link>
@@ -360,23 +403,63 @@ export default function Home() {
           </div>
 
           <div
-            className={`flex items-center gap-6 text-[10px] tracking-[0.32em] font-light ${navOnLight ? 'text-black' : 'text-white'
-              }`}
+            className={`flex items-center gap-6 text-[10px] tracking-[0.32em] font-light ${navOnLight ? 'text-black' : 'text-white'}`}
           >
-            <Link href={START_TRIAL_HREF} className="link-underline hover:opacity-60 transition-opacity">
-              START TRIAL
-            </Link>
-            <Link
-              href={session ? "/dashboard" : "/signin?next=/download"}
-              className={`p-2.5 rounded-full border transition-all duration-300 active:scale-95 flex items-center justify-center group/signin ${navOnLight
-                ? 'border-black/20 hover:border-black hover:bg-black/5'
-                : 'border-white/20 hover:border-white hover:bg-white/10 shadow-[0_0_20px_rgba(255,255,255,0.02)]'
-                }`}
-              aria-label={session ? "Go to Dashboard" : "Sign In"}
-            >
-              <User className={`w-4 h-4 transition-colors duration-300 ${navOnLight ? 'text-black' : 'text-white'} group-hover/signin:text-accent`} />
-              <div className={`absolute top-0 right-0 w-1.5 h-1.5 rounded-full animate-pulse bg-accent ${session ? 'opacity-100' : 'opacity-0'}`} />
-            </Link>
+            {/* Only show START TRIAL if user is NOT signed in */}
+            {!session && (
+              <Link href={START_TRIAL_HREF} className="link-underline hover:opacity-60 transition-opacity">
+                START TRIAL
+              </Link>
+            )}
+
+            {/* User Profile - Avatar dropdown for signed in, simple icon for signed out */}
+            {session ? (
+              <div className="relative group">
+                <button
+                  className={`flex items-center gap-2 p-1.5 pr-3 rounded-full border transition-all duration-300 active:scale-95 ${navOnLight
+                    ? 'border-black/20 hover:border-black hover:bg-black/5'
+                    : 'border-white/20 hover:border-white hover:bg-white/10'
+                    }`}
+                  aria-label="User menu"
+                >
+                  {/* User Avatar - first letter of email */}
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-medium ${navOnLight ? 'bg-black text-white' : 'bg-white text-black'}`}>
+                    {session.user?.email?.charAt(0).toUpperCase() || 'U'}
+                  </div>
+                  <ChevronDown className={`w-3 h-3 transition-transform group-hover:rotate-180 ${navOnLight ? 'text-black/50' : 'text-white/50'}`} />
+                </button>
+
+                {/* Dropdown Menu */}
+                <div className="absolute top-full right-0 mt-2 w-48 py-2 bg-white text-black rounded-lg shadow-xl border border-black/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="px-4 py-2 border-b border-black/5">
+                    <p className="text-[11px] text-black/40 truncate">{session.user?.email}</p>
+                  </div>
+                  <Link href="/dashboard" className="block px-4 py-2.5 text-[11px] tracking-wider hover:bg-black/5 transition-colors">
+                    DASHBOARD
+                  </Link>
+                  <Link href="/download" className="block px-4 py-2.5 text-[11px] tracking-wider hover:bg-black/5 transition-colors">
+                    DOWNLOAD
+                  </Link>
+                  <button
+                    onClick={() => signOut()}
+                    className="w-full text-left px-4 py-2.5 text-[11px] tracking-wider hover:bg-black/5 transition-colors text-red-500"
+                  >
+                    SIGN OUT
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <Link
+                href="/signin?next=/download"
+                className={`p-2.5 rounded-full border transition-all duration-300 active:scale-95 flex items-center justify-center group/signin ${navOnLight
+                  ? 'border-black/20 hover:border-black hover:bg-black/5'
+                  : 'border-white/20 hover:border-white hover:bg-white/10'
+                  }`}
+                aria-label="Sign In"
+              >
+                <User className={`w-4 h-4 transition-colors duration-300 ${navOnLight ? 'text-black' : 'text-white'} group-hover/signin:text-accent`} />
+              </Link>
+            )}
             {SHOW_BOOK_DEMO && (
               <a href={BOOK_DEMO_HREF} className="link-underline hover:opacity-60 transition-opacity hidden xl:inline">
                 BOOK DEMO
@@ -391,9 +474,11 @@ export default function Home() {
         <CameraScene lowPowerMode={lowPowerMode} variant="full" />
       </section>
 
-      {/* Key Benefits */}
-      <section className="relative bg-black border-t border-white/5 py-32 overflow-hidden">
-        <div className="w-full max-w-[1400px] mx-auto px-8 md:px-12 lg:px-16 space-y-32 md:space-y-48">
+      {/* Key Benefits (Black - Clean) */}
+      <section className="relative bg-black text-white border-t border-white/5 py-32 overflow-hidden">
+        {/* Artifacts removed per user request for clean monochrome look */}
+
+        <div className="w-full max-w-[1400px] mx-auto px-8 md:px-12 lg:px-16 space-y-32 md:space-y-48 relative z-10">
 
           {/* Feature 01: Intelligent Culling */}
           <div className="flex flex-col items-center justify-center text-center">
@@ -405,33 +490,30 @@ export default function Home() {
               className="relative mb-12 md:mb-16"
             >
               <div className="relative z-10">
-                <div className="relative w-[300px] md:w-[500px] aspect-video rounded-xl overflow-hidden border border-white/10 bg-[#050505]">
+                <div className="relative w-[300px] md:w-[500px] aspect-video rounded-xl overflow-hidden border border-white/10 bg-[#111]">
                   <Image
                     src="/wedding-culling-ui.png"
                     alt="Wedding Culling Interface"
                     fill
-                    className="object-cover opacity-95"
+                    className="object-cover opacity-90"
                   />
 
                   {/* Flat UI Overlay: Selection Highlight */}
                   <motion.div
-                    className="absolute top-[38%] left-[38%] w-[24%] h-[24%] border-2 border-white rounded-sm"
+                    className="absolute top-[38%] left-[38%] w-[24%] h-[24%] border-2 border-accent rounded-sm shadow-[0_0_15px_rgba(34,197,94,0.2)]"
                     animate={{ opacity: [1, 0.5, 1] }}
                     transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                   />
 
                   {/* Flat UI Badge */}
                   <div className="absolute top-4 right-4">
-                    <div className="flex items-center gap-2 px-3 py-1 bg-white rounded-md">
-                      <div className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" />
-                      <span className="text-[10px] font-bold tracking-tight text-black uppercase">Processing</span>
+                    <div className="flex items-center gap-2 px-3 py-1 bg-[#1a1a1a] shadow-sm rounded-md border border-white/10">
+                      <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+                      <span className="text-[10px] font-bold tracking-tight text-white uppercase">Processing</span>
                     </div>
                   </div>
                 </div>
               </div>
-
-              {/* Subtle Monochrome Glow */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] bg-white/5 blur-[80px] rounded-full pointer-events-none" />
             </motion.div>
 
             <motion.div
@@ -443,10 +525,10 @@ export default function Home() {
             >
               <h3 className="font-display text-[32px] md:text-[48px] text-white font-extralight tracking-tight leading-[1.1]">
                 Weeks of work.<br />
-                <span className="text-white/50">Done in moments.</span>
+                <span className="text-white/40">Done in moments.</span>
               </h3>
               <p className="text-[16px] md:text-[18px] leading-[1.8] text-white/50 font-light">
-                Quartz doesn&apos;t just organize; it builds. <span className="text-white/90 font-normal">Your wedding footage</span> is intelligently culled, color-corrected, and assembled into a full, solid rough cut—saving you weeks of manual labor.
+                Quartz doesn&apos;t just organize; it builds. <span className="text-white/80 font-normal">Your wedding footage</span> is intelligently culled, color-corrected, and assembled into a full, solid rough cut—saving you weeks of manual labor.
               </p>
             </motion.div>
           </div>
@@ -461,32 +543,37 @@ export default function Home() {
               className="relative mb-12 md:mb-16"
             >
               <div className="relative z-10">
-                <div className="relative w-[300px] md:w-[500px] aspect-video rounded-xl overflow-hidden border border-white/10 bg-[#050505]">
+                <div className="relative w-[300px] md:w-[500px] aspect-video rounded-xl overflow-hidden border border-white/10 bg-[#111]">
                   <Image
                     src="/flat-audio-sync-ui.png"
                     alt="Audio Synchronization Interface"
                     fill
-                    className="object-cover opacity-95"
+                    className="object-cover opacity-90"
                   />
 
-                  {/* Flat Sync Line */}
+                  {/* Scanning Playhead - Elegant and technical */}
                   <motion.div
-                    className="absolute top-0 bottom-0 w-[1px] bg-white"
-                    style={{ left: "50%" }}
-                    initial={{ opacity: 0.5 }}
-                    animate={{ opacity: [0.5, 1, 0.5] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
+                    className="absolute top-0 bottom-0 w-[1px] bg-accent/80 shadow-[0_0_15px_rgba(34,197,94,0.3)] z-20"
+                    initial={{ left: "0%", opacity: 0 }}
+                    whileInView={{ left: "100%", opacity: 1 }}
+                    viewport={{ once: false }} // Re-run on scroll back
+                    transition={{ duration: 4, ease: "linear", repeat: Infinity }}
                   />
 
-                  {/* Flat Sync Badge */}
-                  <div className="absolute inset-0 flex items-center justify-center">
+                  {/* "Synced" Badge */}
+                  <div className="absolute top-4 right-4 z-30">
                     <motion.div
-                      initial={{ opacity: 0, scale: 0.9 }}
+                      initial={{ opacity: 0, scale: 0.95 }}
                       whileInView={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.5 }}
-                      className="bg-black border border-white/20 px-3 py-1 rounded-sm shadow-xl"
+                      transition={{ delay: 1, duration: 0.4 }}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-[#1a1a1a]/90 backdrop-blur-md border border-white/10 shadow-sm rounded-full"
                     >
-                      <span className="text-[10px] font-mono text-white tracking-widest uppercase">Sync_Complete</span>
+                      <motion.div
+                        animate={{ opacity: [1, 0.4, 1] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="w-1.5 h-1.5 rounded-full bg-accent"
+                      />
+                      <span className="text-[10px] font-medium tracking-widest text-white uppercase">Synced</span>
                     </motion.div>
                   </div>
                 </div>
@@ -501,8 +588,8 @@ export default function Home() {
               className="max-w-2xl space-y-6"
             >
               <h3 className="font-display text-[32px] md:text-[48px] text-white font-extralight tracking-tight leading-[1.1]">
-                Sonic precision.<br />
-                <span className="text-white/50">Perfectly synced.</span>
+                Instantly synced.<br />
+                <span className="text-white/40">Perfectly aligned.</span>
               </h3>
               <p className="text-[16px] md:text-[18px] leading-[1.8] text-white/50 font-light">
                 Multi-cam sources, external recorders, and chaotic audio—instantly aligned. Quartz analyzes the waveform landscape to ensure every toast, vow, and laugh is perfectly in place.
@@ -520,12 +607,12 @@ export default function Home() {
               className="relative mb-12 md:mb-16"
             >
               <div className="relative z-10">
-                <div className="relative w-[300px] md:w-[500px] aspect-video rounded-xl overflow-hidden border border-white/10 bg-[#050505]">
+                <div className="relative w-[300px] md:w-[500px] aspect-video rounded-xl overflow-hidden border border-white/10 bg-[#111]">
                   <Image
                     src="/flat-export-ui.png"
                     alt="Seamless Export Interface"
                     fill
-                    className="object-cover opacity-95"
+                    className="object-cover opacity-90"
                   />
 
                   {/* Flat Success Toast */}
@@ -534,10 +621,10 @@ export default function Home() {
                       initial={{ y: 20, opacity: 0 }}
                       whileInView={{ y: 0, opacity: 1 }}
                       transition={{ delay: 0.5 }}
-                      className="bg-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2"
+                      className="bg-[#1a1a1a] border border-white/10 px-4 py-2 rounded-full shadow-lg flex items-center gap-2"
                     >
-                      <div className="w-1.5 h-1.5 rounded-full bg-black" />
-                      <span className="text-[11px] font-semibold text-black tracking-wide">Ready to Edit</span>
+                      <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                      <span className="text-[11px] font-semibold text-white tracking-wide">Ready to Edit</span>
                     </motion.div>
                   </div>
                 </div>
@@ -553,26 +640,14 @@ export default function Home() {
             >
               <h3 className="font-display text-[32px] md:text-[48px] text-white font-extralight tracking-tight leading-[1.1]">
                 Creative flow,<br />
-                <span className="text-white/50">unlocked.</span>
+                <span className="text-white/40">unlocked.</span>
               </h3>
               <p className="text-[16px] md:text-[18px] leading-[1.8] text-white/50 font-light">
-                Skip the assembly drudgery entirely. Export a fully structured, <span className="text-white/90 font-normal">color-graded</span> timeline directly to your NLE for any Highlight, Full Day, Ceremony, or Reception edit. Start with a finished foundation.
+                Skip the assembly drudgery entirely. Export a fully structured, <span className="text-white/80 font-normal">color-graded</span> timeline directly to your NLE for any Highlight, Full Day, Ceremony, or Reception edit. Start with a finished foundation.
               </p>
             </motion.div>
           </div>
         </div>
-
-        {/* Subtle dot field */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage: 'radial-gradient(rgba(255,255,255,0.10) 1px, transparent 1px)',
-            backgroundSize: '26px 26px',
-            backgroundPosition: 'center',
-            opacity: 0.35,
-          }}
-        />
       </section>
 
       {/* Workflow */}
@@ -588,15 +663,15 @@ export default function Home() {
           className="pointer-events-none sticky top-0 z-40 bg-black -mb-screen rounded-b-3xl"
           style={{ height: '100vh', transform: 'translate3d(0, 0, 0)', willChange: 'transform', marginBottom: '-100vh' }}
         >
-          {/* Subtle dot field (matches hero language) */}
+          {/* Subtle dot field (white dots on black) - No other artifacts */}
           <div
             aria-hidden="true"
             className="absolute inset-0"
             style={{
-              backgroundImage: 'radial-gradient(rgba(255,255,255,0.10) 1px, transparent 1px)',
+              backgroundImage: 'radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px)',
               backgroundSize: '26px 26px',
               backgroundPosition: 'center',
-              opacity: 0.35,
+              opacity: 0.5,
             }}
           />
 
@@ -605,8 +680,8 @@ export default function Home() {
             aria-hidden="true"
             className="absolute inset-x-0 bottom-0 h-px"
             style={{
-              background: 'rgba(255,255,255,0.10)',
-              boxShadow: '0 18px 60px rgba(0,0,0,0.55)',
+              background: 'rgba(255,255,255,0.15)',
+              boxShadow: '0 18px 60px rgba(0,0,0,0.8)',
             }}
           />
         </div>
@@ -634,7 +709,7 @@ export default function Home() {
             />
           </div>
 
-          <div className="sticky top-0 h-screen">
+          <div ref={workflowContentRef} className="sticky top-0 h-screen" style={{ willChange: 'transform, opacity' }}>
             {/* Keep pinned content comfortably within the viewport (avoid clipped dock on shorter screens). */}
             <div className="relative h-full pt-24 pb-12 flex flex-col">
               {/* Title (gallery rhythm: aligned to content grid) */}
@@ -951,55 +1026,60 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section ref={philosophyRef} className="relative border-t border-white/5 bg-black">
-        <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 py-32">
-          <div className="flex flex-col md:flex-row items-end justify-between gap-12 mb-24">
+      {/* Problems we solve */}
+      <section ref={philosophyRef} className="relative border-t border-black/5 bg-white text-black">
+        <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 py-24 md:py-32">
+          <div className="flex flex-col md:flex-row items-baseline justify-between gap-12 mb-20">
             <Reveal>
-              <h2 className="font-display text-[42px] md:text-[64px] font-extralight tracking-[-0.04em] leading-[1.05] text-white max-w-2xl">
-                Trusted by the world's best storytellers.
-                <BleepDot className="ml-4" />
+              <h2 className="font-display text-[42px] md:text-[64px] font-extralight tracking-[-0.04em] leading-[1.05] text-black">
+                The problems we solve.
               </h2>
             </Reveal>
-            <div className="hidden md:block pb-4">
+            <div className="hidden md:block">
               <Reveal delay={0.1}>
-                <p className="text-white/40 text-sm tracking-widest font-light uppercase">
-                  REAL FEEDBACK FROM REAL PROS
+                <p className="text-black/40 text-xs tracking-widest font-mono uppercase">
+                  Real solutions for real workflow pain
                 </p>
               </Reveal>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="space-y-0 border-t border-black/10">
             {[
               {
-                quote: "I used to drown in 4TB of footage after every weekend. Quartz culls the junk instantly. I delivered my last three weddings in half the time.",
-                author: "Elena R.",
-                role: "Destination Weddings"
+                pain: "Drowning in footage",
+                desc: "4TB of clips after every weekend. Hours spent scrubbing for the good shots.",
+                solution: "AI-powered culling finds highlights instantly."
               },
               {
-                quote: "Syncing 4 cameras and 6 mics for a ceremony used to be a nightmare. Quartz aligns it all flawlessly, even with drift. It's essential gear now.",
-                author: "Marcus T.",
-                role: "Luxury Wedding Films"
+                pain: "Audio sync nightmares",
+                desc: "4 cameras, 6 mics, ceremony drift. Manual alignment takes forever.",
+                solution: "Automatic multi-source alignment, even with drift."
               },
               {
-                quote: "Most AI editors chop up the emotion. Quartz actually understands the vows and speeches. I start with a solid story timeline instead of a mess.",
-                author: "Sarah J.",
-                role: "Wedding Editor"
+                pain: "Starting from scratch",
+                desc: "Every edit begins with a blank timeline. Hours of assembly before creativity.",
+                solution: "Export a structured rough cut in minutes."
               }
             ].map((t, i) => (
-              <Reveal key={i} delay={0.1 + i * 0.1}>
-                <div className="group relative p-10 rounded-3xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] transition-colors duration-500 h-full">
-                  <div className="absolute top-10 left-10 text-white/10 group-hover:text-white/20 transition-colors text-6xl font-serif leading-none">
-                    &ldquo;
-                  </div>
-                  <div className="relative z-10 pt-12 space-y-8">
-                    <p className="text-[17px] leading-[1.8] text-white/80 font-light">
-                      {t.quote}
-                    </p>
-                    <div>
-                      <div className="text-white font-medium mb-1">{t.author}</div>
-                      <div className="text-white/40 text-[11px] tracking-widest uppercase">{t.role}</div>
+              <Reveal key={i} delay={0.1}>
+                <div className="group relative border-b border-black/10 transition-colors hover:bg-black/[0.02]">
+                  <div className="py-12 md:py-16 grid md:grid-cols-12 gap-8 items-start">
+                    <div className="md:col-span-4">
+                      <h3 className="text-2xl md:text-3xl font-light text-black group-hover:text-black/90 transition-colors">
+                        {t.pain}
+                      </h3>
+                    </div>
+                    <div className="md:col-span-4">
+                      <p className="text-lg text-black/50 font-light leading-relaxed max-w-sm">
+                        {t.desc}
+                      </p>
+                    </div>
+                    <div className="md:col-span-4 flex items-center gap-3 pt-1 md:pt-0">
+                      <div className="w-8 h-8 rounded-full border border-black/10 flex items-center justify-center flex-shrink-0 text-accent opacity-50 group-hover:opacity-100 transition-opacity">
+                        <Check className="w-4 h-4" />
+                      </div>
+                      <span className="text-sm text-black/60 font-mono">{t.solution}</span>
                     </div>
                   </div>
                 </div>
@@ -1009,139 +1089,133 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Pricing - Minimal Grid */}
-      <section data-nav="light" className="relative bg-white text-black border-y border-black/5">
-        {/* Subtle dot field (Gray for light background) */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
+      {/* Built in Public - Integrated (Black - Clean) */}
+      <section ref={firstDarkRef} className="relative border-t border-white/5 bg-black py-24 md:py-32 overflow-hidden">
+        {/* Artifacts removed - keeping it minimal */}
+
+        <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 relative z-10">
+          <Reveal>
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div>
+                <p className="text-white/30 text-xs tracking-widest font-mono uppercase mb-6">Open development</p>
+                <h2 className="font-display text-[42px] md:text-[56px] font-extralight tracking-[-0.04em] leading-[1.1] text-white mb-8">
+                  Built in public.
+                </h2>
+                <p className="text-white/50 text-xl font-light leading-relaxed mb-10 max-w-md">
+                  No secrets, no gatekeeping. We build alongside our users.
+                </p>
+
+                <div className="flex flex-wrap gap-8 text-sm font-mono">
+                  <Link href="/blog/why-we-built-quartz" className="text-white/60 hover:text-white transition-colors border-b border-white/20 hover:border-white pb-1">
+                    The backstory
+                  </Link>
+                  <Link href="/roadmap" className="text-white/60 hover:text-white transition-colors border-b border-white/20 hover:border-white pb-1">
+                    Roadmap
+                  </Link>
+                  <a href="https://discord.gg/quartz" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white transition-colors border-b border-white/20 hover:border-white pb-1">
+                    Discord
+                  </a>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* Pricing - Stark & Direct (Black - Clean) */}
+      <section data-nav="light" className="relative bg-black text-white border-y border-white/5 min-h-screen flex items-center overflow-hidden">
+        {/* Artifacts: Plus signs grid (Restored per user request) */}
+        <div className="absolute inset-0 pointer-events-none opacity-[0.15]" aria-hidden="true"
           style={{
-            backgroundImage: 'radial-gradient(rgba(0,0,0,0.07) 1px, transparent 1px)',
-            backgroundSize: '26px 26px',
-            backgroundPosition: 'center',
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M0 0h1v1H0zM39 0h1v1h-1zM0 39h1v1H0zM39 39h1v1h-1z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            backgroundSize: '40px 40px'
           }}
         />
 
-        <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 w-full py-32">
+        <div className="relative z-10 max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 w-full py-32">
           <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-start">
 
             {/* Left - Title + Toggle */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="lg:sticky lg:top-24"
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="lg:sticky lg:top-32 relative z-10"
             >
-              <div className="flex items-center gap-2 mb-6">
-                <span className="h-2 w-2 rounded-full bg-accent" />
-                <span className="text-sm text-black/50">Founding offer · 50 spots</span>
+              <div className="flex items-center gap-2 mb-8">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                </span>
+                <span className="text-xs font-mono uppercase tracking-widest text-white/40">50 spots</span>
               </div>
 
-              <h1 className="text-4xl md:text-5xl font-light tracking-tight">
-                One price
+              <h1 className="text-6xl md:text-8xl font-light tracking-[-0.04em] leading-[0.9] text-white mix-blend-difference mb-8">
+                Pricing.
               </h1>
 
-              <p className="mt-4 text-black/40">
-                Lock in this rate for life.
+              <p className="text-lg text-white/40 font-light max-w-sm leading-relaxed mb-12">
+                Everything included.
               </p>
 
-              {/* Billing Toggle */}
-              <div className="mt-10 flex items-center p-1 bg-black/5 rounded-full border border-black/10 w-fit">
+              {/* Minimal Billing Toggle */}
+              <div className="flex items-center p-1 bg-white/[0.03] rounded-full border border-white/10 w-fit backdrop-blur-md">
                 <button
                   onClick={() => setBilling('monthly')}
-                  className={`px-5 py-2 rounded-full text-sm transition-all ${billing === 'monthly' ? 'bg-white text-black shadow-sm font-medium' : 'text-black/50 hover:text-black'}`}
+                  className={`px-6 py-2.5 rounded-full text-sm transition-all duration-300 ${billing === 'monthly' ? 'bg-white text-black font-medium shadow-[0_0_20px_rgba(255,255,255,0.1)]' : 'text-white/40 hover:text-white'}`}
                 >
                   Monthly
                 </button>
                 <button
                   onClick={() => setBilling('annual')}
-                  className={`px-5 py-2 rounded-full text-sm transition-all flex items-center gap-2 ${billing === 'annual' ? 'bg-white text-black shadow-sm font-medium' : 'text-black/50 hover:text-black'}`}
+                  className={`px-6 py-2.5 rounded-full text-sm transition-all duration-300 flex items-center gap-2 ${billing === 'annual' ? 'bg-white text-black font-medium shadow-[0_0_20px_rgba(255,255,255,0.1)]' : 'text-white/40 hover:text-white'}`}
                 >
                   Annual
-                  <span className={`text-xs px-1.5 py-0.5 rounded ${billing === 'annual' ? 'bg-accent text-white' : 'bg-accent/10 text-accent'}`}>
-                    Save 2mo
+                  <span className={`text-[10px] uppercase tracking-wider font-medium px-1.5 py-0.5 rounded ${billing === 'annual' ? 'bg-accent/10 text-accent' : 'bg-white/5 text-white/30'}`}>
+                    -17%
                   </span>
                 </button>
               </div>
-
-              {/* Referral */}
-              <p className="mt-10 text-sm text-black/25">
-                <Link href="/dashboard?tab=referrals" className="hover:text-black/50 transition-colors">
-                  Refer a friend → Get a free month
-                </Link>
-              </p>
             </motion.div>
 
-            {/* Right - Pricing Card */}
+            {/* Right - Dark Monochrome Pricing Card */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="bg-black/[0.03] border border-black/10 rounded-2xl p-8 md:p-12 grid md:grid-cols-5 gap-12 items-center overflow-hidden"
+              transition={{ delay: 0.2, duration: 0.6 }}
             >
-              {/* Content - 3 cols */}
-              <div className="md:col-span-3 space-y-8">
-                {/* Price */}
-                <div>
+              {/* Dark card - Dark Grey with White Text (Monochrome) */}
+              <div className="bg-[#111] text-white rounded-2xl p-10 md:p-12 border border-white/10">
+
+                <div className="mb-10">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-5xl md:text-6xl font-light tracking-tight">${price}</span>
-                    <span className="text-lg text-black/40">/{period}</span>
+                    <span className="text-6xl md:text-7xl font-light tracking-tight text-white">${price}</span>
+                    <span className="text-xl text-white/40">/{period}</span>
                   </div>
-                  <p className="mt-2 text-sm text-black/40">per seat · cancel anytime</p>
+                  <p className="text-white/40 text-sm mt-2">Billed {billing}, cancel anytime.</p>
                 </div>
 
-                {/* Features */}
-                <div className="space-y-4">
+                <div className="space-y-4 mb-10 border-t border-white/5 pt-8">
                   {PLAN.features.map((f, i) => (
                     <div key={i} className="flex items-center gap-3">
-                      <div className="w-5 h-5 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
-                        <Check className="w-3 h-3 text-accent" />
-                      </div>
-                      <span className="text-sm text-black/70">{f}</span>
+                      <Check className="w-4 h-4 text-white/40" />
+                      <span className="text-[15px] text-white/70">{f}</span>
                     </div>
                   ))}
                 </div>
 
-                {/* CTA */}
-                <div>
-                  <a href={`https://creem.io/checkout/${PLAN.creemProductId}`} target="_blank" rel="noopener noreferrer" className="block">
-                    <button className="group w-full py-4 rounded-xl bg-black text-white text-sm font-medium hover:bg-black/90 transition-all flex items-center justify-center gap-2 shadow-xl shadow-black/5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-accent opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200" />
-                      Start free trial
-                    </button>
-                  </a>
-                  <p className="text-center text-black/30 text-[11px] mt-3 font-medium">7 days free · No credit card</p>
-                </div>
-              </div>
-
-              {/* Gallery - 2 cols (Visual filler) */}
-              <div className="hidden md:block md:col-span-2 relative h-full min-h-[400px]">
-                {/* Card 1 */}
-                <div className="absolute top-0 right-0 w-[260px] aspect-[4/3] rounded-lg shadow-2xl shadow-black/10 border border-black/5 overflow-hidden transform rotate-3 translate-x-4 z-10 bg-white">
-                  <Image
-                    src="/wedding-culling-ui.png"
-                    alt="Culling Interface"
-                    fill
-                    className="object-cover"
-                  />
-                  {/* Subtle gloss overlay to make it look like a screen */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-black/5 to-transparent pointer-events-none" />
-                </div>
-
-                {/* Card 2 */}
-                <div className="absolute top-32 right-12 w-[240px] aspect-[4/3] rounded-lg shadow-xl shadow-black/5 border border-black/5 overflow-hidden transform -rotate-2 -translate-x-4 bg-white">
-                  <Image
-                    src="/flat-export-ui.png"
-                    alt="Export Interface"
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-tr from-black/5 to-transparent pointer-events-none" />
-                </div>
+                <a href={`https://creem.io/checkout/${PLAN.creemProductId}`} target="_blank" rel="noopener noreferrer" className="block">
+                  <button className="w-full py-4 bg-white text-black text-sm font-medium rounded-lg hover:bg-white/90 transition-colors">
+                    Start free trial
+                  </button>
+                </a>
+                <p className="text-center text-white/30 text-xs mt-4">
+                  7 day free trial · No credit card
+                </p>
               </div>
             </motion.div>
-
           </div>
         </div>
       </section>
@@ -1150,10 +1224,20 @@ export default function Home() {
 
 
       {/* Footer - Minimal Grid */}
-      <footer className="border-t border-white/5">
-        <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 py-20">
-          {/* Main Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-16 md:gap-8">
+      <footer className="relative bg-black text-white border-t border-white/5 py-24 md:py-32">
+        {/* Subtle dot field (white dots on black) - matched to other dark sections */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none opacity-[0.1]"
+          style={{
+            backgroundImage: 'radial-gradient(rgba(255,255,255,0.2) 1px, transparent 1px)',
+            backgroundSize: '20px 20px',
+            backgroundPosition: 'center',
+          }}
+        />
+
+        <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 relative z-10">
+          <div className="grid md:grid-cols-12 gap-12 lg:gap-24 mb-24">
             {/* Brand - 5 cols (golden ratio) */}
             <div className="md:col-span-5 space-y-8">
               <Link href="/" className="inline-flex items-center">
@@ -1214,6 +1298,6 @@ export default function Home() {
           </div>
         </div>
       </footer>
-    </div>
+    </div >
   );
 }

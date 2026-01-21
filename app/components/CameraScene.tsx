@@ -64,10 +64,13 @@ function MonitorModel({
 }) {
   // Load MTL first, then OBJ with materials
   const materials = useLoader(MTLLoader, '/monitor1.mtl');
-  const obj = useLoader(OBJLoader, '/monitor1.obj', (loader) => {
+  const objRaw = useLoader(OBJLoader, '/monitor1.obj', (loader) => {
     materials.preload();
     loader.setMaterials(materials);
   });
+
+  // Clone the object to prevent mutation of the cached loader instance (fixes compounding offset bug)
+  const obj = useMemo(() => objRaw.clone(), [objRaw]);
 
   const screenMaterialRef = useRef<THREE.MeshBasicMaterial>(null);
   const videoTextureRef = useRef<THREE.VideoTexture | null>(null);
@@ -132,6 +135,12 @@ function MonitorModel({
     baseNormal.flipY = false;
 
     return { baseColor, baseNormal };
+  }, []);
+
+  useEffect(() => {
+    // Reset refs on mount to prevent tilt accumulation across navigations
+    displayBaseQuatRef.current = null;
+    displayFitRef.current = null;
   }, []);
 
   useEffect(() => {
@@ -788,8 +797,8 @@ export default function CameraScene({
     const animate = () => {
       const prev = progressRef.current;
       const diff = targetProgress.current - prev;
-      // Lower threshold for smoother settling (was 0.001)
-      const next = Math.abs(diff) < 0.0001 ? targetProgress.current : prev + diff * 0.18;
+      // Balanced lerp factor (0.10) - smooth but not too floaty
+      const next = Math.abs(diff) < 0.00001 ? targetProgress.current : prev + diff * 0.10;
       progressRef.current = next;
       applyProgressToDom(next);
       animationFrame = requestAnimationFrame(animate);
