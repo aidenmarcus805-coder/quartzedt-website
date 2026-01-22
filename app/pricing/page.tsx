@@ -165,7 +165,7 @@ export default function PricingPage() {
                   ))}
                 </div>
 
-                <a href={`https://creem.io/checkout/${PLAN.creemProductId}`} target="_blank" rel="noopener noreferrer" className="block">
+                <a href={`https://creem.io/payment/${PLAN.creemProductId}`} target="_blank" rel="noopener noreferrer" className="block">
                   <button className="w-full py-4 bg-white text-black text-sm font-medium rounded-lg hover:bg-white/90 transition-colors">
                     Start free trial
                   </button>

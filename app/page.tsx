@@ -216,7 +216,7 @@ const WORKFLOW_STEPS = [
   },
 ];
 
-const START_TRIAL_HREF = '/signin?next=/download';
+const START_TRIAL_HREF = '/signin?next=/dashboard/download';
 const BOOK_DEMO_HREF = '/pricing';
 const SHOW_BOOK_DEMO = false;
 
@@ -399,7 +399,7 @@ export default function Home() {
           >
             <Link href="/about" className="link-underline hover:opacity-60 transition-opacity">ABOUT</Link>
             <Link href="/pricing" className="link-underline hover:opacity-60 transition-opacity">PRICING</Link>
-            <Link href="/download" className="link-underline hover:opacity-60 transition-opacity">DOWNLOAD</Link>
+            <Link href="/dashboard/download" className="link-underline hover:opacity-60 transition-opacity">DOWNLOAD</Link>
           </div>
 
           <div
@@ -457,7 +457,7 @@ export default function Home() {
                           Dashboard
                         </Link>
                         <Link
-                          href="/download"
+                          href="/dashboard/download"
                           className="flex items-center gap-2 px-3 py-2 text-xs text-black/60 hover:text-black hover:bg-black/5 rounded-lg transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
@@ -476,7 +476,7 @@ export default function Home() {
               </div>
             ) : (
               <Link
-                href="/signin?next=/download"
+                href="/signin?next=/dashboard/download"
                 className={`p-2.5 rounded-full border transition-all duration-300 active:scale-95 flex items-center justify-center group/signin ${navOnLight
                   ? 'border-black/20 hover:border-black hover:bg-black/5'
                   : 'border-white/20 hover:border-white hover:bg-white/10'
@@ -1199,7 +1199,7 @@ export default function Home() {
                   ))}
                 </div>
 
-                <a href={`https://creem.io/checkout/${PLAN.creemProductId}`} target="_blank" rel="noopener noreferrer" className="block">
+                <a href={`https://creem.io/payment/${PLAN.creemProductId}`} target="_blank" rel="noopener noreferrer" className="block">
                   <button className="w-full py-4 bg-white text-black text-sm font-medium rounded-lg hover:bg-white/90 transition-colors">
                     Start free trial
                   </button>
