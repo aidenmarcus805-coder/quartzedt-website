@@ -55,6 +55,12 @@ export const authOptions: NextAuthOptions = {
       // Add user ID and plan to token on sign in
       if (user) {
         token.userId = user.id;
+        // Fetch plan from database
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { plan: true }
+        });
+        token.plan = dbUser?.plan || 'free';
       }
       if (account) {
         token.provider = account.provider;
@@ -63,9 +69,10 @@ export const authOptions: NextAuthOptions = {
     },
 
     async session({ session, token }) {
-      // Add user ID to session
+      // Add user ID and plan to session
       if (session.user && token.userId) {
-        (session.user as { id?: string }).id = token.userId as string;
+        (session.user as { id?: string; plan?: string }).id = token.userId as string;
+        (session.user as { id?: string; plan?: string }).plan = (token.plan as string) || 'free';
       }
       return session;
     },
