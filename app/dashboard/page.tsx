@@ -18,14 +18,14 @@ export default function DashboardPage() {
             {/* Header */}
             <div>
                 <h1 className="font-display text-4xl text-black font-light mb-2">Profile</h1>
-                <p className="text-black/50 text-lg font-light">Manage your Quartz account and subscription.</p>
+                <p className="text-black/60 text-lg font-light">Manage your Quartz account and subscription.</p>
             </div>
 
             {/* Account Section */}
             <section className="space-y-6">
                 <div>
                     <h2 className="text-sm font-medium text-black">Account</h2>
-                    <p className="text-sm text-black/40">Manage your login details and profile.</p>
+                    <p className="text-sm text-black/50">Manage your login details and profile.</p>
                 </div>
 
                 <div className="p-8 rounded-2xl bg-black/[0.02] border border-black/5 flex items-center justify-between">
@@ -44,11 +44,9 @@ export default function DashboardPage() {
                                     {isPro ? 'Pro Member' : 'Free Account'}
                                 </span>
                             </div>
-                            <p className="text-black/40">{session?.user?.email}</p>
+                            <p className="text-black/50">{session?.user?.email}</p>
                         </div>
                     </div>
-                    {/* Placeholder for Edit Profile if we had it */}
-                    {/* <button className="text-sm border border-black/10 px-4 py-2 rounded-lg hover:border-black/30 bg-white transition-colors">Edit</button> */}
                 </div>
             </section>
 
@@ -56,7 +54,7 @@ export default function DashboardPage() {
             <section className="space-y-6">
                 <div>
                     <h2 className="text-sm font-medium text-black">Subscriptions</h2>
-                    <p className="text-sm text-black/40">View and manage your plan processing.</p>
+                    <p className="text-sm text-black/50">View and manage your plan processing.</p>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6">
@@ -67,9 +65,9 @@ export default function DashboardPage() {
                                 <CreditCard className="w-5 h-5 text-black/60" />
                             </div>
                             <h3 className="font-medium text-lg mb-1">{isPro ? 'Pro Plan' : 'Free Trial'}</h3>
-                            <p className="text-sm text-black/40 mb-8">{isPro ? 'Active and recurring.' : 'Limited access. Upgrade for more.'}</p>
+                            <p className="text-sm text-black/50 mb-8">{isPro ? 'Active and recurring.' : 'Limited access. Upgrade for more.'}</p>
 
-                            <Link href="/billing">
+                            <Link href="/dashboard/billing">
                                 <button className="text-sm font-medium border-b border-black/20 hover:border-black pb-0.5 transition-colors">
                                     Manage Subscription
                                 </button>
@@ -97,7 +95,7 @@ export default function DashboardPage() {
                                     Open
                                 </a>
                                 <Link
-                                    href="/download"
+                                    href="/dashboard/download"
                                     className="flex items-center gap-2 text-sm border border-white/20 px-4 py-2 rounded-lg hover:bg-white/10 transition-colors"
                                 >
                                     <Download className="w-4 h-4" />
@@ -114,7 +112,7 @@ export default function DashboardPage() {
             <section className="space-y-6">
                 <div>
                     <h2 className="text-sm font-medium text-black">Credits & Usage</h2>
-                    <p className="text-sm text-black/40">Check your processing usage this month.</p>
+                    <p className="text-sm text-black/50">Check your processing usage this month.</p>
                 </div>
 
                 <div className="p-8 rounded-2xl bg-black/[0.02] border border-black/5">
@@ -135,7 +133,7 @@ export default function DashboardPage() {
                     <div className="h-2 w-full bg-black/5 rounded-full overflow-hidden mb-2">
                         <div className="h-full bg-black w-full" />
                     </div>
-                    <p className="text-xs text-black/40">Include unlimited photos and videos with the Pro plan.</p>
+                    <p className="text-xs text-black/50">Include unlimited photos and videos with the Pro plan.</p>
                 </div>
             </section>
         </div>

@@ -43,7 +43,7 @@ export default function DownloadPage() {
     <div className="space-y-16">
       <div>
         <h1 className="font-display text-4xl font-light text-black">Download</h1>
-        <p className="text-black/50 text-lg font-light">
+        <p className="text-black/60 text-lg font-light">
           Get the Quartz Desktop application.
         </p>
       </div>
@@ -53,7 +53,7 @@ export default function DownloadPage() {
         <section className="space-y-8">
           <div>
             <h2 className="text-sm font-medium text-black">Installers</h2>
-            <p className="text-sm text-black/40">Select your operating system.</p>
+            <p className="text-sm text-black/50">Select your operating system.</p>
           </div>
 
           <div className="space-y-4">
@@ -95,7 +95,7 @@ export default function DownloadPage() {
         <section className="space-y-8">
           <div>
             <h2 className="text-sm font-medium text-black">Connect</h2>
-            <p className="text-sm text-black/40">Link the desktop app to your account.</p>
+            <p className="text-sm text-black/50">Link the desktop app to your account.</p>
           </div>
 
           <div className="p-8 rounded-2xl bg-black/[0.02] border border-black/5">
@@ -123,7 +123,7 @@ export default function DownloadPage() {
             ) : (
               <div className="space-y-4">
                 <div className="space-y-1">
-                  <p className="text-xs font-medium uppercase tracking-wider text-black/40">Connection Code</p>
+                  <p className="text-xs font-medium uppercase tracking-wider text-black/50">Connection Code</p>
                   <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-white border border-black/10">
                     <code className="text-sm font-mono tracking-wide">{desktopToken}</code>
                     <button onClick={copyToken} className="p-2 hover:bg-black/5 rounded-lg transition-colors">
@@ -134,7 +134,7 @@ export default function DownloadPage() {
 
                 <div className="relative flex items-center gap-4 py-4">
                   <div className="h-px bg-black/5 flex-1" />
-                  <span className="text-[10px] text-black/20 uppercase">OR</span>
+                  <span className="text-[10px] text-black/30 uppercase">OR</span>
                   <div className="h-px bg-black/5 flex-1" />
                 </div>
 
