@@ -108,34 +108,7 @@ export default function DashboardPage() {
                 </div>
             </section>
 
-            {/* Credits/Stats Section */}
-            <section className="space-y-6">
-                <div>
-                    <h2 className="text-sm font-medium text-black">Credits & Usage</h2>
-                    <p className="text-sm text-black/50">Check your processing usage this month.</p>
-                </div>
 
-                <div className="p-8 rounded-2xl bg-black/[0.02] border border-black/5">
-                    <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-medium">Unlimited Processing</h3>
-                        {isPro ? (
-                            <span className="flex items-center gap-1.5 text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                                <CheckCircle2 className="w-3 h-3" />
-                                Active
-                            </span>
-                        ) : (
-                            <span className="text-xs font-medium text-black/40 bg-black/5 px-2 py-1 rounded-full">
-                                Limited Trial
-                            </span>
-                        )}
-                    </div>
-
-                    <div className="h-2 w-full bg-black/5 rounded-full overflow-hidden mb-2">
-                        <div className="h-full bg-black w-full" />
-                    </div>
-                    <p className="text-xs text-black/50">Include unlimited photos and videos with the Pro plan.</p>
-                </div>
-            </section>
         </div>
     );
 }

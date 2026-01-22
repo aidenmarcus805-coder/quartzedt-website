@@ -15,6 +15,15 @@ const PLANS = [
         current: false,
     },
     {
+        id: 'referral',
+        name: 'Referral Pass',
+        price: '$49',
+        period: '1 month',
+        description: 'Special access for referred friends.',
+        features: ['1 month unlimited access', 'No watermark', 'Priority support', 'One-time payment'],
+        productId: 'prod_referral_Placeholder',
+    },
+    {
         id: 'pro',
         name: 'Pro Plan',
         price: '$49',
@@ -50,16 +59,16 @@ export default function BillingPage() {
         <div className="space-y-16">
             <div className="space-y-2">
                 <h1 className="font-display text-4xl font-light text-black">Subscription</h1>
-                <p className="text-black/50 text-lg font-light">
+                <p className="text-black/60 text-lg font-light">
                     Upgrade or manage your Quartz plan.
                 </p>
             </div>
 
-            <div className="grid lg:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
                 {PLANS.map((plan) => (
                     <div
                         key={plan.id}
-                        className={`relative p-8 rounded-2xl border ${plan.popular ? 'border-black ring-1 ring-black/5' : 'border-black/10'} bg-white flex flex-col`}
+                        className={`relative p-6 rounded-2xl border ${plan.popular ? 'border-black ring-1 ring-black/5' : 'border-black/10'} bg-white flex flex-col`}
                     >
                         {plan.popular && (
                             <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4">
@@ -71,7 +80,7 @@ export default function BillingPage() {
                             <h3 className="font-medium text-lg mb-2">{plan.name}</h3>
                             <div className="flex items-baseline gap-1">
                                 <span className="text-3xl font-light">{plan.price}</span>
-                                <span className="text-sm text-black/40">/{plan.period.split(' ')[1]}</span>
+                                <span className="text-sm text-black/50">/{plan.period.includes(' ') ? plan.period.split(' ')[1] : plan.period}</span>
                             </div>
                             <p className="text-sm text-black/50 mt-4 leading-relaxed">{plan.description}</p>
                         </div>
@@ -89,10 +98,10 @@ export default function BillingPage() {
                             onClick={() => handleCheckout(plan.productId || '')}
                             disabled={plan.id === currentPlan || !plan.productId}
                             className={`w-full py-3 rounded-xl text-sm font-medium transition-all ${plan.id === currentPlan
-                                    ? 'bg-black/5 text-black/30 cursor-default'
-                                    : plan.popular
-                                        ? 'bg-black text-white hover:bg-black/90'
-                                        : 'border border-black/10 hover:border-black/30'
+                                ? 'bg-black/5 text-black/30 cursor-default'
+                                : plan.popular
+                                    ? 'bg-black text-white hover:bg-black/90'
+                                    : 'border border-black/10 hover:border-black/30'
                                 }`}
                         >
                             {plan.id === currentPlan ? 'Current Plan' : `Upgrade to ${plan.name}`}
@@ -103,7 +112,7 @@ export default function BillingPage() {
 
             <div className="p-6 rounded-xl bg-black/[0.02] border border-black/5 flex items-center justify-between text-sm">
                 <div className="flex items-center gap-3">
-                    <Shield className="w-4 h-4 text-black/40" />
+                    <Shield className="w-4 h-4 text-black/50" />
                     <span className="text-black/60">Payments are securely processed by Creem.io. canceling is easy.</span>
                 </div>
                 <a href="mailto:support@quartzeditor.com" className="text-black/60 hover:text-black hover:underline"> Need help?</a>
