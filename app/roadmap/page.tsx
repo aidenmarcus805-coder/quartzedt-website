@@ -198,45 +198,6 @@ export default function RoadmapPage() {
                 </motion.div>
             </section>
 
-            {/* Built in Public */}
-            <section className="max-w-[1200px] mx-auto px-8 md:px-12 lg:px-16 py-20 border-t border-white/5">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6 }}
-                    className="grid md:grid-cols-2 gap-16 items-center"
-                >
-                    <div>
-                        <h2 className="font-display text-[36px] md:text-[48px] font-extralight tracking-[-0.03em] leading-[1.1] mb-8">
-                            Built in <span className="text-white/40">Public</span>
-                        </h2>
-                        <div className="space-y-6">
-                            <p className="text-[18px] leading-[1.8] text-white/70 font-light">
-                                Quartz is shaped in the open.
-                            </p>
-                            <p className="text-[18px] leading-[1.8] text-white/50 font-light">
-                                We share progress, experiments, and failures with the filmmaking community—especially on Reddit—because real workflows matter more than assumptions.
-                            </p>
-                            <p className="text-[18px] leading-[1.8] text-white/50 font-light">
-                                Features, pricing, and priorities are all influenced by working editors, not growth decks.
-                            </p>
-                        </div>
-                    </div>
-                    {/* Placeholder for community image */}
-                    <div className="relative aspect-square rounded-2xl overflow-hidden bg-white/[0.02] border border-white/5">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="text-center">
-                                <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-white/5 flex items-center justify-center">
-                                    <div className="w-6 h-6 rounded-full bg-white/10" />
-                                </div>
-                                <p className="text-[11px] text-white/30 tracking-wider">COMMUNITY IMAGE</p>
-                            </div>
-                        </div>
-                    </div>
-                </motion.div>
-            </section>
-
             {/* What's Next */}
             <section className="max-w-[1200px] mx-auto px-8 md:px-12 lg:px-16 py-20 border-t border-white/5">
                 <motion.div

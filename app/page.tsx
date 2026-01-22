@@ -1115,41 +1115,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Built in Public - Integrated (Black - Clean) */}
-      <section ref={firstDarkRef} className="relative border-t border-white/5 bg-black py-24 md:py-32 overflow-hidden">
-        {/* Artifacts removed - keeping it minimal */}
-
-        <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 relative z-10">
-          <Reveal>
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <p className="text-white/30 text-xs tracking-widest font-mono uppercase mb-6">Open development</p>
-                <h2 className="font-display text-[42px] md:text-[56px] font-extralight tracking-[-0.04em] leading-[1.1] text-white mb-8">
-                  Built in public.
-                </h2>
-                <p className="text-white/50 text-xl font-light leading-relaxed mb-10 max-w-md">
-                  No secrets, no gatekeeping. We build alongside our users.
-                </p>
-
-                <div className="flex flex-wrap gap-8 text-sm font-mono">
-                  <Link href="/blog/why-we-built-quartz" className="text-white/60 hover:text-white transition-colors border-b border-white/20 hover:border-white pb-1">
-                    The backstory
-                  </Link>
-                  <Link href="/roadmap" className="text-white/60 hover:text-white transition-colors border-b border-white/20 hover:border-white pb-1">
-                    Roadmap
-                  </Link>
-                  <a href="https://discord.gg/quartz" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-white transition-colors border-b border-white/20 hover:border-white pb-1">
-                    Discord
-                  </a>
-                </div>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
       {/* Pricing - Stark & Direct (Black - Clean) */}
-      <section data-nav="light" className="relative bg-black text-white border-y border-white/5 min-h-screen flex items-center overflow-hidden">
+      <section ref={firstDarkRef} data-nav="light" className="relative bg-black text-white border-y border-white/5 min-h-screen flex items-center overflow-hidden">
         {/* Artifacts: Plus signs grid (Restored per user request) */}
         <div className="absolute inset-0 pointer-events-none opacity-[0.15]" aria-hidden="true"
           style={{
