@@ -4,6 +4,17 @@ import { authOptions } from '@/app/lib/auth';
 import { prisma } from '@/app/lib/prisma';
 import crypto from 'crypto';
 
+// Handle direct browser navigation with a friendly message
+export async function GET() {
+  return NextResponse.json(
+    {
+      error: 'method_not_allowed',
+      message: 'This endpoint requires a POST request. Please use the Quartz dashboard to generate a desktop token.'
+    },
+    { status: 405 }
+  );
+}
+
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
