@@ -31,26 +31,50 @@ export async function POST(req: Request) {
         const { data, meta } = body;
         const attributes = data.attributes;
 
-        // Get email from payload - prefer user_email from attributes
+        // Get email from payload - prefer user_email from attributes, fallback to meta
         const email = attributes.user_email || meta?.custom_data?.email;
 
-        console.log(`[Webhook] Received ${eventType} for ${email}`);
+        if (!email) {
+            console.log(`[Webhook] No email found in payload for event ${eventType}`);
+            return NextResponse.json({ message: 'No email found' }, { status: 200 });
+        }
 
-        if (eventType === 'order_created' || eventType === 'subscription_created') {
-            if (attributes.status === 'paid' || attributes.status === 'active') {
-                if (email) {
-                    await prisma.user.update({
-                        where: { email },
-                        data: { plan: 'pro' }
-                    });
-                    console.log(`[Webhook] Upgraded user ${email} to pro`);
-                }
+        console.log(`[Webhook] Received ${eventType} for ${email} (Status: ${attributes.status})`);
+
+        // Handle Access Granting (Paid/Active)
+        if (
+            eventType === 'order_created' ||
+            eventType === 'subscription_created' ||
+            eventType === 'subscription_updated' ||
+            eventType === 'subscription_payment_success'
+        ) {
+            if (attributes.status === 'paid' || attributes.status === 'active' || attributes.status === 'on_trial') {
+                await prisma.user.update({
+                    where: { email },
+                    data: { plan: 'pro' }
+                });
+                console.log(`[Webhook] Upgraded user ${email} to pro`);
             }
         }
 
-        // Handle cancellations/expirations if needed
-        if (eventType === 'subscription_cancelled' || eventType === 'subscription_expired') {
-            if (email) {
+        // Handle Access Revocation (Refunded/Cancelled/Expired)
+        if (
+            eventType === 'subscription_cancelled' ||
+            eventType === 'subscription_expired' ||
+            eventType === 'order_refunded' ||
+            eventType === 'subscription_payment_failed' // Optional: revoke on failed payment? Usually wait for 'past_due' or expiry.
+        ) {
+            // For cancellations, Lemon Squeezy sends 'subscription_cancelled' but status might still be 'active' until period end.
+            // We should check 'ends_at' or rely on 'status' being 'cancelled'/'expired' if immediate.
+            // However, 'order_refunded' is immediate revocation.
+
+            const shouldRevoke =
+                eventType === 'order_refunded' ||
+                attributes.status === 'expired' ||
+                attributes.status === 'void' ||
+                attributes.status === 'refunded';
+
+            if (shouldRevoke) {
                 await prisma.user.update({
                     where: { email },
                     data: { plan: 'free' } // Downgrade

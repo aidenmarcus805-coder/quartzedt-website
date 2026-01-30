@@ -1,11 +1,23 @@
 'use client';
 
+
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, ArrowLeft, ArrowRight, User } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
 import { useSession, signOut } from 'next-auth/react';
+
+declare global {
+  interface Window {
+    LemonSqueezy?: {
+      Url: {
+        Open: (url: string) => void;
+      };
+    };
+  }
+}
+
 
 const PLAN = {
   price: 179,
@@ -168,9 +180,8 @@ export default function PricingPage() {
                 <button
                   onClick={() => {
                     const checkoutUrl = `https://quartzedt.lemonsqueezy.com/checkout/buy/${PLAN.lsVariantId}?checkout[email]=${session?.user?.email || ''}&embed=1&checkout[dark]=1`;
-                    // @ts-ignore
+
                     if (window.LemonSqueezy) {
-                      // @ts-ignore
                       window.LemonSqueezy.Url.Open(checkoutUrl);
                     } else {
                       window.open(checkoutUrl, '_blank');
@@ -187,9 +198,9 @@ export default function PricingPage() {
             </motion.div>
 
           </div>
-        </div>
-      </main>
+        </div >
+      </main >
 
-    </div>
+    </div >
   );
 }
