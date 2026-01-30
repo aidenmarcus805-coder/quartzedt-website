@@ -18,7 +18,7 @@ const PLAN = {
     'Same-day templates',
     'Direct support',
   ],
-  lsVariantId: '12345', // REPLACE WITH YOUR LEMON SQUEEZY VARIANT ID
+  lsVariantId: '1262109', // Founding Member Plan
 };
 
 const UserMenu = ({ session }: { session: any }) => {
