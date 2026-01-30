@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect } from 'react';
-import { Check } from 'lucide-react';
+import { Check, ArrowRight } from 'lucide-react';
 
 export default function SuccessPage() {
     useEffect(() => {
@@ -29,16 +29,16 @@ export default function SuccessPage() {
                 <div className="space-y-4">
                     <a
                         href="autocut://success"
-                        className="block w-full py-4 bg-white text-black font-medium rounded-lg hover:bg-white/90 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                        className="flex items-center justify-center gap-2 w-full py-4 bg-white text-black font-semibold rounded-xl hover:bg-white/90 transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)]"
                     >
-                        Open Quartz
+                        Open Quartz <ArrowRight className="w-4 h-4" />
                     </a>
 
                     <Link
                         href="/dashboard"
                         className="block py-4 text-sm text-white/30 hover:text-white transition-colors"
                     >
-                        Go to Dashboard
+                        Back to Dashboard
                     </Link>
                 </div>
             </div>

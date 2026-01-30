@@ -116,10 +116,16 @@ function HandshakeContent() {
                         </div>
                     </div>
 
-                    <div className="pt-8 flex justify-center">
-                        <a href={`autocut://auth?token=${token}`} className="text-xs text-white/30 hover:text-white transition-colors flex items-center gap-1">
-                            Try opening app again <ArrowRight className="w-3 h-3" />
+                    <div className="pt-8 w-full">
+                        <a
+                            href={`autocut://auth?token=${token}`}
+                            className="flex items-center justify-center gap-2 w-full py-4 bg-white text-black font-semibold rounded-xl hover:bg-white/90 transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)] mb-4"
+                        >
+                            Open Quartz <ArrowRight className="w-4 h-4" />
                         </a>
+                        <p className="text-[11px] text-white/20">
+                            Automatic redirect blocked by browser? Click the button above.
+                        </p>
                     </div>
 
                 </div>

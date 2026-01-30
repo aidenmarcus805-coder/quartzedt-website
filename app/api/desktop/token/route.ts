@@ -44,11 +44,10 @@ export async function GET() {
             
             .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite; }
             
-            .btn-link { background: transparent; color: #444; border: none; font-size: 13px; cursor: pointer; text-decoration: underline; margin-top: 24px; transition: color 0.2s; }
-            .btn-link:hover { color: #888; }
+            .btn-primary { background: white; color: black; border: none; font-size: 15px; font-weight: 600; padding: 14px 40px; border-radius: 12px; cursor: pointer; text-decoration: none; margin-top: 24px; transition: opacity 0.2s; box-shadow: 0 0 40px rgba(255,255,255,0.1); }
+            .btn-primary:hover { opacity: 0.9; }
 
-            @keyframes spin { to { transform: rotate(360deg); } }
-            @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+            .btn-link { background: transparent; color: #444; border: none; font-size: 13px; cursor: pointer; text-decoration: underline; margin-top: 16px; transition: color 0.2s; }
           </style>
         </head>
         <body>
@@ -62,6 +61,8 @@ export async function GET() {
                <p style="font-size: 12px; color: #444;">Click code to copy</p>
             </div>
 
+            <a href="autocut://auth?token=${code}" class="btn-primary" id="open-btn">Open Quartz</a>
+            
             <button onclick="showManual()" class="btn-link">App didn't open?</button>
           </div>
           
@@ -73,20 +74,18 @@ export async function GET() {
             }
 
             function showManual() {
-                // Determine if we should try to open again or show code
-                // For now, just show the code as fallback
                 document.getElementById('manual').style.display = 'block';
-                // Also force a retry on the link
-                window.location.href = 'autocut://auth?token=${code}';
+                document.getElementById('open-btn').innerText = 'Retry Opening App';
             }
             
-            // Auto-redirect immediately
-            window.location.href = 'autocut://auth?token=${code}';
-            
-            // Backup redirect 
+            // Wait for 2 seconds, if user hasn't clicked, show manual instructions
             setTimeout(() => {
-                window.location.href = 'autocut://auth?token=${code}';
-            }, 1000);
+                const manual = document.getElementById('manual');
+                if (manual.style.display !== 'block') {
+                    // We don't force redirect anymore as browsers block it
+                    // Instead we let the user click the primary button
+                }
+            }, 3000);
           </script>
         </body>
       </html>
