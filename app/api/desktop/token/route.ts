@@ -35,48 +35,58 @@ export async function GET() {
           <title>Quartz Authentication</title>
           <style>
             body { background: #0c0c0c; color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-            .card { background: #1f1f1f; padding: 48px; border-radius: 24px; text-align: center; border: 1px solid #333; box-shadow: 0 20px 40px rgba(0,0,0,0.6); max-width: 400px; width: 100%; }
-            h1 { margin: 0 0 16px; font-weight: 600; font-size: 24px; letter-spacing: -0.5px; }
-            p.sub { color: #888; margin: 0 0 32px; font-size: 15px; line-height: 1.5; }
-            .code { font-family: "SF Mono", "Monaco", "Inconsolata", "Fira Mono", "Droid Sans Mono", "Source Code Pro", monospace; font-size: 42px; letter-spacing: 8px; font-weight: 700; color: white; margin: 0 0 32px; display: block; user-select: all; cursor: pointer; }
+            .card { background: transparent; padding: 48px; border-radius: 24px; text-align: center; max-width: 400px; width: 100%; display: flex; flex-direction: column; align-items: center; }
+            h1 { margin: 24px 0 12px; font-weight: 600; font-size: 24px; letter-spacing: -0.5px; }
+            p.sub { color: #666; margin: 0 0 32px; font-size: 15px; line-height: 1.5; }
             
-            .btn-primary { background: white; color: black; border: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; cursor: pointer; font-size: 16px; width: 100%; transition: transform 0.1s, background 0.2s; display: block; text-decoration: none; box-sizing: border-box; }
-            .btn-primary:hover { background: #e0e0e0; transform: translateY(-1px); }
-            .btn-primary:active { transform: translateY(0); }
+            .code-container { display: none; margin-top: 20px; animation: fadeIn 0.5s ease; }
+            .code { font-family: "SF Mono", "Monaco", "Inconsolata", monospace; font-size: 24px; letter-spacing: 4px; font-weight: 700; color: #fff; background: #222; padding: 12px 24px; border-radius: 8px; margin-bottom: 12px; }
+            
+            .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite; }
+            
+            .btn-link { background: transparent; color: #444; border: none; font-size: 13px; cursor: pointer; text-decoration: underline; margin-top: 24px; transition: color 0.2s; }
+            .btn-link:hover { color: #888; }
 
-            .btn-secondary { background: transparent; color: #666; border: 1px solid #333; padding: 12px; border-radius: 12px; font-weight: 500; cursor: pointer; font-size: 14px; margin-top: 12px; width: 100%; transition: all 0.2s; }
-            .btn-secondary:hover { border-color: #555; color: #888; }
-            
-            .toast { position: fixed; bottom: 24px; background: white; color: black; padding: 12px 24px; border-radius: 50px; font-weight: 500; opacity: 0; transform: translateY(20px); transition: all 0.3s; pointer-events: none; }
-            .toast.show { opacity: 1; transform: translateY(0); }
+            @keyframes spin { to { transform: rotate(360deg); } }
+            @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
           </style>
         </head>
         <body>
           <div class="card">
-            <h1>Initialize Quartz</h1>
-            <p class="sub">Your workstation is ready to connect.<br>The app should open automatically.</p>
+            <div class="spinner"></div>
+            <h1>Opening Quartz...</h1>
+            <p class="sub">You can close this browser tab once the app opens.</p>
             
-            <div class="code" id="code" onclick="copyCode()" title="Click to copy">${code}</div>
-            
-            <a href="autocut://auth?token=${code}" class="btn-primary">Launch Desktop App</a>
-            <button onclick="copyCode()" class="btn-secondary">Copy Code Manually</button>
+            <div class="code-container" id="manual">
+               <div class="code" id="code" onclick="copyCode()">${code}</div>
+               <p style="font-size: 12px; color: #444;">Click code to copy</p>
+            </div>
+
+            <button onclick="showManual()" class="btn-link">App didn't open?</button>
           </div>
           
-          <div class="toast" id="toast">Copied to clipboard</div>
-
           <script>
             function copyCode() {
               const code = document.getElementById('code').innerText;
               navigator.clipboard.writeText(code);
-              const toast = document.getElementById('toast');
-              toast.classList.add('show');
-              setTimeout(() => toast.classList.remove('show'), 2000);
+              alert('Copied');
+            }
+
+            function showManual() {
+                // Determine if we should try to open again or show code
+                // For now, just show the code as fallback
+                document.getElementById('manual').style.display = 'block';
+                // Also force a retry on the link
+                window.location.href = 'autocut://auth?token=${code}';
             }
             
-            // Auto-redirect
+            // Auto-redirect immediately
+            window.location.href = 'autocut://auth?token=${code}';
+            
+            // Backup redirect 
             setTimeout(() => {
                 window.location.href = 'autocut://auth?token=${code}';
-            }, 500);
+            }, 1000);
           </script>
         </body>
       </html>
