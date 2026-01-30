@@ -40,6 +40,7 @@ export default function RootLayout({
           <SmoothScroll />
           {children}
         </AuthProvider>
+        <script src="https://assets.lemonsqueezy.com/lemon.js" defer></script>
       </body>
     </html>
   );

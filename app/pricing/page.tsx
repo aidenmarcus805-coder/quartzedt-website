@@ -18,7 +18,7 @@ const PLAN = {
     'Same-day templates',
     'Direct support',
   ],
-  creemProductId: 'prod_founding_GF7xl',
+  lsVariantId: '12345', // REPLACE WITH YOUR LEMON SQUEEZY VARIANT ID
 };
 
 const UserMenu = ({ session }: { session: any }) => {
@@ -165,11 +165,21 @@ export default function PricingPage() {
                   ))}
                 </div>
 
-                <a href={`https://creem.io/payment/${PLAN.creemProductId}`} target="_blank" rel="noopener noreferrer" className="block">
-                  <button className="w-full py-4 bg-white text-black text-sm font-medium rounded-lg hover:bg-white/90 transition-colors">
-                    Start free trial
-                  </button>
-                </a>
+                <button
+                  onClick={() => {
+                    const checkoutUrl = `https://store.quartzeditor.com/checkout/buy/${PLAN.lsVariantId}?checkout[email]=${session?.user?.email || ''}&embed=1`;
+                    // @ts-ignore
+                    if (window.LemonSqueezy) {
+                      // @ts-ignore
+                      window.LemonSqueezy.Url.Open(checkoutUrl);
+                    } else {
+                      window.open(checkoutUrl, '_blank');
+                    }
+                  }}
+                  className="w-full py-4 bg-white text-black text-sm font-medium rounded-lg hover:bg-white/90 transition-colors"
+                >
+                  Start free trial
+                </button>
                 <p className="text-center text-white/30 text-xs mt-4">
                   7 day free trial · No credit card
                 </p>
