@@ -54,6 +54,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   plan          String    @default("free") // free, starter, pro
   desktopTokens DesktopToken[]
+  devices       DesktopDevice[]
 }
 
 model VerificationToken {
@@ -72,4 +73,18 @@ model DesktopToken {
   expiresAt DateTime
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Track active devices for license limits
+model DesktopDevice {
+  id        String   @id @default(cuid())
+  userId    String
+  machineId String
+  name      String?
+  accessToken String @unique @default(cuid()) // Persistent session token
+  lastSeen  DateTime @default(now())
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, machineId])
 }
