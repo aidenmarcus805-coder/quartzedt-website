@@ -2,7 +2,7 @@
 
 import { signIn } from 'next-auth/react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Chrome, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
@@ -27,12 +27,19 @@ function SignInContent() {
   });
   const [isFocused, setIsFocused] = useState<string | null>(null);
 
+  const hasAutoSignedIn = useRef(false);
+
   useEffect(() => {
     const prompt = searchParams.get('prompt');
-    if (prompt === 'google' && !isLoading && !error) {
-      handleGoogleSignIn();
+    if (prompt === 'google' && !hasAutoSignedIn.current && !isLoading && !error) {
+      hasAutoSignedIn.current = true;
+      // Add a small delay to ensure hydration is complete and the session is stable
+      const timer = setTimeout(() => {
+        handleGoogleSignIn();
+      }, 500);
+      return () => clearTimeout(timer);
     }
-  }, [searchParams, error]); // Handle auto-trigger once if param is present and no error
+  }, [searchParams, error, isLoading]); // Added isLoading to deps for safety
 
   const handleGoogleSignIn = async () => {
     setIsLoading('google');
