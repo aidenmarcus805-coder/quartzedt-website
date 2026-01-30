@@ -34,60 +34,103 @@ export async function GET() {
         <head>
           <title>Quartz Authentication</title>
           <style>
-            body { background: #0c0c0c; color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-            .card { background: transparent; padding: 48px; border-radius: 24px; text-align: center; max-width: 400px; width: 100%; display: flex; flex-direction: column; align-items: center; }
-            h1 { margin: 24px 0 12px; font-weight: 600; font-size: 24px; letter-spacing: -0.5px; }
-            p.sub { color: #666; margin: 0 0 32px; font-size: 15px; line-height: 1.5; }
-            
-            .code-container { display: none; margin-top: 20px; animation: fadeIn 0.5s ease; }
-            .code { font-family: "SF Mono", "Monaco", "Inconsolata", monospace; font-size: 24px; letter-spacing: 4px; font-weight: 700; color: #fff; background: #222; padding: 12px 24px; border-radius: 8px; margin-bottom: 12px; }
-            
-            .btn-primary { background: white; color: black; border: none; font-size: 15px; font-weight: 600; padding: 14px 40px; border-radius: 12px; cursor: pointer; text-decoration: none; margin-top: 12px; transition: all 0.2s; box-shadow: 0 0 40px rgba(255,255,255,0.1); }
-            .btn-primary:hover { opacity: 0.9; transform: scale(1.02); }
-
-            .btn-link { background: transparent; color: #444; border: none; font-size: 13px; cursor: pointer; text-decoration: underline; margin-top: 24px; transition: color 0.2s; }
-            .btn-link:hover { color: #888; }
-            
-            .icon { width: 48px; height: 48px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
-            
-            @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+            body { 
+                background: #000; 
+                color: #fff; 
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+                display: flex; 
+                flex-direction: column; 
+                align-items: center; 
+                justify-content: center; 
+                height: 100vh; 
+                margin: 0;
+            }
+            .container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 24px;
+                opacity: 0;
+                animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            }
+            .spinner {
+                width: 24px;
+                height: 24px;
+                border: 2px solid rgba(255,255,255,0.1);
+                border-top-color: #fff;
+                border-radius: 50%;
+                animation: spin 0.8s linear infinite;
+            }
+            h1 {
+                font-size: 14px;
+                font-weight: 500;
+                color: rgba(255,255,255,0.9);
+                margin: 0;
+                letter-spacing: -0.01em;
+            }
+            .btn-primary {
+                background: #fff;
+                color: #000;
+                border: none;
+                padding: 10px 24px;
+                border-radius: 8px;
+                font-size: 13px;
+                font-weight: 500;
+                cursor: pointer;
+                text-decoration: none;
+                transition: all 0.2s;
+                opacity: 0;
+                animation: fadeIn 0.5s ease 1s forwards; /* Delay button appearance */
+            }
+            .btn-primary:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(255,255,255,0.2);
+            }
+            .code-btn {
+                background: transparent;
+                border: 1px solid rgba(255,255,255,0.1);
+                color: rgba(255,255,255,0.4);
+                padding: 8px 16px;
+                border-radius: 6px;
+                font-size: 11px;
+                margin-top: 32px;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+            .code-btn:hover {
+                color: rgba(255,255,255,0.8);
+                border-color: rgba(255,255,255,0.2);
+            }
+            @keyframes spin { to { transform: rotate(360deg); } }
+            @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
           </style>
         </head>
         <body>
-          <div class="card">
-            <div class="icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-            </div>
-            <h1>Launch Quartz</h1>
-            <p class="sub">Click the button below to complete sign in.</p>
-            
-            <div class="code-container" id="manual">
-               <div class="code" id="code" onclick="copyCode()">${code}</div>
-               <p style="font-size: 12px; color: #444;">Click code to copy</p>
-            </div>
-
-            <a href="autocut://auth?token=${code}" class="btn-primary" id="open-btn">Open Quartz</a>
-            
-            <button onclick="showManual()" class="btn-link">App didn't open?</button>
+          <div class="container">
+            <div class="spinner"></div>
+            <h1>Connecting to Quartz...</h1>
+            <a href="autocut://auth?token=${code}" class="btn-primary" id="open-btn">Open App</a>
           </div>
+
+          <button onclick="copyCode()" class="code-btn" title="Copy Manual Code">
+              Use Connection Code
+          </button>
+          <div style="display:none;" id="code">${code}</div>
           
           <script>
             function copyCode() {
               const code = document.getElementById('code').innerText;
               navigator.clipboard.writeText(code);
-              alert('Copied');
-            }
-
-            function showManual() {
-                document.getElementById('manual').style.display = 'block';
-                document.getElementById('open-btn').innerText = 'Retry Opening App';
+              const btn = document.querySelector('.code-btn');
+              const original = btn.innerText;
+              btn.innerText = 'Copied';
+              setTimeout(() => btn.innerText = original, 2000);
             }
             
-            // Attempt auto-click after delay for convenience, but rely on manual click
+            // Auto click
             setTimeout(() => {
-                 const btn = document.getElementById('open-btn');
-                 if (btn) btn.click();
-            }, 800);
+                 document.getElementById('open-btn').click();
+            }, 500);
           </script>
         </body>
       </html>
