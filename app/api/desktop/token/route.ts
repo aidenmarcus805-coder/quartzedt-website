@@ -42,19 +42,24 @@ export async function GET() {
             .code-container { display: none; margin-top: 20px; animation: fadeIn 0.5s ease; }
             .code { font-family: "SF Mono", "Monaco", "Inconsolata", monospace; font-size: 24px; letter-spacing: 4px; font-weight: 700; color: #fff; background: #222; padding: 12px 24px; border-radius: 8px; margin-bottom: 12px; }
             
-            .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite; }
-            
-            .btn-primary { background: white; color: black; border: none; font-size: 15px; font-weight: 600; padding: 14px 40px; border-radius: 12px; cursor: pointer; text-decoration: none; margin-top: 24px; transition: opacity 0.2s; box-shadow: 0 0 40px rgba(255,255,255,0.1); }
-            .btn-primary:hover { opacity: 0.9; }
+            .btn-primary { background: white; color: black; border: none; font-size: 15px; font-weight: 600; padding: 14px 40px; border-radius: 12px; cursor: pointer; text-decoration: none; margin-top: 12px; transition: all 0.2s; box-shadow: 0 0 40px rgba(255,255,255,0.1); }
+            .btn-primary:hover { opacity: 0.9; transform: scale(1.02); }
 
-            .btn-link { background: transparent; color: #444; border: none; font-size: 13px; cursor: pointer; text-decoration: underline; margin-top: 16px; transition: color 0.2s; }
+            .btn-link { background: transparent; color: #444; border: none; font-size: 13px; cursor: pointer; text-decoration: underline; margin-top: 24px; transition: color 0.2s; }
+            .btn-link:hover { color: #888; }
+            
+            .icon { width: 48px; height: 48px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+            
+            @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
           </style>
         </head>
         <body>
           <div class="card">
-            <div class="spinner"></div>
-            <h1>Opening Quartz...</h1>
-            <p class="sub">You can close this browser tab once the app opens.</p>
+            <div class="icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+            </div>
+            <h1>Launch Quartz</h1>
+            <p class="sub">Click the button below to complete sign in.</p>
             
             <div class="code-container" id="manual">
                <div class="code" id="code" onclick="copyCode()">${code}</div>
@@ -78,14 +83,11 @@ export async function GET() {
                 document.getElementById('open-btn').innerText = 'Retry Opening App';
             }
             
-            // Wait for 2 seconds, if user hasn't clicked, show manual instructions
+            // Attempt auto-click after delay for convenience, but rely on manual click
             setTimeout(() => {
-                const manual = document.getElementById('manual');
-                if (manual.style.display !== 'block') {
-                    // We don't force redirect anymore as browsers block it
-                    // Instead we let the user click the primary button
-                }
-            }, 3000);
+                 const btn = document.getElementById('open-btn');
+                 if (btn) btn.click();
+            }, 800);
           </script>
         </body>
       </html>
