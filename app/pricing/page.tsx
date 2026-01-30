@@ -18,7 +18,7 @@ const PLAN = {
     'Same-day templates',
     'Direct support',
   ],
-  lsVariantId: '1262109', // Founding Member Plan
+  lsVariantId: 'ad029df4-2bb2-45b2-bfa3-038e6938eb09', // Founding Member Plan
 };
 
 const UserMenu = ({ session }: { session: any }) => {
@@ -167,7 +167,7 @@ export default function PricingPage() {
 
                 <button
                   onClick={() => {
-                    const checkoutUrl = `https://quartzeditor.lemonsqueezy.com/checkout/buy/${PLAN.lsVariantId}?checkout[email]=${session?.user?.email || ''}&embed=1`;
+                    const checkoutUrl = `https://quartzedt.lemonsqueezy.com/checkout/buy/${PLAN.lsVariantId}?checkout[email]=${session?.user?.email || ''}&embed=1`;
                     // @ts-ignore
                     if (window.LemonSqueezy) {
                       // @ts-ignore
