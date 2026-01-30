@@ -1,45 +1,67 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { prisma } from '@/app/lib/prisma';
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
     try {
-        const text = await req.text();
-        const hmac = crypto.createHmac('sha256', process.env.LEMONSQUEEZY_WEBHOOK_SECRET || '');
-        const digest = Buffer.from(hmac.update(text).digest('hex'), 'utf8');
-        const signature = Buffer.from(req.headers.get('x-signature') || '', 'utf8');
+        const clone = req.clone();
+        const eventType = req.headers.get('X-Event-Name');
+        const signature = req.headers.get('X-Signature');
+        const rawBody = await clone.text();
 
-        if (!crypto.timingSafeEqual(digest, signature)) {
-            return new NextResponse('Invalid signature', { status: 401 });
+        if (!process.env.LEMONSQUEEZY_WEBHOOK_SECRET) {
+            console.error('LEMONSQUEEZY_WEBHOOK_SECRET is not set');
+            return NextResponse.json({ message: 'Secret not set' }, { status: 500 });
         }
 
-        const payload = JSON.parse(text);
-        const { meta, data } = payload;
+        // Verify signature
+        const hmac = crypto.createHmac('sha256', process.env.LEMONSQUEEZY_WEBHOOK_SECRET);
+        const digest = Buffer.from(hmac.update(rawBody).digest('hex'), 'utf8');
+        const signatureBuffer = Buffer.from(signature || '', 'utf8');
 
-        if (meta.event_name === 'order_created') {
-            const email = data.attributes.user_email;
-            // You might also want to check product_id or variant_id if you have multiple products
-            // const variantId = data.attributes.first_order_item.variant_id;
+        if (
+            !signature ||
+            digest.length !== signatureBuffer.length ||
+            !crypto.timingSafeEqual(digest, signatureBuffer)
+        ) {
+            return NextResponse.json({ message: 'Invalid signature' }, { status: 401 });
+        }
 
-            if (email) {
-                console.log(`Processing order for ${email}`);
+        const body = await req.json();
+        const { data, meta } = body;
+        const attributes = data.attributes;
 
-                // Upsert user: Update if exists, create if not (so they have Pro when they eventually sign up)
-                await prisma.user.upsert({
-                    where: { email },
-                    update: { plan: 'pro' },
-                    create: {
-                        email,
-                        plan: 'pro',
-                        // created via webhook
-                    },
-                });
+        // Get email from payload - prefer user_email from attributes
+        const email = attributes.user_email || meta?.custom_data?.email;
+
+        console.log(`[Webhook] Received ${eventType} for ${email}`);
+
+        if (eventType === 'order_created' || eventType === 'subscription_created') {
+            if (attributes.status === 'paid' || attributes.status === 'active') {
+                if (email) {
+                    await prisma.user.update({
+                        where: { email },
+                        data: { plan: 'pro' }
+                    });
+                    console.log(`[Webhook] Upgraded user ${email} to pro`);
+                }
             }
         }
 
-        return new NextResponse('Webhook received', { status: 200 });
+        // Handle cancellations/expirations if needed
+        if (eventType === 'subscription_cancelled' || eventType === 'subscription_expired') {
+            if (email) {
+                await prisma.user.update({
+                    where: { email },
+                    data: { plan: 'free' } // Downgrade
+                });
+                console.log(`[Webhook] Downgraded user ${email} to free`);
+            }
+        }
+
+        return NextResponse.json({ received: true });
     } catch (error) {
-        console.error('Webhook processing error:', error);
-        return new NextResponse('Internal Error', { status: 500 });
+        console.error('[Webhook] Error:', error);
+        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
     }
 }

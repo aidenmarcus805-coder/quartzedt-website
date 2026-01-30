@@ -167,7 +167,7 @@ export default function PricingPage() {
 
                 <button
                   onClick={() => {
-                    const checkoutUrl = `https://quartzedt.lemonsqueezy.com/checkout/buy/${PLAN.lsVariantId}?checkout[email]=${session?.user?.email || ''}&embed=1`;
+                    const checkoutUrl = `https://quartzedt.lemonsqueezy.com/checkout/buy/${PLAN.lsVariantId}?checkout[email]=${session?.user?.email || ''}&embed=1&checkout[dark]=1`;
                     // @ts-ignore
                     if (window.LemonSqueezy) {
                       // @ts-ignore
