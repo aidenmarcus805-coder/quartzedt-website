@@ -32,12 +32,12 @@ export async function GET() {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Quartz Authentication</title>
+          <title>Opening Quartz...</title>
           <style>
             body { 
                 background: #000; 
                 color: #fff; 
-                font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
                 display: flex; 
                 flex-direction: column; 
                 align-items: center; 
@@ -45,92 +45,63 @@ export async function GET() {
                 height: 100vh; 
                 margin: 0;
             }
-            .container {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 24px;
-                opacity: 0;
-                animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            }
             .spinner {
                 width: 24px;
                 height: 24px;
-                border: 2px solid rgba(255,255,255,0.1);
+                border: 2px solid rgba(255,255,255,0.2);
                 border-top-color: #fff;
                 border-radius: 50%;
                 animation: spin 0.8s linear infinite;
+                margin-bottom: 24px;
             }
             h1 {
-                font-size: 14px;
+                font-size: 16px;
                 font-weight: 500;
-                color: rgba(255,255,255,0.9);
-                margin: 0;
-                letter-spacing: -0.01em;
+                margin: 0 0 12px;
+                color: #fff;
             }
-            .btn-primary {
-                background: #fff;
-                color: #000;
-                border: none;
-                padding: 10px 24px;
-                border-radius: 8px;
+            p {
+                color: #666;
                 font-size: 13px;
-                font-weight: 500;
-                cursor: pointer;
-                text-decoration: none;
-                transition: all 0.2s;
-                opacity: 0;
-                animation: fadeIn 0.5s ease 1s forwards; /* Delay button appearance */
-            }
-            .btn-primary:hover {
-                transform: translateY(-1px);
-                box-shadow: 0 4px 12px rgba(255,255,255,0.2);
-            }
-            .code-btn {
-                background: transparent;
-                border: 1px solid rgba(255,255,255,0.1);
-                color: rgba(255,255,255,0.4);
-                padding: 8px 16px;
-                border-radius: 6px;
-                font-size: 11px;
-                margin-top: 32px;
-                cursor: pointer;
-                transition: all 0.2s;
-            }
-            .code-btn:hover {
-                color: rgba(255,255,255,0.8);
-                border-color: rgba(255,255,255,0.2);
+                margin: 0;
             }
             @keyframes spin { to { transform: rotate(360deg); } }
             @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+            .container { 
+                display: flex; 
+                flex-direction: column; 
+                align-items: center;
+                animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+            }
+            #trigger {
+                opacity: 0;
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                pointer-events: none;
+            }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="spinner"></div>
-            <h1>Connecting to Quartz...</h1>
-            <a href="autocut://auth?token=${code}" class="btn-primary" id="open-btn">Open App</a>
+            <h1>Opening Quartz...</h1>
+            <p>You can close this browser tab once the app opens.</p>
           </div>
-
-          <button onclick="copyCode()" class="code-btn" title="Copy Manual Code">
-              Use Connection Code
-          </button>
-          <div style="display:none;" id="code">${code}</div>
           
+          <a href="autocut://auth?token=${code}" id="trigger">Open</a>
+
           <script>
-            function copyCode() {
-              const code = document.getElementById('code').innerText;
-              navigator.clipboard.writeText(code);
-              const btn = document.querySelector('.code-btn');
-              const original = btn.innerText;
-              btn.innerText = 'Copied';
-              setTimeout(() => btn.innerText = original, 2000);
-            }
-            
-            // Auto click
-            setTimeout(() => {
-                 document.getElementById('open-btn').click();
-            }, 500);
+             const trigger = document.getElementById('trigger');
+             // Attempt click for user gesture emulation if possible
+             setTimeout(() => {
+                 trigger.click();
+             }, 100);
+             
+             // Fallback redirect
+             setTimeout(() => {
+                 window.location.href = "autocut://auth?token=${code}";
+             }, 500);
           </script>
         </body>
       </html>
