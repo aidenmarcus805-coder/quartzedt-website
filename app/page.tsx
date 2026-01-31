@@ -213,7 +213,7 @@ const BOOK_DEMO_HREF = '/pricing';
 const SHOW_BOOK_DEMO = false;
 
 // Shared scroll constants (blueprint-aligned)
-const WORKFLOW_DOOR_SCROLL_PX = 500;
+const WORKFLOW_DOOR_SCROLL_PX = 300; // Snappier opening (was 500)
 const WORKFLOW_SCROLL_PX_PER_STEP = 1200;
 const WORKFLOW_SCROLLS_PER_STEP = 3; // "3 scrolls to commit" feel
 const WORKFLOW_STEP_MIN_DWELL_MS = 300; // minimum time to stay on a step during fast scrolling
@@ -757,24 +757,20 @@ export default function Home() {
                   key={i}
                   className="absolute bg-[#111111]" // Gray1
                   style={{
-                    // Each blade is a rectangle that covers a sector
-                    // 8 blades = 45 degrees each.
-                    // We make them huge to cover corners.
-                    width: '150vmax',
-                    height: '150vmax',
+                    // Geometry: Ultra-large to ensure NO gaps even on huge screens
+                    width: '200vmax',
+                    height: '200vmax',
                     bottom: '50%',
                     right: '50%',
                     transformOrigin: 'bottom right',
 
-                    // Base rotation to form the circle
-                    // + Dynamic rotation to open
-                    // + Dynamic translation to clear the center
+                    // Motion:
+                    // Rotate: -90deg over the course of opening (more spin)
+                    // Translate: -40% outward to clear the center completely
                     transform: `
-                        rotate(calc(${i * 45}deg + (var(--shutter-progress, 0) * -60deg))) 
-                        translate(calc(var(--shutter-progress, 0) * -30%), calc(var(--shutter-progress, 0) * -30%))
+                        rotate(calc(${i * 45}deg + (var(--shutter-progress, 0) * -90deg))) 
+                        translate(calc(var(--shutter-progress, 0) * -40%), calc(var(--shutter-progress, 0) * -40%))
                       `,
-                    // Clip path ensures they don't overlap messy
-                    // A 45deg wedge would be ideal, but rectangles overlap fine for a "closed" state.
                   }}
                 />
               ))}
