@@ -19,19 +19,9 @@ declare global {
 }
 
 
-const PLAN = {
-  price: 179,
-  priceAnnual: 1790,
-  features: [
-    'AI scene detection',
-    'Full transcripts',
-    'Multicam sync',
-    'XML export',
-    'Same-day templates',
-    'Direct support',
-  ],
-  lsVariantId: 'ad029df4-2bb2-45b2-bfa3-038e6938eb09', // Founding Member Plan
-};
+import { PRICING_PLAN } from '../lib/constants/pricing';
+
+const PLAN = PRICING_PLAN;
 
 const UserMenu = ({ session }: { session: any }) => {
   const [isOpen, setIsOpen] = useState(false);

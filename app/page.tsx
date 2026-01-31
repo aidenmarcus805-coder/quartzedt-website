@@ -3,19 +3,9 @@
 import { AnimatePresence, motion, useInView } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Check, ChevronDown, Film, MessageCircle, FileText, Map, Minus, Scissors, Search, Upload, User } from 'lucide-react';
 
-const PLAN = {
-  price: 179,
-  priceAnnual: 1790,
-  features: [
-    'AI scene detection',
-    'Full transcripts',
-    'Multicam sync',
-    'XML export',
-    'Same-day templates',
-    'Direct support',
-  ],
-  creemProductId: 'prod_founding_GF7xl',
-};
+import { PRICING_PLAN } from './lib/constants/pricing';
+
+const PLAN = PRICING_PLAN;
 import { useEffect, useRef, useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import dynamic from 'next/dynamic';
@@ -231,6 +221,7 @@ const WORKFLOW_STEP_MIN_DWELL_MS = 300; // minimum time to stay on a step during
 export default function Home() {
   const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly');
   const price = billing === 'annual' ? PLAN.priceAnnual : PLAN.price;
+  const productId = billing === 'annual' ? PLAN.creemProductIdAnnual : PLAN.creemProductIdMonthly;
   const period = billing === 'annual' ? 'year' : 'mo';
   const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
@@ -326,6 +317,10 @@ export default function Home() {
         containerRef.current.style.setProperty('--shutter-progress', shutterProgress.toString());
         containerRef.current.style.setProperty('--shutter-opacity', shutterOpacity.toString());
       }
+      if (shutterContainerRef.current) {
+        shutterContainerRef.current.style.setProperty('--shutter-progress', shutterProgress.toString());
+        shutterContainerRef.current.style.setProperty('--shutter-opacity', shutterOpacity.toString());
+      }
 
       // Animate content reveal: Just scale and opacity, NO movement (fixing "land perfectly" issue)
       if (workflowContentRef.current) {
@@ -362,6 +357,7 @@ export default function Home() {
 
 
   const workflowContentRef = useRef<HTMLDivElement>(null);
+  const shutterContainerRef = useRef<HTMLDivElement>(null);
 
   return (
     <div ref={containerRef} className="bg-white text-black min-h-screen selection:bg-black selection:text-white antialiased">
@@ -701,7 +697,7 @@ export default function Home() {
           }}
         >
           {/* Shutter Layer - Sticky on top of content */}
-          <div className="sticky top-0 h-screen w-full z-40 pointer-events-none overflow-hidden">
+          <div ref={shutterContainerRef} className="sticky top-0 h-screen w-full z-40 pointer-events-none overflow-hidden">
             <ShutterReveal />
           </div>
 
@@ -1114,7 +1110,7 @@ export default function Home() {
                   ))}
                 </div>
 
-                <a href={`https://creem.io/payment/${PLAN.creemProductId}`} target="_blank" rel="noopener noreferrer" className="block">
+                <a href={`https://creem.io/payment/${productId}`} target="_blank" rel="noopener noreferrer" className="block">
                   <button className="w-full py-4 bg-white text-black text-sm font-medium rounded-lg hover:bg-white/90 transition-colors">
                     Start free trial
                   </button>

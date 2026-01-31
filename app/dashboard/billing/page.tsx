@@ -4,6 +4,8 @@ import { Check, CreditCard, Shield } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 
+import { PRICING_PLAN } from '../../lib/constants/pricing';
+
 const PLANS = [
     {
         id: 'free',
@@ -17,8 +19,8 @@ const PLANS = [
     {
         id: 'referral',
         name: 'Referral Pass',
-        price: '$49',
-        period: 'billed once',
+        price: '$0',
+        period: 'one-time',
         description: 'Special access for referred friends.',
         features: ['1 month unlimited access', 'No watermark', 'Priority support', 'One-time payment'],
         productId: 'prod_referral_Placeholder',
@@ -26,21 +28,21 @@ const PLANS = [
     {
         id: 'pro',
         name: 'Pro Plan',
-        price: '$49',
+        price: `$${PRICING_PLAN.price}`,
         period: 'per month',
         description: 'For professional wedding filmmakers.',
         features: ['Unlimited exports', 'No watermark', 'Priority support', 'All AI features'],
-        productId: 'prod_founding_GF7xl',
+        productId: PRICING_PLAN.creemProductIdMonthly,
         popular: true,
     },
     {
         id: 'annual',
         name: 'Annual Pass',
-        price: '$490',
+        price: `$${PRICING_PLAN.priceAnnual}`,
         period: 'per year',
         description: 'Best value for full-time studios.',
         features: ['2 months free', 'Unlimited exports', 'No watermark', 'Priority support'],
-        productId: 'prod_annual_XYZ',
+        productId: PRICING_PLAN.creemProductIdAnnual,
     }
 ];
 
