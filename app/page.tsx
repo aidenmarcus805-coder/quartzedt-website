@@ -223,7 +223,7 @@ const BOOK_DEMO_HREF = '/pricing';
 const SHOW_BOOK_DEMO = false;
 
 // Shared scroll constants (blueprint-aligned)
-const WORKFLOW_DOOR_SCROLL_PX = 800;
+const WORKFLOW_DOOR_SCROLL_PX = 600;
 const WORKFLOW_SCROLL_PX_PER_STEP = 1200;
 const WORKFLOW_SCROLLS_PER_STEP = 3; // "3 scrolls to commit" feel
 const WORKFLOW_STEP_MIN_DWELL_MS = 300; // minimum time to stay on a step during fast scrolling
@@ -315,9 +315,12 @@ export default function Home() {
       // Update Shutter Animation (driven by CSS variable)
       // Progress 0 = Closed (at top of section), 1 = Open (scroll past specific threshold)
       const shutterProgress = Math.max(0, Math.min(1, doorProgress));
+      // Cubic falloff for opacity so it stays mostly visible then fades at the end
+      const shutterOpacity = 1 - Math.pow(shutterProgress, 3);
 
       if (containerRef.current) {
         containerRef.current.style.setProperty('--shutter-progress', shutterProgress.toString());
+        containerRef.current.style.setProperty('--shutter-opacity', shutterOpacity.toString());
       }
 
       // Animate content reveal: Scale up from 0.95 and fade in as door clears
