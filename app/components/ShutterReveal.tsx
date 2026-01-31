@@ -53,6 +53,8 @@ export default function ShutterReveal() {
 
                                 clipPath: 'polygon(100% 100%, 0% 100%, 0% 0%)',
                                 willChange: 'transform',
+                                // Cinematic Smoothing: Inertia for the blades so they don't jitter on scroll
+                                transition: 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)',
                             }}
                         />
                     );

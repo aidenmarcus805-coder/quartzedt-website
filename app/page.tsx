@@ -223,7 +223,7 @@ const BOOK_DEMO_HREF = '/pricing';
 const SHOW_BOOK_DEMO = false;
 
 // Shared scroll constants (blueprint-aligned)
-const WORKFLOW_DOOR_SCROLL_PX = 600;
+const WORKFLOW_DOOR_SCROLL_PX = 500;
 const WORKFLOW_SCROLL_PX_PER_STEP = 1200;
 const WORKFLOW_SCROLLS_PER_STEP = 3; // "3 scrolls to commit" feel
 const WORKFLOW_STEP_MIN_DWELL_MS = 300; // minimum time to stay on a step during fast scrolling
@@ -314,31 +314,30 @@ export default function Home() {
 
       // Update Shutter Animation (driven by CSS variable)
       // Progress 0 = Closed (at top of section), 1 = Open (scroll past specific threshold)
-      const shutterProgress = Math.max(0, Math.min(1, doorProgress));
-      // Cubic falloff for opacity so it stays mostly visible then fades at the end
-      const shutterOpacity = 1 - Math.pow(shutterProgress, 3);
+      const rawShutterProgress = Math.max(0, Math.min(1, doorProgress));
+
+      // Cinematic Easing: Ease-in-out (smoothstep) -> starts slow, speeds up, slows down
+      // rS^2 * (3 - 2*rS)
+      const shutterProgress = rawShutterProgress * rawShutterProgress * (3 - 2 * rawShutterProgress);
+      // Make opacity stay solid longer (hiding the content behind) then fade out quickly at the end
+      const shutterOpacity = 1 - Math.pow(shutterProgress, 12);
 
       if (containerRef.current) {
         containerRef.current.style.setProperty('--shutter-progress', shutterProgress.toString());
         containerRef.current.style.setProperty('--shutter-opacity', shutterOpacity.toString());
       }
 
-      // Animate content reveal: Scale up from 0.95 and fade in as door clears
+      // Animate content reveal: Just scale and opacity, NO movement (fixing "land perfectly" issue)
       if (workflowContentRef.current) {
-        const doorProgress = -rect.top / WORKFLOW_DOOR_SCROLL_PX; // Recalc or reuse
+        // Reveal starts earlier
+        const rawProgress = Math.max(0, Math.min(1, (doorProgress - 0.1) / 0.9));
+        const revealProgress = 1 - Math.pow(1 - rawProgress, 3);
 
-        // Reveal starts earlier (at 20% door progress) for dramatic effect
-        const rawProgress = Math.max(0, Math.min(1, (doorProgress - 0.2) / 0.8));
-        // Ease-out cubic for cushiony deceleration (not too aggressive)
-        const revealProgress = 1 - Math.pow(1 - rawProgress, 2.5);
-        // Scale: 0.92 -> 1.0 (slightly more dramatic)
-        const scale = 0.92 + (revealProgress * 0.08);
-        // Opacity: 0 -> 1
+        const scale = 0.94 + (revealProgress * 0.06);
         const opacity = revealProgress;
-        // Y: 60px -> 0 (more travel distance)
-        const y = (1 - revealProgress) * 60;
 
-        workflowContentRef.current.style.transform = `scale(${scale}) translate3d(0, ${y}px, 0)`;
+        // Removed Y translation so it doesn't feel like you have to "catch up" to it
+        workflowContentRef.current.style.transform = `scale(${scale})`;
         workflowContentRef.current.style.opacity = `${opacity}`;
       }
 
