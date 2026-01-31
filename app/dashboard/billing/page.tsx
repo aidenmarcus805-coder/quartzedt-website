@@ -78,6 +78,7 @@ export default function BillingPage() {
 
                         <div className="mb-6">
                             <h3 className="font-medium text-lg mb-2">{plan.name}</h3>
+                            <div className="flex items-baseline gap-1">
                                 <span className="text-3xl font-light">{plan.price}</span>
                                 <span className="text-sm text-black/50">
                                     {plan.period === 'billed once' ? ' one-time' : `/${plan.period.includes(' ') ? plan.period.split(' ')[1] : plan.period}`}
@@ -109,9 +110,9 @@ export default function BillingPage() {
                         </button>
                     </div>
                 ))}
-        </div>
+            </div>
 
-            {/* Refer a Friend Section */ }
+            {/* Refer a Friend Section */}
             <div className="p-8 rounded-2xl border border-black/10 bg-white flex flex-col md:flex-row items-center justify-between gap-8">
                 <div className="space-y-2 flex-1">
                     <h3 className="font-display text-xl text-black">Give One Month Free</h3>
