@@ -213,7 +213,7 @@ const BOOK_DEMO_HREF = '/pricing';
 const SHOW_BOOK_DEMO = false;
 
 // Shared scroll constants (blueprint-aligned)
-const WORKFLOW_DOOR_SCROLL_PX = 300; // Snappier opening (was 500)
+const WORKFLOW_DOOR_SCROLL_PX = 1500; // Super Heavy mechanical scroll // Balanced: Heavy enough to feel mechanical, short enough to avoid "too much space"
 const WORKFLOW_SCROLL_PX_PER_STEP = 1200;
 const WORKFLOW_SCROLLS_PER_STEP = 3; // "3 scrolls to commit" feel
 const WORKFLOW_STEP_MIN_DWELL_MS = 300; // minimum time to stay on a step during fast scrolling
@@ -248,6 +248,7 @@ export default function Home() {
   const workflowLockedRef = useRef(false);
   const workflowHasInteractedRef = useRef(false);
   const workflowStepLockUntilRef = useRef(0);
+  const isScrollingToStepRef = useRef(false);
   const workflowAutoIdxRef = useRef(0);
   const workflowAutoAdvanceRef = useRef(0);
 
@@ -334,6 +335,9 @@ export default function Home() {
 
       // If we're in the workflow zone, calculate which step we should be on based on scroll
       if (isWorkflowLocked) {
+        // Guard: Don't update index if we are programmatically scrolling to a step (avoids "fast-forward" glitch)
+        if (isScrollingToStepRef.current) return;
+
         const workflowScroll = -rect.top - WORKFLOW_DOOR_SCROLL_PX;
         if (workflowScroll > 0) {
           const rawIdx = Math.floor(workflowScroll / WORKFLOW_SCROLL_PX_PER_STEP);
@@ -702,83 +706,60 @@ export default function Home() {
               opacity: 'var(--shutter-opacity, 1)',
             }}
           >
-            {/* SVG Aperture - 8 Blades */}
-            {/* Rotating the whole group based on progress provides the "opening" torque effect */}
+            {/* 8 Blades - Squares that translate outward. 
+                 Start: 8 squares meeting at center.
+                 End: They move outward radially.
+             */}
+            {/* SVG Mask Shutter - Guaranteed clean geometry + Mechanical lines */}
             <svg
+              className="absolute inset-0 w-full h-full"
               viewBox="0 0 100 100"
               preserveAspectRatio="xMidYMid slice"
-              className="absolute inset-0 w-full h-full"
-              style={{
-                transform: 'rotate(calc(var(--shutter-progress, 0) * 45deg)) scale(calc(1 + var(--shutter-progress, 0) * 0.5))',
-                transformOrigin: '50% 50%',
-              }}
             >
               <defs>
-                <mask id="apertureMask">
-                  <rect width="100%" height="100%" fill="white" />
-                  {/* The hole opening */}
-                  <circle cx="50" cy="50" r="0" fill="black">
-                    <animate attributeName="r" values="0;70" dur="1s" fill="freeze" />
-                    {/* We control this via CSS logic using CSS vars instead of SMIL for scroll binding */}
-                  </circle>
+                <mask id="irisMask">
+                  <rect x="0" y="0" width="100" height="100" fill="white" />
+                  {/* The Hole: An Octagon that rotates and scales */}
+                  <polygon
+                    points="29.29,0 70.71,0 100,29.29 100,70.71 70.71,100 29.29,100 0,70.71 0,29.29"
+                    fill="black"
+                    style={{
+                      transformOrigin: '50% 50%',
+                      transform: 'rotate(calc(var(--shutter-progress, 0) * 720deg)) scale(calc(var(--shutter-progress, 0) * 20))',
+                    }}
+                  />
                 </mask>
               </defs>
+              <rect x="0" y="0" width="100%" height="100%" fill="#000000" mask="url(#irisMask)" />
 
-              {/* Actually, let's draw physical blades that move out. 
-                 A standard 8-blade iris.
-                 We'll use a single path rotated 8 times.
-              */}
-
-              <g fill="#111111"> {/* Gray1 */}
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <path
-                    key={i}
-                    d="M 50 50 L 0 0 L 100 0 Z"
-                  // Simplified huge triangle blade. 
-                  // To open, we rotate/translate them away from center?
-                  // Better: standard iris geometry.
-                  // Blade shape: A rectangle pinned at a corner, rotated.
-                  // Let's stick to the user's "Radial Blades" request -> Huge wedges.
-                  />
-                ))}
+              {/* Cosmetic Blade Edges - Adds "Mechanical" texture to avoid "flat cube" look */}
+              <g
+                style={{
+                  transformOrigin: '50% 50%',
+                  transform: 'rotate(calc(var(--shutter-progress, 0) * 720deg)) scale(calc(var(--shutter-progress, 0) * 20))',
+                  opacity: 0.15,
+                  pointerEvents: 'none',
+                }}
+              >
+                {/* 8 Spiral Lines radiating from the octagon vertices */}
+                {/* Vertices: 
+                    1: 29.29,0
+                    2: 70.71,0
+                    3: 100,29.29
+                    etc.
+                */}
+                <path d="M 70.71,0 L 100,-50" stroke="white" strokeWidth="0.5" />
+                <path d="M 100,29.29 L 150,0" stroke="white" strokeWidth="0.5" />
+                <path d="M 100,70.71 L 150,100" stroke="white" strokeWidth="0.5" />
+                <path d="M 70.71,100 L 100,150" stroke="white" strokeWidth="0.5" />
+                <path d="M 29.29,100 L 0,150" stroke="white" strokeWidth="0.5" />
+                <path d="M 0,70.71 L -50,100" stroke="white" strokeWidth="0.5" />
+                <path d="M 0,29.29 L -50,0" stroke="white" strokeWidth="0.5" />
+                <path d="M 29.29,0 L 0,-50" stroke="white" strokeWidth="0.5" />
               </g>
             </svg>
 
-            {/* CSS-based SVG implementation is tricky for "iris" without complex paths.
-                Let's use the PROVEN "Rotated Divs" method but with clean styling requested.
-                The previous issue appeared to be visibility/z-index.
-                I will re-implement the DIV method but ensuring the z-index and color matches exactly.
-            */}
-
-            {/* Re-attempting CLEAN div implementation with 8 blades for 'cinematic' look */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="absolute bg-[#111111]" // Gray1
-                  style={{
-                    // Geometry: Ultra-large to ensure NO gaps even on huge screens
-                    width: '200vmax',
-                    height: '200vmax',
-                    bottom: '50%',
-                    right: '50%',
-                    transformOrigin: 'bottom right',
-
-                    // Motion:
-                    // Rotate: -90deg over the course of opening (more spin)
-                    // Translate: -40% outward to clear the center completely
-                    transform: `
-                        rotate(calc(${i * 45}deg + (var(--shutter-progress, 0) * -90deg))) 
-                        translate(calc(var(--shutter-progress, 0) * -40%), calc(var(--shutter-progress, 0) * -40%))
-                      `,
-                  }}
-                />
-              ))}
-            </div>
-
           </div>
-
-
           {/* Dotted background (keep) */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
             <div
@@ -795,7 +776,7 @@ export default function Home() {
             />
           </div>
 
-          <div ref={workflowContentRef} className="sticky top-0 h-screen z-0" style={{ willChange: 'transform, opacity' }}>
+          <div ref={workflowContentRef} className="sticky top-0 h-screen z-0 -mt-[100vh]" style={{ willChange: 'transform, opacity' }}>
             {/* Keep pinned content comfortably within the viewport (avoid clipped dock on shorter screens). */}
             <div className="relative h-full pt-24 pb-12 flex flex-col">
               {/* Title (gallery rhythm: aligned to content grid) */}
@@ -804,10 +785,13 @@ export default function Home() {
                   The Workflow
                   <BleepDot className="ml-4" />
                 </h2>
+                <p className="mt-3 text-lg md:text-xl text-neutral-400 font-light max-w-2xl tracking-wide">
+                  Automate your entire post-production pipeline.
+                </p>
               </div>
 
               {/* Videos */}
-              <div className="flex-1 mt-4 md:mt-6 flex items-end">
+              <div className="flex-1 mt-4 md:mt-6 flex items-center">
                 {/* Stage (same width as the rest of the site) */}
                 <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 w-full">
                   {/* One “video row”: active expands (main), others stay as shutters on the right.
@@ -817,7 +801,7 @@ export default function Home() {
 
                     <div className="relative aspect-[21/10]">
                       <motion.div
-                        className="absolute inset-0 flex gap-[6px] p-2 md:p-3"
+                        className="absolute inset-0 flex gap-[6px]"
                         style={{
                           perspective: 1200,
                           transformStyle: 'preserve-3d',
@@ -932,23 +916,46 @@ export default function Home() {
                                   }}
                                 />
 
-                                {/* Bottom Description Bar (Inside Card) */}
+                                {/* Bottom Description Bar (Inset "pill" style) */}
                                 {isActive && (
-                                  <div className="absolute inset-x-0 bottom-0 z-20">
-                                    <div className="bg-black/90 backdrop-blur-md text-white px-6 py-4 flex items-center justify-between border-t border-white/5">
+                                  <motion.div
+                                    key={`desc-${step.label}`}
+                                    initial={{ opacity: 0, y: 40, scale: 0.8 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    transition={{
+                                      duration: 0.5,
+                                      ease: [0.23, 1, 0.32, 1], // "Quart" ease out 
+                                      delay: 0.3 // Wait for card to settle before popping (ensures visibility)
+                                    }}
+                                    className="absolute inset-x-2 bottom-2 z-20"
+                                  >
+                                    <div className="bg-black/90 backdrop-blur-md text-white px-4 py-3 flex items-center justify-between border border-white/5 rounded-[12px] overflow-hidden">
                                       <div className="flex items-center gap-4">
-                                        <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
-                                        <p className="text-[13px] font-light tracking-wide text-white/90">
+                                        <motion.span
+                                          initial={{ scale: 0 }}
+                                          animate={{ scale: 1 }}
+                                          transition={{ delay: 0.45, type: "spring", stiffness: 300, damping: 20 }}
+                                          className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent animate-pulse"
+                                        />
+                                        <p className="text-[13px] font-light tracking-wide text-white/90 truncate">
                                           {step.desc}
                                         </p>
                                       </div>
-                                      <div className="flex items-center gap-3 text-[11px] tracking-widest font-mono text-white/40">
+                                      <div className="flex items-center gap-3 text-[11px] tracking-widest font-mono text-white/40 shrink-0">
                                         <span className="text-white">{String(idx + 1).padStart(2, '0')}</span>
                                         <span className="h-px w-8 bg-white/20" />
                                         <span>{String(WORKFLOW_STEPS.length).padStart(2, '0')}</span>
                                       </div>
+
+                                      {/* Technical sheen effect */}
+                                      <motion.div
+                                        initial={{ x: "-100%" }}
+                                        animate={{ x: "200%" }}
+                                        transition={{ duration: 1.2, ease: "linear", delay: 0.4 }}
+                                        className="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12 pointer-events-none"
+                                      />
                                     </div>
-                                  </div>
+                                  </motion.div>
                                 )}
                               </div>
 
@@ -986,6 +993,10 @@ export default function Home() {
                               onClick={() => {
                                 workflowHasInteractedRef.current = true;
                                 setWorkflowHasInteracted(true);
+
+                                // Lock scroll updates
+                                isScrollingToStepRef.current = true;
+
                                 workflowAutoIdxRef.current = idx;
                                 workflowAutoAdvanceRef.current = 0;
                                 setWorkflowAdvance(0);
@@ -996,11 +1007,19 @@ export default function Home() {
                                   const topY = window.scrollY + el.getBoundingClientRect().top;
                                   const targetY = topY + WORKFLOW_DOOR_SCROLL_PX + idx * WORKFLOW_SCROLL_PX_PER_STEP;
                                   const lenis = window.__lenis;
+
+                                  const DURATION = 1.0; // slightly slower for better jump feel
+
                                   if (lenis?.scrollTo) {
-                                    lenis.scrollTo(targetY, { duration: 0.8 });
+                                    lenis.scrollTo(targetY, { duration: DURATION, lock: true });
                                   } else {
                                     window.scrollTo({ top: targetY, left: 0, behavior: 'smooth' });
                                   }
+
+                                  // Unlock after scroll finishes
+                                  setTimeout(() => {
+                                    isScrollingToStepRef.current = false;
+                                  }, DURATION * 1000 + 100);
                                 }
                               }}
                               className={`group relative w-full text-left px-5 py-4 transition-all duration-300 border-r border-black/5 last:border-r-0 ${active
