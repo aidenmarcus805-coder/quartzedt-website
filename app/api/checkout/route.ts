@@ -19,7 +19,7 @@ export async function POST(req: Request) {
         }
 
         // Call Creem API to create session
-        const response = await fetch('https://api.creem.io/v1/checkout_sessions', {
+        const response = await fetch('https://api.creem.io/v1/checkouts', {
             method: 'POST',
             headers: {
                 'x-api-key': CREEM_API_KEY,
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
             },
             body: JSON.stringify({
                 product_id: productId,
-                fields: {
+                customer: {
                     email: session.user.email,
                 },
                 success_url: `${process.env.NEXTAUTH_URL}/dashboard?checkout=success`,
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
         if (!response.ok) {
             const errorText = await response.text();
             console.error('Creem API Error:', errorText);
-            throw new Error(`Creem API responded with ${response.status}`);
+            throw new Error(`Creem API responded with ${response.status}: ${errorText}`);
         }
 
         const data = await response.json();
