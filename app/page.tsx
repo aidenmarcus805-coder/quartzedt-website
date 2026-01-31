@@ -310,8 +310,8 @@ export default function Home() {
       // Cinematic Easing: Ease-in-out (smoothstep) -> starts slow, speeds up, slows down
       // rS^2 * (3 - 2*rS)
       const shutterProgress = rawShutterProgress * rawShutterProgress * (3 - 2 * rawShutterProgress);
-      // Make opacity stay solid longer (hiding the content behind) then fade out quickly at the end
-      const shutterOpacity = 1 - Math.pow(shutterProgress, 12);
+      // Make opacity stay solid longer (pow 20) then fade out quickly at the end
+      const shutterOpacity = 1 - Math.pow(shutterProgress, 20);
 
       if (containerRef.current) {
         containerRef.current.style.setProperty('--shutter-progress', shutterProgress.toString());
@@ -322,27 +322,21 @@ export default function Home() {
         shutterContainerRef.current.style.setProperty('--shutter-progress', shutterProgress.toString());
         shutterContainerRef.current.style.setProperty('--shutter-opacity', shutterOpacity.toString());
 
-        // Manual Sticky Logic (Fallsafe)
-        // If we are INSIDE the workflow section (rect.top <= 0) but not yet at the bottom (rect.bottom > window.innerHeight)
-        // we set position: fixed, top: 0.
-        // Otherwise absolute.
-        const sectionBottom = rect.bottom;
-        const windowHeight = window.innerHeight;
+        // Global Fixed Overlay Logic
+        // Only show when we are in the "shutter zone" (when doorProgress is relevant)
+        // doorProgress > 0 starts opening. We want it visible slightly before (e.g., -0.1) as we approach?
+        // Actually, just show it when doorProgress > -0.5 and < 1.5 to be safe?
+        // Better: Show it when rect.top <= window.innerHeight (entering view) and rectify visibility.
+        // But since it's an overlay for the "Workflow" section, we want it to cover the screen
+        // perfectly when the "Workflow" section title hits top.
 
-        if (rect.top <= 0 && sectionBottom >= windowHeight) {
-          shutterContainerRef.current.style.position = 'fixed';
-          shutterContainerRef.current.style.top = '0px';
-          shutterContainerRef.current.style.bottom = 'auto';
-        } else if (sectionBottom < windowHeight) {
-          // Scrolled past -> Pin to bottom
-          shutterContainerRef.current.style.position = 'absolute';
-          shutterContainerRef.current.style.top = 'auto';
-          shutterContainerRef.current.style.bottom = '0px';
+        // Simpler logic:
+        // Visible = true if we are interacting with the workflow door.
+
+        if (doorProgress > -0.1 && doorProgress < 1.1) {
+          shutterContainerRef.current.style.display = 'block';
         } else {
-          // Above section -> Pin to top
-          shutterContainerRef.current.style.position = 'absolute';
-          shutterContainerRef.current.style.top = '0px';
-          shutterContainerRef.current.style.bottom = 'auto';
+          shutterContainerRef.current.style.display = 'none';
         }
       }
 
@@ -522,6 +516,15 @@ export default function Home() {
           </div>
         </div>
       </motion.nav>
+
+      {/* Global Shutter Overlay - Fixed to viewport, controlled via JS display/vars */}
+      <div
+        ref={shutterContainerRef}
+        className="fixed inset-0 z-[90] pointer-events-none overflow-hidden"
+        style={{ display: 'none' }} // Hidden by default
+      >
+        <ShutterReveal />
+      </div>
 
       {/* Hero - Fullscreen intro (scroll-driven) */}
       <section ref={heroRef} className="relative">
@@ -721,10 +724,8 @@ export default function Home() {
           }}
         >
           {/* Shutter Layer - Sticky on top of content */}
-          {/* Shutter Layer - Manual Sticky (via JS) */}
-          <div ref={shutterContainerRef} className="absolute top-0 h-screen w-full z-40 pointer-events-none overflow-hidden">
-            <ShutterReveal />
-          </div>
+          {/* Shutter Layer Removed (Moved to Global) */}
+
 
           {/* Dotted background (keep) */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
@@ -878,6 +879,25 @@ export default function Home() {
                                       : 'inset 0 1px 2px rgba(255,255,255,0.86), inset 0 -8px 18px rgba(0,0,0,0.08)',
                                   }}
                                 />
+
+                                {/* Bottom Description Bar (Inside Card) */}
+                                {isActive && (
+                                  <div className="absolute inset-x-0 bottom-0 z-20">
+                                    <div className="bg-black/90 backdrop-blur-md text-white px-6 py-4 flex items-center justify-between border-t border-white/5">
+                                      <div className="flex items-center gap-4">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+                                        <p className="text-[13px] font-light tracking-wide text-white/90">
+                                          {step.desc}
+                                        </p>
+                                      </div>
+                                      <div className="flex items-center gap-3 text-[11px] tracking-widest font-mono text-white/40">
+                                        <span className="text-white">{String(idx + 1).padStart(2, '0')}</span>
+                                        <span className="h-px w-8 bg-white/20" />
+                                        <span>{String(WORKFLOW_STEPS.length).padStart(2, '0')}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
 
                               {/* Edge bar for depth */}
@@ -899,22 +919,7 @@ export default function Home() {
                         })}
                       </motion.div>
 
-                      {/* Bottom Description Bar - Minimalist Black Bar */}
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20">
-                        <div className="bg-black text-white px-6 py-4 flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
-                            <p className="text-[13px] font-light tracking-wide text-white/90">
-                              {WORKFLOW_STEPS[workflowIdx]?.desc}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-3 text-[11px] tracking-widest font-mono text-white/40">
-                            <span className="text-white">{String(workflowIdx + 1).padStart(2, '0')}</span>
-                            <span className="h-px w-8 bg-white/20" />
-                            <span>{String(WORKFLOW_STEPS.length).padStart(2, '0')}</span>
-                          </div>
-                        </div>
-                      </div>
+                      {/* Bottom Description Bar Removed (Moved inside card) */}
                     </div>
 
                     <div className="border-t border-black/8">

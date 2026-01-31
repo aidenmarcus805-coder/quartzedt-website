@@ -18,7 +18,6 @@ export default function ShutterReveal() {
                 // --shutter-progress will be set by parent on the container div or :root
                 opacity: 'var(--shutter-opacity, 1)',
                 pointerEvents: 'none',
-                transition: 'opacity 0.1s linear', // smooth out any jitter
             }}
         >
             <div className="relative w-full h-full flex items-center justify-center">
