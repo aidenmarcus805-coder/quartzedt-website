@@ -318,8 +318,32 @@ export default function Home() {
         containerRef.current.style.setProperty('--shutter-opacity', shutterOpacity.toString());
       }
       if (shutterContainerRef.current) {
+        // Update Shutter Animation vars
         shutterContainerRef.current.style.setProperty('--shutter-progress', shutterProgress.toString());
         shutterContainerRef.current.style.setProperty('--shutter-opacity', shutterOpacity.toString());
+
+        // Manual Sticky Logic (Fallsafe)
+        // If we are INSIDE the workflow section (rect.top <= 0) but not yet at the bottom (rect.bottom > window.innerHeight)
+        // we set position: fixed, top: 0.
+        // Otherwise absolute.
+        const sectionBottom = rect.bottom;
+        const windowHeight = window.innerHeight;
+
+        if (rect.top <= 0 && sectionBottom >= windowHeight) {
+          shutterContainerRef.current.style.position = 'fixed';
+          shutterContainerRef.current.style.top = '0px';
+          shutterContainerRef.current.style.bottom = 'auto';
+        } else if (sectionBottom < windowHeight) {
+          // Scrolled past -> Pin to bottom
+          shutterContainerRef.current.style.position = 'absolute';
+          shutterContainerRef.current.style.top = 'auto';
+          shutterContainerRef.current.style.bottom = '0px';
+        } else {
+          // Above section -> Pin to top
+          shutterContainerRef.current.style.position = 'absolute';
+          shutterContainerRef.current.style.top = '0px';
+          shutterContainerRef.current.style.bottom = 'auto';
+        }
       }
 
       // Animate content reveal: Just scale and opacity, NO movement (fixing "land perfectly" issue)
@@ -697,7 +721,8 @@ export default function Home() {
           }}
         >
           {/* Shutter Layer - Sticky on top of content */}
-          <div ref={shutterContainerRef} className="sticky top-0 h-screen w-full z-40 pointer-events-none overflow-hidden">
+          {/* Shutter Layer - Manual Sticky (via JS) */}
+          <div ref={shutterContainerRef} className="absolute top-0 h-screen w-full z-40 pointer-events-none overflow-hidden">
             <ShutterReveal />
           </div>
 

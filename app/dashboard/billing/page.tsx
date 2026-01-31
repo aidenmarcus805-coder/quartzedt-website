@@ -3,115 +3,94 @@
 import { Check, CreditCard, Shield } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
-
 import { PRICING_PLAN } from '../../lib/constants/pricing';
-
-const PLANS = [
-    {
-        id: 'free',
-        name: 'Free Trial',
-        price: '$0',
-        period: '7 days',
-        description: 'Perfect for testing the waters.',
-        features: ['7-day unlimited access', 'Watermarked exports', 'Basic support'],
-        current: false,
-    },
-    {
-        id: 'referral',
-        name: 'Referral Pass',
-        price: '$0',
-        period: 'one-time',
-        description: 'Special access for referred friends.',
-        features: ['1 month unlimited access', 'No watermark', 'Priority support', 'One-time payment'],
-        productId: 'prod_referral_Placeholder',
-    },
-    {
-        id: 'pro',
-        name: 'Pro Plan',
-        price: `$${PRICING_PLAN.price}`,
-        period: 'per month',
-        description: 'For professional wedding filmmakers.',
-        features: ['Unlimited exports', 'No watermark', 'Priority support', 'All AI features'],
-        productId: PRICING_PLAN.creemProductIdMonthly,
-        popular: true,
-    },
-    {
-        id: 'annual',
-        name: 'Annual Pass',
-        price: `$${PRICING_PLAN.priceAnnual}`,
-        period: 'per year',
-        description: 'Best value for full-time studios.',
-        features: ['2 months free', 'Unlimited exports', 'No watermark', 'Priority support'],
-        productId: PRICING_PLAN.creemProductIdAnnual,
-    }
-];
 
 export default function BillingPage() {
     const { data: session } = useSession();
-    const [isLoading, setIsLoading] = useState(false);
+    const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly');
 
-    const currentPlan = (session?.user as any)?.plan || 'free';
+    const price = billing === 'annual' ? PRICING_PLAN.priceAnnual : PRICING_PLAN.price;
+    const period = billing === 'annual' ? 'year' : 'month';
+    const productId = billing === 'annual' ? PRICING_PLAN.creemProductIdAnnual : PRICING_PLAN.creemProductIdMonthly;
+    const priceSuffix = billing === 'annual' ? '/year' : '/month';
 
-    const handleCheckout = async (productId: string) => {
-        // ... (same logic as before)
+    const handleCheckout = () => {
         window.open(`https://creem.io/payment/${productId}?email=${session?.user?.email}`, '_blank');
     };
 
     return (
-        <div className="space-y-16">
-            <div className="space-y-2">
-                <h1 className="font-display text-4xl font-light text-black">Subscription</h1>
-                <p className="text-black/60 text-lg font-light">
-                    Upgrade or manage your Quartz plan.
-                </p>
+        <div className="space-y-12">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div className="space-y-2">
+                    <h1 className="font-display text-4xl font-light text-black">Subscription</h1>
+                    <p className="text-black/60 text-lg font-light">
+                        Upgrade or manage your Quartz plan.
+                    </p>
+                </div>
+
+                {/* Minimal Billing Toggle */}
+                <div className="flex items-center p-1 bg-black/[0.03] rounded-full border border-black/10 w-fit">
+                    <button
+                        onClick={() => setBilling('monthly')}
+                        className={`px-6 py-2 rounded-full text-sm transition-all duration-300 ${billing === 'monthly' ? 'bg-white text-black font-medium shadow-sm border border-black/5' : 'text-black/40 hover:text-black'}`}
+                    >
+                        Monthly
+                    </button>
+                    <button
+                        onClick={() => setBilling('annual')}
+                        className={`px-6 py-2 rounded-full text-sm transition-all duration-300 flex items-center gap-2 ${billing === 'annual' ? 'bg-white text-black font-medium shadow-sm border border-black/5' : 'text-black/40 hover:text-black'}`}
+                    >
+                        Annual
+                        <span className={`text-[10px] uppercase tracking-wider font-medium px-1.5 py-0.5 rounded ${billing === 'annual' ? 'bg-black/5 text-black' : 'bg-black/5 text-black/30'}`}>
+                            -17%
+                        </span>
+                    </button>
+                </div>
             </div>
 
-            <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
-                {PLANS.map((plan) => (
-                    <div
-                        key={plan.id}
-                        className={`relative p-6 rounded-2xl border ${plan.popular ? 'border-black ring-1 ring-black/5' : 'border-black/10'} bg-white flex flex-col`}
-                    >
-                        {plan.popular && (
-                            <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4">
-                                <span className="bg-black text-white text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">Popular</span>
-                            </div>
-                        )}
+            {/* Single Pro Card */}
+            <div className="relative p-8 md:p-10 rounded-2xl border border-black ring-1 ring-black/5 bg-white overflow-hidden">
+                {/* Popular Badge */}
+                <div className="absolute top-0 right-0">
+                    <div className="bg-black text-white text-[10px] uppercase tracking-widest px-4 py-2 rounded-bl-xl font-medium">
+                        Pro Plan
+                    </div>
+                </div>
 
-                        <div className="mb-6">
-                            <h3 className="font-medium text-lg mb-2">{plan.name}</h3>
+                <div className="grid lg:grid-cols-2 gap-12 items-center">
+                    <div className="space-y-6">
+                        <div>
                             <div className="flex items-baseline gap-1">
-                                <span className="text-3xl font-light">{plan.price}</span>
-                                <span className="text-sm text-black/50">
-                                    {plan.period === 'billed once' ? ' one-time' : `/${plan.period.includes(' ') ? plan.period.split(' ')[1] : plan.period}`}
-                                </span>
+                                <span className="text-6xl font-light tracking-tight text-black">${price}</span>
+                                <span className="text-xl text-black/40">{priceSuffix}</span>
                             </div>
-                            <p className="text-sm text-black/50 mt-4 leading-relaxed">{plan.description}</p>
+                            <p className="text-black/40 text-sm mt-3">
+                                Billed {billing}, cancel anytime. Includes 7-day free trial.
+                            </p>
                         </div>
 
-                        <ul className="space-y-3 mb-8 flex-1">
-                            {plan.features.map((feature, i) => (
-                                <li key={i} className="flex items-start gap-3">
-                                    <Check className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
-                                    <span className="text-sm text-black/70">{feature}</span>
-                                </li>
-                            ))}
-                        </ul>
-
                         <button
-                            onClick={() => handleCheckout(plan.productId || '')}
-                            disabled={plan.id === currentPlan || !plan.productId}
-                            className={`w-full py-3 rounded-xl text-sm font-medium transition-all ${plan.id === currentPlan
-                                ? 'bg-black/5 text-black/30 cursor-default'
-                                : plan.popular
-                                    ? 'bg-black text-white hover:bg-black/90'
-                                    : 'border border-black/10 hover:border-black/30'
-                                }`}
+                            onClick={handleCheckout}
+                            className="w-full md:w-auto px-8 py-4 bg-black text-white text-sm font-medium rounded-xl hover:bg-black/90 transition-all shadow-lg shadow-black/5"
                         >
-                            {plan.id === currentPlan ? 'Current Plan' : `Upgrade to ${plan.name}`}
+                            Upgrade to Pro Plan
                         </button>
                     </div>
-                ))}
+
+                    <div className="space-y-4 border-t lg:border-t-0 lg:border-l border-black/5 pt-8 lg:pt-0 lg:pl-12">
+                        <p className="text-sm font-medium text-black/90 uppercase tracking-widest mb-6">Everything you need</p>
+                        <div className="grid sm:grid-cols-2 gap-x-8 gap-y-4">
+                            {PRICING_PLAN.features.map((feature, i) => (
+                                <div key={i} className="flex items-center gap-3">
+                                    <div className="w-5 h-5 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
+                                        <Check className="w-3 h-3 text-green-600" />
+                                    </div>
+                                    <span className="text-[15px] text-black/70">{feature}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* Refer a Friend Section */}
