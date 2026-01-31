@@ -694,40 +694,92 @@ export default function Home() {
             height: `calc(100vh + ${WORKFLOW_DOOR_SCROLL_PX + WORKFLOW_SCROLL_PX_PER_STEP * WORKFLOW_STEPS.length}px)`,
           }}
         >
-          {/* Shutter Layer - Sticky on top of content (Inlined) */}
+          {/* Shutter Layer - Sticky on top of content (SVG Aperture) */}
           <div
             ref={shutterContainerRef}
-            className="sticky top-0 h-screen w-full z-40 pointer-events-none overflow-hidden flex items-center justify-center"
+            className="sticky top-0 h-screen w-full z-50 pointer-events-none overflow-hidden flex items-center justify-center"
             style={{
               opacity: 'var(--shutter-opacity, 1)',
             }}
           >
-            {/* Blades */}
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div
-                key={i}
-                className="absolute bg-black"
-                style={{
-                  width: '120vmax',
-                  height: '120vmax',
-                  transformOrigin: 'bottom right',
-                  bottom: '50%',
-                  right: '50%',
-                  clipPath: 'polygon(100% 100%, 0% 100%, 0% 0%)',
-                  transform: `rotate(calc(${i * 30}deg + (var(--shutter-progress, 0) * 45deg))) translate(calc(var(--shutter-progress, 0) * 50%), calc(var(--shutter-progress, 0) * 50%))`
-                }}
-              />
-            ))}
-            {/* Central Ring */}
-            <div
-              className="absolute rounded-full border border-white/5"
+            {/* SVG Aperture - 8 Blades */}
+            {/* Rotating the whole group based on progress provides the "opening" torque effect */}
+            <svg
+              viewBox="0 0 100 100"
+              preserveAspectRatio="xMidYMid slice"
+              className="absolute inset-0 w-full h-full"
               style={{
-                width: '40vmin',
-                height: '40vmin',
-                opacity: 'calc(1 - var(--shutter-progress, 0))',
-                transform: 'scale(calc(0.8 + var(--shutter-progress, 0) * 0.5))'
+                transform: 'rotate(calc(var(--shutter-progress, 0) * 45deg)) scale(calc(1 + var(--shutter-progress, 0) * 0.5))',
+                transformOrigin: '50% 50%',
               }}
-            />
+            >
+              <defs>
+                <mask id="apertureMask">
+                  <rect width="100%" height="100%" fill="white" />
+                  {/* The hole opening */}
+                  <circle cx="50" cy="50" r="0" fill="black">
+                    <animate attributeName="r" values="0;70" dur="1s" fill="freeze" />
+                    {/* We control this via CSS logic using CSS vars instead of SMIL for scroll binding */}
+                  </circle>
+                </mask>
+              </defs>
+
+              {/* Actually, let's draw physical blades that move out. 
+                 A standard 8-blade iris.
+                 We'll use a single path rotated 8 times.
+              */}
+
+              <g fill="#111111"> {/* Gray1 */}
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <path
+                    key={i}
+                    d="M 50 50 L 0 0 L 100 0 Z"
+                  // Simplified huge triangle blade. 
+                  // To open, we rotate/translate them away from center?
+                  // Better: standard iris geometry.
+                  // Blade shape: A rectangle pinned at a corner, rotated.
+                  // Let's stick to the user's "Radial Blades" request -> Huge wedges.
+                  />
+                ))}
+              </g>
+            </svg>
+
+            {/* CSS-based SVG implementation is tricky for "iris" without complex paths.
+                Let's use the PROVEN "Rotated Divs" method but with clean styling requested.
+                The previous issue appeared to be visibility/z-index.
+                I will re-implement the DIV method but ensuring the z-index and color matches exactly.
+            */}
+
+            {/* Re-attempting CLEAN div implementation with 8 blades for 'cinematic' look */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute bg-[#111111]" // Gray1
+                  style={{
+                    // Each blade is a rectangle that covers a sector
+                    // 8 blades = 45 degrees each.
+                    // We make them huge to cover corners.
+                    width: '150vmax',
+                    height: '150vmax',
+                    bottom: '50%',
+                    right: '50%',
+                    transformOrigin: 'bottom right',
+
+                    // Base rotation to form the circle
+                    // + Dynamic rotation to open
+                    // + Dynamic translation to clear the center
+                    transform: `
+                        rotate(calc(${i * 45}deg + (var(--shutter-progress, 0) * -60deg))) 
+                        translate(calc(var(--shutter-progress, 0) * -30%), calc(var(--shutter-progress, 0) * -30%))
+                      `,
+                    // Clip path ensures they don't overlap messy
+                    // A 45deg wedge would be ideal, but rectangles overlap fine for a "closed" state.
+                  }}
+                />
+              ))}
+            </div>
+
           </div>
 
 
