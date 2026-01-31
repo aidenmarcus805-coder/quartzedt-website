@@ -18,7 +18,7 @@ const PLANS = [
         id: 'referral',
         name: 'Referral Pass',
         price: '$49',
-        period: '1 month',
+        period: 'billed once',
         description: 'Special access for referred friends.',
         features: ['1 month unlimited access', 'No watermark', 'Priority support', 'One-time payment'],
         productId: 'prod_referral_Placeholder',
@@ -78,9 +78,10 @@ export default function BillingPage() {
 
                         <div className="mb-6">
                             <h3 className="font-medium text-lg mb-2">{plan.name}</h3>
-                            <div className="flex items-baseline gap-1">
                                 <span className="text-3xl font-light">{plan.price}</span>
-                                <span className="text-sm text-black/50">/{plan.period.includes(' ') ? plan.period.split(' ')[1] : plan.period}</span>
+                                <span className="text-sm text-black/50">
+                                    {plan.period === 'billed once' ? ' one-time' : `/${plan.period.includes(' ') ? plan.period.split(' ')[1] : plan.period}`}
+                                </span>
                             </div>
                             <p className="text-sm text-black/50 mt-4 leading-relaxed">{plan.description}</p>
                         </div>
@@ -108,6 +109,30 @@ export default function BillingPage() {
                         </button>
                     </div>
                 ))}
+        </div>
+
+            {/* Refer a Friend Section */ }
+            <div className="p-8 rounded-2xl border border-black/10 bg-white flex flex-col md:flex-row items-center justify-between gap-8">
+                <div className="space-y-2 flex-1">
+                    <h3 className="font-display text-xl text-black">Give One Month Free</h3>
+                    <p className="text-black/60 font-light">
+                        Share Quartz with a friend. They get a 1-month Referral Pass for free when they sign up with your link.
+                    </p>
+                </div>
+                <div className="flex items-center gap-3 w-full md:w-auto bg-black/[0.02] p-2 rounded-xl border border-black/5">
+                    <code className="px-3 text-sm text-black/60 font-mono truncate max-w-[200px] md:max-w-[300px]">
+                        quartzeditor.com/referral?code={(session?.user as any)?.email?.split('@')[0] || 'your-code'}
+                    </code>
+                    <button
+                        onClick={() => {
+                            const code = (session?.user as any)?.email?.split('@')[0] || 'your-code';
+                            navigator.clipboard.writeText(`https://quartzeditor.com/referral?code=${code}`);
+                        }}
+                        className="px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-black/90 transition-colors shrink-0"
+                    >
+                        Copy Link
+                    </button>
+                </div>
             </div>
 
             <div className="p-6 rounded-xl bg-black/[0.02] border border-black/5 flex items-center justify-between text-sm">
@@ -117,6 +142,6 @@ export default function BillingPage() {
                 </div>
                 <a href="mailto:support@quartzeditor.com" className="text-black/60 hover:text-black hover:underline"> Need help?</a>
             </div>
-        </div>
+        </div >
     );
 }
