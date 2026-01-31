@@ -725,7 +725,7 @@ export default function Home() {
             {/* Keep pinned content comfortably within the viewport (avoid clipped dock on shorter screens). */}
             <div className="relative h-full pt-24 pb-12 flex flex-col">
               {/* Title (gallery rhythm: aligned to content grid) */}
-              <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 flex-none">
+              <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 flex-none w-full text-left">
                 <h2 className="font-display text-[clamp(56px,5.5vw,96px)] font-light tracking-[-0.06em] leading-[0.92]">
                   The Workflow
                   <BleepDot className="ml-4" />
@@ -738,29 +738,8 @@ export default function Home() {
                 <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 w-full">
                   {/* One “video row”: active expands (main), others stay as shutters on the right.
                       Advancing tabs expands the next shutter into the main video (per blueprint). */}
-                  <div className="relative overflow-hidden bg-white shadow-[0_70px_160px_rgba(0,0,0,0.10)]">
-                    {/* Workflow HUD */}
-                    <div className="pointer-events-none absolute inset-x-0 top-0 z-10">
-                      <div className="flex items-start justify-between p-5 md:p-6">
-                        <div className="flex flex-col gap-1.5 backdrop-blur-sm bg-white/60 rounded-lg px-4 py-3">
-                          <div className="flex items-center gap-2.5">
-                            <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
-                            <span className="text-[11px] tracking-[0.35em] text-black/60 font-medium">
-                              {WORKFLOW_STEPS[workflowIdx]?.label.toUpperCase()}
-                            </span>
-                          </div>
-                          <p className="pl-[18px] text-[12px] leading-[1.5] text-black/40 font-light max-w-[280px]">
-                            {WORKFLOW_STEPS[workflowIdx]?.desc}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-2.5 backdrop-blur-sm bg-white/60 rounded-lg px-4 py-3">
-                          <span className="text-[13px] font-medium text-black/70">{String(workflowIdx + 1).padStart(2, '0')}</span>
-                          <span className="h-[1px] w-6 bg-black/20" aria-hidden="true" />
-                          <span className="text-[13px] text-black/35">{String(WORKFLOW_STEPS.length).padStart(2, '0')}</span>
-                        </div>
-                      </div>
-                    </div>
+                  <div className="relative overflow-hidden bg-transparent">
+                    {/* HUD Removed per user request */}
 
                     <div className="relative aspect-[21/10]">
                       <motion.div
@@ -899,55 +878,22 @@ export default function Home() {
                         })}
                       </motion.div>
 
-                      <AnimatePresence>
-                        {workflowLocked && !workflowHasInteracted && (
-                          <motion.div
-                            key="workflow-hint"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 10 }}
-                            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                            className="pointer-events-none absolute left-4 bottom-4 z-10"
-                          >
-                            <div className="inline-flex items-center gap-3 border border-black/10 bg-white/80 backdrop-blur-sm px-4 py-2">
-                              <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
-                              <span className="text-[10px] tracking-[0.45em] text-black/55 font-light">
-                                SCROLL TO ADVANCE
-                              </span>
-                              <motion.span
-                                aria-hidden="true"
-                                animate={{ x: [0, 4, 0] }}
-                                transition={{ duration: 1.6, repeat: Infinity, ease: [0.16, 1, 0.3, 1] }}
-                                className="text-black/35"
-                              >
-                                <ArrowRight className="w-4 h-4" />
-                              </motion.span>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-
-                      <AnimatePresence>
-                        {workflowLocked &&
-                          workflowIdx === WORKFLOW_STEPS.length - 1 &&
-                          workflowAdvance === WORKFLOW_SCROLLS_PER_STEP - 1 && (
-                            <motion.div
-                              key="workflow-exit-hint"
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: 10 }}
-                              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                              className="pointer-events-none absolute right-4 bottom-4 z-10"
-                            >
-                              <div className="inline-flex items-center gap-3 border border-black/10 bg-white/80 backdrop-blur-sm px-4 py-2">
-                                <span className="h-2 w-2 rounded-full bg-black/25" aria-hidden="true" />
-                                <span className="text-[10px] tracking-[0.45em] text-black/55 font-light">
-                                  SCROLL TO CONTINUE
-                                </span>
-                              </div>
-                            </motion.div>
-                          )}
-                      </AnimatePresence>
+                      {/* Bottom Description Bar - Minimalist Black Bar */}
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20">
+                        <div className="bg-black text-white px-6 py-4 flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+                            <p className="text-[13px] font-light tracking-wide text-white/90">
+                              {WORKFLOW_STEPS[workflowIdx]?.desc}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3 text-[11px] tracking-widest font-mono text-white/40">
+                            <span className="text-white">{String(workflowIdx + 1).padStart(2, '0')}</span>
+                            <span className="h-px w-8 bg-white/20" />
+                            <span>{String(WORKFLOW_STEPS.length).padStart(2, '0')}</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="border-t border-black/8">
@@ -979,52 +925,35 @@ export default function Home() {
                                   }
                                 }
                               }}
-                              className={`group relative w-full text-left px-5 py-5 transition-all duration-200 border-r border-black/5 last:border-r-0 ${active
-                                ? 'bg-white'
-                                : 'bg-[#fafafa] hover:bg-white'
+                              className={`group relative w-full text-left px-5 py-4 transition-all duration-300 border-r border-black/5 last:border-r-0 ${active
+                                ? 'opacity-100'
+                                : 'opacity-40 hover:opacity-70'
                                 }`}
                               aria-label={`Select ${step.label}`}
                             >
                               {/* Active indicator bar */}
                               <div
-                                className={`absolute top-0 left-0 right-0 h-[2px] transition-all duration-300 ${active ? 'bg-accent' : 'bg-transparent'
+                                className={`absolute top-0 left-0 right-0 h-[1px] transition-all duration-300 ${active ? 'bg-black' : 'bg-transparent'
                                   }`}
                               />
 
                               <div className="flex items-center justify-between gap-3">
-                                <div className="flex items-center gap-2.5">
+                                <div className="flex items-center gap-3">
                                   <span
-                                    className={`h-1.5 w-1.5 rounded-full transition-all duration-200 ${active ? 'bg-accent' : 'bg-black/20 group-hover:bg-black/30'
-                                      }`}
-                                    aria-hidden="true"
-                                  />
-                                  <span
-                                    className={`text-[11px] tracking-[0.25em] font-medium transition-colors ${active ? 'text-black' : 'text-black/45 group-hover:text-black/65'
+                                    className={`text-[11px] tracking-[0.2em] font-medium transition-colors ${active ? 'text-black' : 'text-black'
                                       }`}
                                   >
                                     {step.label.toUpperCase()}
                                   </span>
                                 </div>
                                 <Icon
-                                  className={`h-4 w-4 transition-colors ${active ? 'text-black/60' : 'text-black/25 group-hover:text-black/40'
+                                  className={`h-3.5 w-3.5 transition-colors ${active ? 'text-black' : 'text-black'
                                     }`}
                                   aria-hidden="true"
                                 />
                               </div>
 
-                              {/* Description - shows on active */}
-                              <motion.p
-                                initial={false}
-                                animate={{
-                                  height: active ? 'auto' : 0,
-                                  opacity: active ? 1 : 0,
-                                  marginTop: active ? 8 : 0,
-                                }}
-                                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                                className="overflow-hidden text-[12px] leading-[1.6] text-black/45 font-light"
-                              >
-                                {step.desc}
-                              </motion.p>
+                              {/* Description removed from here, moved to black bar */}
                             </button>
                           );
                         })}
