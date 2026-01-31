@@ -10,6 +10,6 @@ export const PRICING_PLAN = {
     'Direct support',
   ],
   // Creem product IDs
-  creemProductIdMonthly: 'prod_founding_GF7xl',
-  creemProductIdAnnual: 'prod_annual_XYZ',
+  creemProductIdMonthly: 'prod_3gDIsxL6bdPrFsNG5v0Mo',
+  creemProductIdAnnual: 'prod_annual_placeholder',
 };
