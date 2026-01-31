@@ -18,8 +18,14 @@ export async function POST(req: Request) {
             return new NextResponse('Internal Error: Missing Payment Configuration', { status: 500 });
         }
 
+        // Determine API URL based on key type
+        const isTestKey = CREEM_API_KEY.startsWith('creem_test_') || CREEM_API_KEY.startsWith('test_');
+        const baseUrl = isTestKey ? 'https://test-api.creem.io' : 'https://api.creem.io';
+
+        console.log(`[Creem Checkout] Using ${isTestKey ? 'TEST' : 'LIVE'} API endpoint`);
+
         // Call Creem API to create session
-        const response = await fetch('https://api.creem.io/v1/checkouts', {
+        const response = await fetch(`${baseUrl}/v1/checkouts`, {
             method: 'POST',
             headers: {
                 'x-api-key': CREEM_API_KEY,
