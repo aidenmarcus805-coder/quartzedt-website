@@ -168,16 +168,45 @@ export default function PricingPage() {
                 </div>
 
                 <button
-                  onClick={() => {
-                    const checkoutUrl = `https://quartzedt.lemonsqueezy.com/checkout/buy/${PLAN.lsVariantId}?checkout[email]=${session?.user?.email || ''}&embed=1&checkout[dark]=1`;
+                  onClick={async () => {
+                    if (!session) {
+                      window.location.href = '/signin?next=/pricing';
+                      return;
+                    }
 
-                    if (window.LemonSqueezy) {
-                      window.LemonSqueezy.Url.Open(checkoutUrl);
-                    } else {
-                      window.open(checkoutUrl, '_blank');
+                    try {
+                      const button = document.activeElement as HTMLButtonElement;
+                      const originalText = button.innerText;
+                      button.innerText = 'Redirecting...';
+                      button.disabled = true;
+
+                      const res = await fetch('/api/checkout', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          productId: billing === 'annual' ? PLAN.creemProductIdAnnual : PLAN.creemProductIdMonthly
+                        })
+                      });
+
+                      if (!res.ok) throw new Error('Checkout failed');
+
+                      const { url } = await res.json();
+                      if (url) {
+                        window.location.href = url;
+                      } else {
+                        alert('Something went wrong initiating checkout.');
+                        button.innerText = originalText;
+                        button.disabled = false;
+                      }
+                    } catch (e) {
+                      console.error(e);
+                      alert('Error starting checkout. Please try again.');
+                      const button = document.activeElement as HTMLButtonElement;
+                      if (button) button.innerText = 'Start free trial';
+                      if (button) button.disabled = false;
                     }
                   }}
-                  className="w-full py-4 bg-white text-black text-sm font-medium rounded-lg hover:bg-white/90 transition-colors"
+                  className="w-full py-4 bg-white text-black text-sm font-medium rounded-lg hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Start free trial
                 </button>

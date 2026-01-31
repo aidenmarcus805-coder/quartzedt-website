@@ -15,28 +15,34 @@ export async function POST(req: Request) {
         const CREEM_API_KEY = process.env.CREEM_API_KEY;
         if (!CREEM_API_KEY) {
             console.warn('CREEM_API_KEY not found in environment variables');
-            // Return empty so frontend uses fallback URL
-            return NextResponse.json({ url: null });
+            return new NextResponse('Internal Error: Missing Payment Configuration', { status: 500 });
         }
 
-        // TODO: Call Creem API to create session when docs are available/key is present
-        // const response = await fetch('https://api.creem.io/v1/checkout_sessions', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Authorization': `Bearer ${CREEM_API_KEY}`,
-        //         'Content-Type': 'application/json',
-        //     },
-        //     body: JSON.stringify({
-        //         product_id: productId,
-        //         email: session.user.email,
-        //         success_url: `${process.env.NEXTAUTH_URL}/dashboard?checkout=success`,
-        //         cancel_url: `${process.env.NEXTAUTH_URL}/billing?checkout=cancel`,
-        //     })
-        // });
-        // const data = await response.json();
-        // return NextResponse.json({ url: data.checkout_url });
+        // Call Creem API to create session
+        const response = await fetch('https://api.creem.io/v1/checkout_sessions', {
+            method: 'POST',
+            headers: {
+                'x-api-key': CREEM_API_KEY,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                product_id: productId,
+                fields: {
+                    email: session.user.email,
+                },
+                success_url: `${process.env.NEXTAUTH_URL}/dashboard?checkout=success`,
+                cancel_url: `${process.env.NEXTAUTH_URL}/pricing?checkout=cancel`,
+            })
+        });
 
-        return NextResponse.json({ url: null });
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Creem API Error:', errorText);
+            throw new Error(`Creem API responded with ${response.status}`);
+        }
+
+        const data = await response.json();
+        return NextResponse.json({ url: data.checkout_url });
 
     } catch (error) {
         console.error('Checkout API error:', error);

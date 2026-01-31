@@ -14,9 +14,7 @@ export default function BillingPage() {
     const productId = billing === 'annual' ? PRICING_PLAN.creemProductIdAnnual : PRICING_PLAN.creemProductIdMonthly;
     const priceSuffix = billing === 'annual' ? '/year' : '/month';
 
-    const handleCheckout = () => {
-        window.open(`https://creem.io/payment/${productId}?email=${session?.user?.email}`, '_blank');
-    };
+
 
     return (
         <div className="space-y-12">
@@ -70,8 +68,40 @@ export default function BillingPage() {
                         </div>
 
                         <button
-                            onClick={handleCheckout}
-                            className="w-full md:w-auto px-8 py-4 bg-black text-white text-sm font-medium rounded-xl hover:bg-black/90 transition-all shadow-lg shadow-black/5"
+                            onClick={async () => {
+                                try {
+                                    const button = document.activeElement as HTMLButtonElement;
+                                    const originalText = button.innerText;
+                                    button.innerText = 'Loading...';
+                                    button.disabled = true;
+
+                                    const res = await fetch('/api/checkout', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ productId })
+                                    });
+
+                                    if (!res.ok) throw new Error('Checkout failed');
+
+                                    const { url } = await res.json();
+                                    if (url) {
+                                        window.location.href = url;
+                                    } else {
+                                        console.error('No checkout URL returned');
+                                        button.innerText = originalText;
+                                        button.disabled = false;
+                                    }
+                                } catch (e) {
+                                    console.error(e);
+                                    alert('Error starting checkout');
+                                    const button = document.activeElement as HTMLButtonElement;
+                                    if (button) {
+                                        button.innerText = 'Upgrade to Pro Plan';
+                                        button.disabled = false;
+                                    }
+                                }
+                            }}
+                            className="w-full md:w-auto px-8 py-4 bg-black text-white text-sm font-medium rounded-xl hover:bg-black/90 transition-all shadow-lg shadow-black/5 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Upgrade to Pro Plan
                         </button>
