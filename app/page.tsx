@@ -23,6 +23,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 // Dynamic import for 3D scene (client-side only)
+import ShutterReveal from './components/ShutterReveal'; // Standard import is fine for this lightweight comp
+
 const CameraScene = dynamic<{
   lowPowerMode?: boolean;
   variant?: 'full' | 'gallery';
@@ -310,27 +312,43 @@ export default function Home() {
 
       setWorkflowLocked(isWorkflowLocked);
 
-      // Handle the "garage door" slide-up and content reveal
+      // Handle the "garage door" slide-up -> NOW SHUTTER REVEAL
       if (workflowDoorRef.current) {
-        const slide = Math.max(0, Math.min(100, doorProgress * 100));
-        workflowDoorRef.current.style.transform = `translate3d(0, -${slide}%, 0)`;
+        // We use the same 'doorProgress' (0 to 1) to drive the shutter
+        // Clamp it strictly
+        const progress = Math.max(0, Math.min(1, doorProgress));
 
-        // Animate content reveal: Scale up from 0.95 and fade in as door clears
-        if (workflowContentRef.current) {
-          // Reveal starts earlier (at 40% door progress) for dramatic effect
-          const rawProgress = Math.max(0, Math.min(1, (doorProgress - 0.4) / 0.6));
-          // Ease-out cubic for cushiony deceleration (not too aggressive)
-          const revealProgress = 1 - Math.pow(1 - rawProgress, 2.5);
-          // Scale: 0.92 -> 1.0 (slightly more dramatic)
-          const scale = 0.92 + (revealProgress * 0.08);
-          // Opacity: 0 -> 1
-          const opacity = revealProgress;
-          // Y: 60px -> 0 (more travel distance)
-          const y = (1 - revealProgress) * 60;
+        // Update the Shutter component via a custom property or direct prop if we re-render?
+        // To avoid re-rendering the whole page on scroll, we should probably pass this REF to the child?
+        // OR: simpler approach for now -> just use state if performance allows, OR direct DOM update.
 
-          workflowContentRef.current.style.transform = `scale(${scale}) translate3d(0, ${y}px, 0)`;
-          workflowContentRef.current.style.opacity = `${opacity}`;
+        // Actually, let's look at how ShutterReveal is implemented. It accepts a prop.
+        // If we want 60fps, props are bad. 
+        // Let's modify ShutterReveal to accept a CSS variable or ref.
+        // BUT for this turn, let's just use the existing loop to set a CSS variable on the container.
+
+        if (containerRef.current) {
+          containerRef.current.style.setProperty('--shutter-progress', progress.toString());
         }
+      }
+
+      // Animate content reveal: Scale up from 0.95 and fade in as door clears
+      if (workflowContentRef.current) {
+        const doorProgress = -rect.top / WORKFLOW_DOOR_SCROLL_PX; // Recalc or reuse
+
+        // Reveal starts earlier (at 20% door progress) for dramatic effect
+        const rawProgress = Math.max(0, Math.min(1, (doorProgress - 0.2) / 0.8));
+        // Ease-out cubic for cushiony deceleration (not too aggressive)
+        const revealProgress = 1 - Math.pow(1 - rawProgress, 2.5);
+        // Scale: 0.92 -> 1.0 (slightly more dramatic)
+        const scale = 0.92 + (revealProgress * 0.08);
+        // Opacity: 0 -> 1
+        const opacity = revealProgress;
+        // Y: 60px -> 0 (more travel distance)
+        const y = (1 - revealProgress) * 60;
+
+        workflowContentRef.current.style.transform = `scale(${scale}) translate3d(0, ${y}px, 0)`;
+        workflowContentRef.current.style.opacity = `${opacity}`;
       }
 
       // If we're in the workflow zone, calculate which step we should be on based on scroll
@@ -683,34 +701,9 @@ export default function Home() {
         data-nav="light"
         className="relative bg-paper text-black border-b border-black/5"
       >
-        {/* Garage-door panel (sticks to viewport, slides up with scroll to reveal workflow) */}
-        <div
-          ref={workflowDoorRef}
-          className="pointer-events-none sticky top-0 z-40 bg-black -mb-screen rounded-b-3xl"
-          style={{ height: '100vh', transform: 'translate3d(0, 0, 0)', willChange: 'transform', marginBottom: '-100vh' }}
-        >
-          {/* Subtle dot field (white dots on black) - No other artifacts */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-0"
-            style={{
-              backgroundImage: 'radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px)',
-              backgroundSize: '26px 26px',
-              backgroundPosition: 'center',
-              opacity: 0.5,
-            }}
-          />
-
-          {/* Bottom edge + shadow so the "door" reads as a panel */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-x-0 bottom-0 h-px"
-            style={{
-              background: 'rgba(255,255,255,0.15)',
-              boxShadow: '0 18px 60px rgba(0,0,0,0.8)',
-            }}
-          />
-        </div>
+        {/* Camera Shutter Reveal */}
+        <div ref={workflowDoorRef} className="absolute inset-0 pointer-events-none z-40" aria-hidden="true" />
+        <ShutterReveal />
 
         <div
           className="relative"
