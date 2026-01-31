@@ -13,7 +13,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 // Dynamic import for 3D scene (client-side only)
-import ShutterReveal from './components/ShutterReveal'; // Standard import is fine for this lightweight comp
+// ShutterReveal component removed (inlined)
 
 const CameraScene = dynamic<{
   lowPowerMode?: boolean;
@@ -317,28 +317,6 @@ export default function Home() {
         containerRef.current.style.setProperty('--shutter-progress', shutterProgress.toString());
         containerRef.current.style.setProperty('--shutter-opacity', shutterOpacity.toString());
       }
-      if (shutterContainerRef.current) {
-        // Update Shutter Animation vars
-        shutterContainerRef.current.style.setProperty('--shutter-progress', shutterProgress.toString());
-        shutterContainerRef.current.style.setProperty('--shutter-opacity', shutterOpacity.toString());
-
-        // Global Fixed Overlay Logic
-        // Only show when we are in the "shutter zone" (when doorProgress is relevant)
-        // doorProgress > 0 starts opening. We want it visible slightly before (e.g., -0.1) as we approach?
-        // Actually, just show it when doorProgress > -0.5 and < 1.5 to be safe?
-        // Better: Show it when rect.top <= window.innerHeight (entering view) and rectify visibility.
-        // But since it's an overlay for the "Workflow" section, we want it to cover the screen
-        // perfectly when the "Workflow" section title hits top.
-
-        // Simpler logic:
-        // Visible = true if we are interacting with the workflow door.
-
-        if (doorProgress > -0.1 && doorProgress < 1.1) {
-          shutterContainerRef.current.style.display = 'block';
-        } else {
-          shutterContainerRef.current.style.display = 'none';
-        }
-      }
 
       // Animate content reveal: Just scale and opacity, NO movement (fixing "land perfectly" issue)
       if (workflowContentRef.current) {
@@ -517,14 +495,7 @@ export default function Home() {
         </div>
       </motion.nav>
 
-      {/* Global Shutter Overlay - Fixed to viewport, controlled via JS display/vars */}
-      <div
-        ref={shutterContainerRef}
-        className="fixed inset-0 z-[90] pointer-events-none overflow-hidden"
-        style={{ display: 'none' }} // Hidden by default
-      >
-        <ShutterReveal />
-      </div>
+
 
       {/* Hero - Fullscreen intro (scroll-driven) */}
       <section ref={heroRef} className="relative">
@@ -723,8 +694,41 @@ export default function Home() {
             height: `calc(100vh + ${WORKFLOW_DOOR_SCROLL_PX + WORKFLOW_SCROLL_PX_PER_STEP * WORKFLOW_STEPS.length}px)`,
           }}
         >
-          {/* Shutter Layer - Sticky on top of content */}
-          {/* Shutter Layer Removed (Moved to Global) */}
+          {/* Shutter Layer - Sticky on top of content (Inlined) */}
+          <div
+            ref={shutterContainerRef}
+            className="sticky top-0 h-screen w-full z-40 pointer-events-none overflow-hidden flex items-center justify-center"
+            style={{
+              opacity: 'var(--shutter-opacity, 1)',
+            }}
+          >
+            {/* Blades */}
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div
+                key={i}
+                className="absolute bg-black"
+                style={{
+                  width: '120vmax',
+                  height: '120vmax',
+                  transformOrigin: 'bottom right',
+                  bottom: '50%',
+                  right: '50%',
+                  clipPath: 'polygon(100% 100%, 0% 100%, 0% 0%)',
+                  transform: `rotate(calc(${i * 30}deg + (var(--shutter-progress, 0) * 45deg))) translate(calc(var(--shutter-progress, 0) * 50%), calc(var(--shutter-progress, 0) * 50%))`
+                }}
+              />
+            ))}
+            {/* Central Ring */}
+            <div
+              className="absolute rounded-full border border-white/5"
+              style={{
+                width: '40vmin',
+                height: '40vmin',
+                opacity: 'calc(1 - var(--shutter-progress, 0))',
+                transform: 'scale(calc(0.8 + var(--shutter-progress, 0) * 0.5))'
+              }}
+            />
+          </div>
 
 
           {/* Dotted background (keep) */}
