@@ -12,7 +12,7 @@ export default function ShutterReveal() {
 
     return (
         <div
-            className="pointer-events-none fixed top-0 inset-x-0 z-40 flex items-center justify-center overflow-hidden h-screen"
+            className="pointer-events-none absolute top-0 inset-x-0 z-40 flex items-center justify-center overflow-hidden h-screen"
             style={{
                 // Default closed
                 // --shutter-progress will be set by parent on the container div or :root

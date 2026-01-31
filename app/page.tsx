@@ -312,24 +312,12 @@ export default function Home() {
 
       setWorkflowLocked(isWorkflowLocked);
 
-      // Handle the "garage door" slide-up -> NOW SHUTTER REVEAL
-      if (workflowDoorRef.current) {
-        // We use the same 'doorProgress' (0 to 1) to drive the shutter
-        // Clamp it strictly
-        const progress = Math.max(0, Math.min(1, doorProgress));
+      // Update Shutter Animation (driven by CSS variable)
+      // Progress 0 = Closed (at top of section), 1 = Open (scroll past specific threshold)
+      const shutterProgress = Math.max(0, Math.min(1, doorProgress));
 
-        // Update the Shutter component via a custom property or direct prop if we re-render?
-        // To avoid re-rendering the whole page on scroll, we should probably pass this REF to the child?
-        // OR: simpler approach for now -> just use state if performance allows, OR direct DOM update.
-
-        // Actually, let's look at how ShutterReveal is implemented. It accepts a prop.
-        // If we want 60fps, props are bad. 
-        // Let's modify ShutterReveal to accept a CSS variable or ref.
-        // BUT for this turn, let's just use the existing loop to set a CSS variable on the container.
-
-        if (containerRef.current) {
-          containerRef.current.style.setProperty('--shutter-progress', progress.toString());
-        }
+      if (containerRef.current) {
+        containerRef.current.style.setProperty('--shutter-progress', shutterProgress.toString());
       }
 
       // Animate content reveal: Scale up from 0.95 and fade in as door clears
@@ -370,7 +358,7 @@ export default function Home() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const workflowDoorRef = useRef<HTMLDivElement>(null);
+
   const workflowContentRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -701,9 +689,7 @@ export default function Home() {
         data-nav="light"
         className="relative bg-paper text-black border-b border-black/5"
       >
-        {/* Camera Shutter Reveal */}
-        <div ref={workflowDoorRef} className="absolute inset-0 pointer-events-none z-40" aria-hidden="true" />
-        <ShutterReveal />
+
 
         <div
           className="relative"
@@ -712,6 +698,11 @@ export default function Home() {
             height: `calc(100vh + ${WORKFLOW_DOOR_SCROLL_PX + WORKFLOW_SCROLL_PX_PER_STEP * WORKFLOW_STEPS.length}px)`,
           }}
         >
+          {/* Shutter Layer - Sticky on top of content */}
+          <div className="sticky top-0 h-screen w-full z-40 pointer-events-none overflow-hidden">
+            <ShutterReveal />
+          </div>
+
           {/* Dotted background (keep) */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
             <div
@@ -728,7 +719,7 @@ export default function Home() {
             />
           </div>
 
-          <div ref={workflowContentRef} className="sticky top-0 h-screen" style={{ willChange: 'transform, opacity' }}>
+          <div ref={workflowContentRef} className="sticky top-0 h-screen z-0" style={{ willChange: 'transform, opacity' }}>
             {/* Keep pinned content comfortably within the viewport (avoid clipped dock on shorter screens). */}
             <div className="relative h-full pt-24 pb-12 flex flex-col">
               {/* Title (gallery rhythm: aligned to content grid) */}
