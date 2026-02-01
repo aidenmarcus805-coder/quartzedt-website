@@ -122,58 +122,66 @@ function SignInContent() {
 
           <form onSubmit={handleCredentialsSignIn} className="space-y-4">
             <div className="space-y-2">
-              <div className="relative overflow-hidden rounded-lg bg-[#0A0A0A] border border-white/[0.08] focus-within:border-white/20 transition-all h-[46px] flex items-center">
-                <AnimatePresence>
-                  {isFocused === 'email' && (
-                    <motion.div
-                      initial={{ x: -20, opacity: 0 }}
-                      animate={{ x: 12, opacity: 1 }}
-                      exit={{ x: -20, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                      className="absolute left-0"
-                    >
-                      <Mail className="w-4 h-4 text-white/40" />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-                <motion.input
+              <div
+                className={`group relative overflow-hidden rounded-lg bg-[#0A0A0A] border transition-all duration-500 h-[46px] flex items-center px-4 ${isFocused === 'email' ? 'border-white/20 ring-1 ring-white/5' : 'border-white/[0.08]'
+                  }`}
+              >
+                <motion.div
+                  initial={false}
+                  animate={{
+                    width: isFocused === 'email' ? 36 : 0,
+                    opacity: isFocused === 'email' ? 1 : 0,
+                    marginRight: isFocused === 'email' ? 12 : 0,
+                  }}
+                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                  className="flex items-center shrink-0 overflow-hidden"
+                >
+                  <div className="flex items-center gap-3">
+                    <Mail className="w-4 h-4 text-white/40" />
+                    <div className="w-px h-4 bg-white/10" />
+                  </div>
+                </motion.div>
+
+                <input
                   type="email"
                   placeholder="Email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   onFocus={() => setIsFocused('email')}
                   onBlur={() => setIsFocused(null)}
-                  animate={{ x: isFocused === 'email' ? 38 : 0 }}
-                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-full h-full bg-transparent px-4 text-sm font-light placeholder:text-white/20 focus:outline-none transition-all text-white/90"
+                  className="w-full h-full bg-transparent text-sm font-light placeholder:text-white/20 focus:outline-none text-white/90"
                   required
                 />
               </div>
 
-              <div className="relative overflow-hidden rounded-lg bg-[#0A0A0A] border border-white/[0.08] focus-within:border-white/20 transition-all h-[46px] flex items-center">
-                <AnimatePresence>
-                  {isFocused === 'password' && (
-                    <motion.div
-                      initial={{ x: -20, opacity: 0 }}
-                      animate={{ x: 12, opacity: 1 }}
-                      exit={{ x: -20, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                      className="absolute left-0"
-                    >
-                      <Lock className="w-4 h-4 text-white/40" />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-                <motion.input
+              <div
+                className={`group relative overflow-hidden rounded-lg bg-[#0A0A0A] border transition-all duration-500 h-[46px] flex items-center px-4 ${isFocused === 'password' ? 'border-white/20 ring-1 ring-white/5' : 'border-white/[0.08]'
+                  }`}
+              >
+                <motion.div
+                  initial={false}
+                  animate={{
+                    width: isFocused === 'password' ? 36 : 0,
+                    opacity: isFocused === 'password' ? 1 : 0,
+                    marginRight: isFocused === 'password' ? 12 : 0,
+                  }}
+                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                  className="flex items-center shrink-0 overflow-hidden"
+                >
+                  <div className="flex items-center gap-3">
+                    <Lock className="w-4 h-4 text-white/40" />
+                    <div className="w-px h-4 bg-white/10" />
+                  </div>
+                </motion.div>
+
+                <input
                   type="password"
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   onFocus={() => setIsFocused('password')}
                   onBlur={() => setIsFocused(null)}
-                  animate={{ x: isFocused === 'password' ? 38 : 0 }}
-                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-full h-full bg-transparent px-4 text-sm font-light placeholder:text-white/20 focus:outline-none transition-all text-white/90"
+                  className="w-full h-full bg-transparent text-sm font-light placeholder:text-white/20 focus:outline-none text-white/90"
                   required
                 />
               </div>
