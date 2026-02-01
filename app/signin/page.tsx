@@ -129,14 +129,14 @@ function SignInContent() {
                 <motion.div
                   initial={false}
                   animate={{
-                    width: isFocused === 'email' ? 36 : 0,
+                    width: isFocused === 'email' ? 30 : 0,
                     opacity: isFocused === 'email' ? 1 : 0,
-                    marginRight: isFocused === 'email' ? 12 : 0,
+                    marginRight: isFocused === 'email' ? 8 : 0,
                   }}
                   transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                   className="flex items-center shrink-0 overflow-hidden"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     <Mail className="w-4 h-4 text-white/40" />
                     <div className="w-px h-4 bg-white/10" />
                   </div>
@@ -161,14 +161,14 @@ function SignInContent() {
                 <motion.div
                   initial={false}
                   animate={{
-                    width: isFocused === 'password' ? 36 : 0,
+                    width: isFocused === 'password' ? 30 : 0,
                     opacity: isFocused === 'password' ? 1 : 0,
-                    marginRight: isFocused === 'password' ? 12 : 0,
+                    marginRight: isFocused === 'password' ? 8 : 0,
                   }}
                   transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                   className="flex items-center shrink-0 overflow-hidden"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     <Lock className="w-4 h-4 text-white/40" />
                     <div className="w-px h-4 bg-white/10" />
                   </div>
