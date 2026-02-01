@@ -122,23 +122,57 @@ function SignInContent() {
 
           <form onSubmit={handleCredentialsSignIn} className="space-y-4">
             <div className="space-y-2">
-              <div className="relative overflow-hidden rounded-lg bg-[#0A0A0A] border border-white/[0.08] focus-within:border-white/20 transition-all h-[46px]">
-                <input
+              <div className="relative overflow-hidden rounded-lg bg-[#0A0A0A] border border-white/[0.08] focus-within:border-white/20 transition-all h-[46px] flex items-center">
+                <AnimatePresence>
+                  {isFocused === 'email' && (
+                    <motion.div
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 12, opacity: 1 }}
+                      exit={{ x: -20, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                      className="absolute left-0"
+                    >
+                      <Mail className="w-4 h-4 text-white/40" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <motion.input
                   type="email"
                   placeholder="Email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onFocus={() => setIsFocused('email')}
+                  onBlur={() => setIsFocused(null)}
+                  animate={{ x: isFocused === 'email' ? 38 : 0 }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   className="w-full h-full bg-transparent px-4 text-sm font-light placeholder:text-white/20 focus:outline-none transition-all text-white/90"
                   required
                 />
               </div>
 
-              <div className="relative overflow-hidden rounded-lg bg-[#0A0A0A] border border-white/[0.08] focus-within:border-white/20 transition-all h-[46px]">
-                <input
+              <div className="relative overflow-hidden rounded-lg bg-[#0A0A0A] border border-white/[0.08] focus-within:border-white/20 transition-all h-[46px] flex items-center">
+                <AnimatePresence>
+                  {isFocused === 'password' && (
+                    <motion.div
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 12, opacity: 1 }}
+                      exit={{ x: -20, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                      className="absolute left-0"
+                    >
+                      <Lock className="w-4 h-4 text-white/40" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <motion.input
                   type="password"
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onFocus={() => setIsFocused('password')}
+                  onBlur={() => setIsFocused(null)}
+                  animate={{ x: isFocused === 'password' ? 38 : 0 }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                   className="w-full h-full bg-transparent px-4 text-sm font-light placeholder:text-white/20 focus:outline-none transition-all text-white/90"
                   required
                 />
@@ -191,7 +225,7 @@ function SignInContent() {
 
           {/* Minimal Utilities */}
           <div className="flex flex-col items-center gap-6 pt-4">
-            <Link href="/forgot" className="text-[10px] text-white/10 hover:text-white/30 transition-colors tracking-tight">
+            <Link href="/forgot" className="text-[10px] text-white/30 hover:text-white/60 transition-colors tracking-tight">
               Forgot your password?
             </Link>
 
