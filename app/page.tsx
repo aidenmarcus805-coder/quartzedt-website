@@ -221,6 +221,7 @@ const WORKFLOW_STEP_MIN_DWELL_MS = 300; // minimum time to stay on a step during
 export default function Home() {
   const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly');
   const price = billing === 'annual' ? PLAN.priceAnnual : PLAN.price;
+  const originalPrice = billing === 'annual' ? PLAN.originalPriceAnnual : PLAN.originalPrice;
   const productId = billing === 'annual' ? PLAN.creemProductIdAnnual : PLAN.creemProductIdMonthly;
   const period = billing === 'annual' ? 'year' : 'mo';
   const containerRef = useRef<HTMLDivElement>(null);
@@ -1178,7 +1179,7 @@ export default function Home() {
                 >
                   Annual
                   <span className={`text-[10px] uppercase tracking-wider font-medium px-1.5 py-0.5 rounded ${billing === 'annual' ? 'bg-accent/10 text-accent' : 'bg-white/5 text-white/30'}`}>
-                    -17%
+                    3 MONTHS FREE
                   </span>
                 </button>
               </div>
@@ -1195,11 +1196,15 @@ export default function Home() {
               <div className="bg-[#111] text-white rounded-2xl p-10 md:p-12 border border-white/10">
 
                 <div className="mb-10">
-                  <div className="flex items-baseline gap-1">
+                  <div className="flex items-baseline gap-3">
                     <span className="text-6xl md:text-7xl font-light tracking-tight text-white">${price}</span>
+                    <span className="text-2xl text-white/30 line-through decoration-white/30 decoration-1">${originalPrice}</span>
                     <span className="text-xl text-white/40">/{period}</span>
                   </div>
                   <p className="text-white/40 text-sm mt-2">Billed {billing}, cancel anytime.</p>
+                  <p className="text-accent/80 text-xs mt-4 font-mono uppercase tracking-wide">
+                    Early Access Price · Locked in forever
+                  </p>
                 </div>
 
                 <div className="space-y-4 mb-10 border-t border-white/5 pt-8">

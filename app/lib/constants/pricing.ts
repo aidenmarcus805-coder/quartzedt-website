@@ -1,6 +1,8 @@
 export const PRICING_PLAN = {
-  price: 179,
-  priceAnnual: 1790,
+  price: 69.99,
+  priceAnnual: 629,
+  originalPrice: 179,
+  originalPriceAnnual: 1790,
   features: [
     'AI scene detection',
     'Full transcripts',
