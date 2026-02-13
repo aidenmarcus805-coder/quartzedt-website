@@ -3,14 +3,14 @@
 import { AnimatePresence, motion, useInView } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Check, ChevronDown, Film, MessageCircle, FileText, Map, Minus, Scissors, Search, Upload, User } from 'lucide-react';
 
-import { PRICING_PLAN } from './lib/constants/pricing';
+// PRICING_PLAN and PLAN removed
 
-const PLAN = PRICING_PLAN;
 import { useEffect, useRef, useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
+import EmailWaitlist from './components/EmailWaitlist';
 
 // Dynamic import for 3D scene (client-side only)
 // ShutterReveal component removed (inlined)
@@ -209,7 +209,7 @@ const WORKFLOW_STEPS = [
 ];
 
 const START_TRIAL_HREF = '/signin?next=/dashboard/download';
-const BOOK_DEMO_HREF = '/pricing';
+const BOOK_DEMO_HREF = '#waitlist';
 const SHOW_BOOK_DEMO = false;
 
 // Shared scroll constants (blueprint-aligned)
@@ -219,11 +219,7 @@ const WORKFLOW_SCROLLS_PER_STEP = 3; // "3 scrolls to commit" feel
 const WORKFLOW_STEP_MIN_DWELL_MS = 300; // minimum time to stay on a step during fast scrolling
 
 export default function Home() {
-  const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly');
-  const price = billing === 'annual' ? PLAN.priceAnnual : PLAN.price;
-  const originalPrice = billing === 'annual' ? PLAN.originalPriceAnnual : PLAN.originalPrice;
-  const productId = billing === 'annual' ? PLAN.creemProductIdAnnual : PLAN.creemProductIdMonthly;
-  const period = billing === 'annual' ? 'year' : 'mo';
+  // Billing state removed
   const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
   const philosophyRef = useRef<HTMLElement>(null);
@@ -403,7 +399,9 @@ export default function Home() {
             className={`hidden md:flex items-center gap-12 text-[10px] tracking-[0.32em] font-light ${navOnLight ? 'text-black' : 'text-white'}`}
           >
             <Link href="/about" className="link-underline hover:opacity-60 transition-opacity">ABOUT</Link>
-            <Link href="/pricing" className="link-underline hover:opacity-60 transition-opacity">PRICING</Link>
+            <Link href="/about" className="link-underline hover:opacity-60 transition-opacity">ABOUT</Link>
+            <Link href="#waitlist" className="link-underline hover:opacity-60 transition-opacity">WAITLIST</Link>
+            <Link href="/dashboard/download" className="link-underline hover:opacity-60 transition-opacity">DOWNLOAD</Link>
             <Link href="/dashboard/download" className="link-underline hover:opacity-60 transition-opacity">DOWNLOAD</Link>
           </div>
 
@@ -1128,9 +1126,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Pricing - Stark & Direct (Black - Clean) */}
-      <section ref={firstDarkRef} data-nav="light" className="relative bg-black text-white border-y border-white/5 min-h-screen flex items-center overflow-hidden">
-        {/* Artifacts: Plus signs grid (Restored per user request) */}
+      {/* Waitlist - Stark & Direct (Black - Clean) */}
+      <section id="waitlist" ref={firstDarkRef} data-nav="light" className="relative bg-black text-white border-y border-white/5 min-h-[80vh] flex items-center justify-center overflow-hidden">
+        {/* Artifacts: Plus signs grid */}
         <div className="absolute inset-0 pointer-events-none opacity-[0.15]" aria-hidden="true"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M0 0h1v1H0zM39 0h1v1h-1zM0 39h1v1H0zM39 39h1v1h-1z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
@@ -1138,95 +1136,34 @@ export default function Home() {
           }}
         />
 
-        <div className="relative z-10 max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 w-full py-32">
-          <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-start">
-
-            {/* Left - Title + Toggle */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="lg:sticky lg:top-32 relative z-10"
-            >
-              <div className="flex items-center gap-2 mb-8">
+        <div className="relative z-10 w-full max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 flex flex-col items-center text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="max-w-xl mx-auto space-y-12"
+          >
+            <div className="space-y-6">
+              <div className="flex items-center justify-center gap-2">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
                 </span>
-                <span className="text-xs font-mono uppercase tracking-widest text-white/40">50 spots</span>
+                <span className="text-xs font-mono uppercase tracking-widest text-white/40">Early Access</span>
               </div>
 
-              <h1 className="text-6xl md:text-8xl font-light tracking-[-0.04em] leading-[0.9] text-white mix-blend-difference mb-8">
-                Pricing.
-              </h1>
+              <h2 className="text-5xl md:text-7xl font-light tracking-[-0.04em] leading-[0.95] text-white mix-blend-difference">
+                Join the waitlist.
+              </h2>
 
-              <p className="text-lg text-white/40 font-light max-w-sm leading-relaxed mb-12">
-                Everything included.
+              <p className="text-lg text-white/40 font-light max-w-md mx-auto leading-relaxed">
+                Quartz is currently in private beta. High-volume wedding studios are prioritized.
               </p>
+            </div>
 
-              {/* Minimal Billing Toggle */}
-              <div className="flex items-center p-1 bg-white/[0.03] rounded-full border border-white/10 w-fit backdrop-blur-md">
-                <button
-                  onClick={() => setBilling('monthly')}
-                  className={`px-6 py-2.5 rounded-full text-sm transition-all duration-300 ${billing === 'monthly' ? 'bg-white text-black font-medium shadow-[0_0_20px_rgba(255,255,255,0.1)]' : 'text-white/40 hover:text-white'}`}
-                >
-                  Monthly
-                </button>
-                <button
-                  onClick={() => setBilling('annual')}
-                  className={`px-6 py-2.5 rounded-full text-sm transition-all duration-300 flex items-center gap-2 ${billing === 'annual' ? 'bg-white text-black font-medium shadow-[0_0_20px_rgba(255,255,255,0.1)]' : 'text-white/40 hover:text-white'}`}
-                >
-                  Annual
-                  <span className={`text-[10px] uppercase tracking-wider font-medium px-1.5 py-0.5 rounded ${billing === 'annual' ? 'bg-accent/10 text-accent' : 'bg-white/5 text-white/30'}`}>
-                    3 MONTHS FREE
-                  </span>
-                </button>
-              </div>
-            </motion.div>
-
-            {/* Right - Dark Monochrome Pricing Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-            >
-              {/* Dark card - Dark Grey with White Text (Monochrome) */}
-              <div className="bg-[#111] text-white rounded-2xl p-10 md:p-12 border border-white/10">
-
-                <div className="mb-10">
-                  <div className="flex items-baseline gap-3">
-                    <span className="text-6xl md:text-7xl font-light tracking-tight text-white">${price}</span>
-                    <span className="text-2xl text-white/30 line-through decoration-white/30 decoration-1">${originalPrice}</span>
-                    <span className="text-xl text-white/40">/{period}</span>
-                  </div>
-                  <p className="text-white/40 text-sm mt-2">Billed {billing}, cancel anytime.</p>
-                  <p className="text-accent/80 text-xs mt-4 font-mono uppercase tracking-wide">
-                    Early Access Price · Locked in forever
-                  </p>
-                </div>
-
-                <div className="space-y-4 mb-10 border-t border-white/5 pt-8">
-                  {PLAN.features.map((f, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <Check className="w-4 h-4 text-white/40" />
-                      <span className="text-[15px] text-white/70">{f}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <a href={`https://creem.io/payment/${productId}`} target="_blank" rel="noopener noreferrer" className="block">
-                  <button className="w-full py-4 bg-white text-black text-sm font-medium rounded-lg hover:bg-white/90 transition-colors">
-                    Start free trial
-                  </button>
-                </a>
-                <p className="text-center text-white/30 text-xs mt-4">
-                  7 day free trial · No credit card
-                </p>
-              </div>
-            </motion.div>
-          </div>
+            <EmailWaitlist />
+          </motion.div>
         </div>
       </section>
 
@@ -1271,7 +1208,7 @@ export default function Home() {
                 <span className="text-[10px] tracking-[0.4em] text-white/20 font-light">PRODUCT</span>
                 <nav className="space-y-4 text-[13px] font-light">
                   <a href="#workflow" className="block text-white/40 hover:text-white transition-colors">Workflow</a>
-                  <Link href="/pricing" className="block text-white/40 hover:text-white transition-colors">Pricing</Link>
+                  <Link href="#waitlist" className="block text-white/40 hover:text-white transition-colors">Waitlist</Link>
                   <a href="#" className="block text-white/40 hover:text-white transition-colors">Changelog</a>
                 </nav>
               </div>
