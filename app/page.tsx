@@ -398,10 +398,7 @@ export default function Home() {
           <div
             className={`hidden md:flex items-center gap-12 text-[10px] tracking-[0.32em] font-light ${navOnLight ? 'text-black' : 'text-white'}`}
           >
-            <Link href="/about" className="link-underline hover:opacity-60 transition-opacity">ABOUT</Link>
-            <Link href="/about" className="link-underline hover:opacity-60 transition-opacity">ABOUT</Link>
             <Link href="#waitlist" className="link-underline hover:opacity-60 transition-opacity">WAITLIST</Link>
-            <Link href="/dashboard/download" className="link-underline hover:opacity-60 transition-opacity">DOWNLOAD</Link>
             <Link href="/dashboard/download" className="link-underline hover:opacity-60 transition-opacity">DOWNLOAD</Link>
           </div>
 
@@ -1158,7 +1155,7 @@ export default function Home() {
               </h2>
 
               <p className="text-lg text-white/40 font-light max-w-md mx-auto leading-relaxed">
-                Quartz is currently in private beta. High-volume wedding studios are prioritized.
+                Quartz is currently in private beta. Available for small businesses and agencies.
               </p>
             </div>
 
