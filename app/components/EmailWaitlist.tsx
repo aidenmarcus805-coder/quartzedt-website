@@ -16,13 +16,19 @@ export default function EmailWaitlist() {
         setStatus('loading');
         setErrorMessage('');
 
-        // Simulate API call
         try {
-            await new Promise((resolve) => setTimeout(resolve, 1500));
-            // Basic validation simulation
-            if (!email.includes('@')) {
-                throw new Error('Please enter a valid email address.');
+            const res = await fetch('/api/waitlist', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.message || 'Something went wrong.');
             }
+
             setStatus('success');
             setEmail('');
         } catch (error) {
