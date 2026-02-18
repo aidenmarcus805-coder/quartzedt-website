@@ -421,7 +421,7 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <Link
               href="#waitlist"
-              className={`px-5 py-2 rounded-full text-[13px] font-semibold transition-all duration-300 ${navOnLight
+              className={`px-5 py-2 rounded-full text-[13px] font-medium transition-all duration-300 ${navOnLight
                 ? 'bg-black text-white hover:bg-black/80 shadow-lg hover:shadow-xl'
                 : 'bg-white text-black hover:bg-white/90 shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.2)]'
                 }`}
