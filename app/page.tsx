@@ -455,22 +455,22 @@ export default function Home() {
                       initial={{ opacity: 0, y: 8, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                      className="absolute top-full right-0 mt-3 w-60 bg-[#111] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50 origin-top-right backdrop-blur-xl"
+                      className="absolute top-full right-0 mt-3 w-60 bg-white border border-neutral-200 rounded-xl shadow-2xl overflow-hidden z-50 origin-top-right backdrop-blur-xl"
                     >
                       <div className="p-1.5">
-                        <div className="px-3 py-2 text-xs text-white/40 border-b border-white/5 mb-1 truncate font-mono">
+                        <div className="px-3 py-2 text-xs text-neutral-500 border-b border-neutral-100 mb-1 truncate font-mono">
                           {session.user?.email}
                         </div>
                         <Link
                           href="/dashboard"
-                          className="flex items-center gap-2 px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-800 hover:text-black hover:bg-neutral-50 rounded-lg transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
                           Dashboard
                         </Link>
                         <button
                           onClick={() => signOut()}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400/80 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors text-left"
                         >
                           Sign out
                         </button>
