@@ -1109,12 +1109,9 @@ export default function CameraScene({
 
                 {/* Minimal CTA */}
                 <div className="mt-12 pointer-events-auto flex justify-center">
-                  <Link href="/pricing" className="group inline-flex items-center gap-3 px-10 py-4 rounded-full text-[10px] tracking-[0.4em] text-white border border-white/20 hover:bg-paper hover:text-black transition-all duration-300 font-light">
-                    <span
-                      className="w-2 h-2 rounded-full bg-accent opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 group-focus-visible:opacity-100 group-focus-visible:scale-100 transition-all duration-200"
-                      aria-hidden="true"
-                    />
-                    START FREE TRIAL
+                  <Link href="#waitlist" className="group relative inline-flex items-center gap-3 px-8 py-4 bg-white text-black rounded-full overflow-hidden transition-transform active:scale-95">
+                    <span className="relative z-10 text-[13px] font-medium tracking-wide uppercase">Join the Waitlist</span>
+                    <div className="absolute inset-0 bg-accent opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
                   </Link>
                 </div>
               </div>

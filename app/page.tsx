@@ -230,6 +230,16 @@ export default function Home() {
   // Nav state management
   const [navOnLight, setNavOnLight] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Handle scroll for HUD state
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   const firstWhiteRef = useRef<HTMLElement>(null);
   const firstDarkRef = useRef<HTMLElement>(null);
 
@@ -359,35 +369,44 @@ export default function Home() {
   return (
     <div ref={containerRef} className="bg-white text-black min-h-screen selection:bg-black selection:text-white antialiased">
 
-      {/* Navigation - minimal, aligned to grid */}
+      {/* Navigation - Cinema Bar (Pro Tech) */}
       <motion.nav
         ref={navRef}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1.2, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed top-0 left-0 right-0 z-[100]"
+        className="fixed top-6 left-0 right-0 z-[100] flex justify-center pointer-events-none"
       >
-        <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 h-24 flex items-center justify-between">
-          <Link href="/" className="flex items-center">
-            {/* Dual logo system: white logo for dark sections, black logo for light sections */}
+        <div
+          className={`pointer-events-auto transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center justify-between px-6
+            ${isScrolled
+              ? `h-14 w-[calc(100%-4rem)] md:w-[calc(100%-6rem)] lg:w-[calc(100%-8rem)] max-w-[1800px] rounded-full border backdrop-blur-xl shadow-lg ${navOnLight
+                ? 'bg-gray-50/40 border-black/5 text-black'
+                : 'bg-neutral-900/40 border-white/5 text-white'
+              }`
+              : `h-20 w-[calc(100%-4rem)] md:w-[calc(100%-6rem)] lg:w-[calc(100%-8rem)] max-w-[1800px] bg-transparent border-transparent ${navOnLight ? 'text-black' : 'text-white'
+              }`
+            }
+          `}
+        >
+          {/* Left: Logo */}
+          <Link href="/" className="flex items-center pl-2">
             <span className="relative h-5 w-auto aspect-[256/65] shrink-0">
-              {/* White logo (shown on dark backgrounds) */}
               <Image
                 src="/logo.png"
                 alt="Quartz Editor"
                 fill
-                sizes="80px"
+                sizes="120px"
                 priority
                 unoptimized
                 className={`object-contain transition-opacity duration-200 ${navOnLight ? 'opacity-0' : 'opacity-100'}`}
               />
-              {/* Black logo (shown on light backgrounds) */}
               <Image
                 src="/logoBlack.png"
                 alt=""
                 aria-hidden="true"
                 fill
-                sizes="80px"
+                sizes="120px"
                 priority
                 unoptimized
                 className={`object-contain transition-opacity duration-200 ${navOnLight ? 'opacity-100' : 'opacity-0'}`}
@@ -395,36 +414,31 @@ export default function Home() {
             </span>
           </Link>
 
-          <div
-            className={`hidden md:flex items-center gap-12 text-[10px] tracking-[0.32em] font-light ${navOnLight ? 'text-black' : 'text-white'}`}
-          >
-            <Link href="#waitlist" className="link-underline hover:opacity-60 transition-opacity">WAITLIST</Link>
-            {/* <Link href="/dashboard/download" className="link-underline hover:opacity-60 transition-opacity">DOWNLOAD</Link> */}
-          </div>
+          {/* Center: Empty for now (Pro tools keep the center clear for content focus) */}
+          <div className="flex-1" />
 
-          <div
-            className={`flex items-center gap-6 text-[10px] tracking-[0.32em] font-light ${navOnLight ? 'text-black' : 'text-white'}`}
-          >
-            {/* Only show START TRIAL if user is NOT signed in */}
-            {/* {!session && (
-              <Link href={START_TRIAL_HREF} className="link-underline hover:opacity-60 transition-opacity">
-                START TRIAL
-              </Link>
-            )} */}
+          {/* Right: Actions */}
+          <div className="flex items-center gap-3">
+            <Link
+              href="#waitlist"
+              className={`px-5 py-2 rounded-full text-[13px] font-semibold transition-all duration-300 ${navOnLight
+                ? 'bg-black text-white hover:bg-black/80 shadow-lg hover:shadow-xl'
+                : 'bg-white text-black hover:bg-white/90 shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.2)]'
+                }`}
+            >
+              Join Waitlist
+            </Link>
 
-            {/* User Profile - Avatar dropdown for signed in, simple icon for signed out */}
+            {/* User Profile */}
             {session ? (
               <div className="relative">
                 <button
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className={`flex items-center gap-2 p-1.5 pr-3 rounded-full border transition-all duration-300 active:scale-95 ${navOnLight
-                    ? 'border-black/20 hover:border-black hover:bg-black/5'
-                    : 'border-white/20 hover:border-white hover:bg-white/10'
-                    }`}
+                  className="flex items-center justify-center rounded-full transition-transform active:scale-95"
                   aria-label="User menu"
                 >
-                  {/* User Avatar - Google profile picture or first letter */}
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-medium overflow-hidden ${navOnLight ? 'bg-black/10' : 'bg-white/10'}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium overflow-hidden ring-1 ${navOnLight ? 'bg-black/5 ring-black/10' : 'bg-white/10 ring-white/20'
+                    }`}>
                     {session.user?.image ? (
                       <img src={session.user.image} alt="" className="w-full h-full object-cover" />
                     ) : (
@@ -433,39 +447,30 @@ export default function Home() {
                       </span>
                     )}
                   </div>
-                  <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isMenuOpen ? 'rotate-180' : ''} ${navOnLight ? 'text-black/50' : 'text-white/50'}`} />
                 </button>
 
-                {/* Dropdown Menu - Click to toggle with AnimatePresence */}
                 <AnimatePresence>
                   {isMenuOpen && (
                     <motion.div
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 4 }}
-                      className="absolute top-full right-0 mt-2 w-48 bg-white border border-black/10 rounded-xl shadow-lg overflow-hidden z-50"
+                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                      className="absolute top-full right-0 mt-3 w-60 bg-[#111] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50 origin-top-right backdrop-blur-xl"
                     >
-                      <div className="p-1">
-                        <div className="px-3 py-2 text-[10px] text-black/40 border-b border-black/5 mb-1 truncate">
+                      <div className="p-1.5">
+                        <div className="px-3 py-2 text-xs text-white/40 border-b border-white/5 mb-1 truncate font-mono">
                           {session.user?.email}
                         </div>
                         <Link
                           href="/dashboard"
-                          className="flex items-center gap-2 px-3 py-2 text-xs text-black/60 hover:text-black hover:bg-black/5 rounded-lg transition-colors"
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                           onClick={() => setIsMenuOpen(false)}
                         >
                           Dashboard
                         </Link>
-                        <Link
-                          href="/dashboard/download"
-                          className="flex items-center gap-2 px-3 py-2 text-xs text-black/60 hover:text-black hover:bg-black/5 rounded-lg transition-colors"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          Download
-                        </Link>
                         <button
                           onClick={() => signOut()}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-xs text-black/60 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400/80 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                         >
                           Sign out
                         </button>
@@ -477,19 +482,12 @@ export default function Home() {
             ) : (
               <Link
                 href="/signin?next=/dashboard/download"
-                className={`p-2.5 rounded-full border transition-all duration-300 active:scale-95 flex items-center justify-center group/signin ${navOnLight
-                  ? 'border-black/20 hover:border-black hover:bg-black/5'
-                  : 'border-white/20 hover:border-white hover:bg-white/10'
+                className={`w-8 h-8 rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center group/signin ${navOnLight ? 'hover:bg-black/10' : 'hover:bg-white/10'
                   }`}
                 aria-label="Sign In"
               >
-                <User className={`w-4 h-4 transition-colors duration-300 ${navOnLight ? 'text-black' : 'text-white'} group-hover/signin:text-accent`} />
+                <User className={`w-4 h-4 transition-colors duration-300 ${navOnLight ? 'text-black/70' : 'text-white/70'} group-hover/signin:text-accent`} />
               </Link>
-            )}
-            {SHOW_BOOK_DEMO && (
-              <a href={BOOK_DEMO_HREF} className="link-underline hover:opacity-60 transition-opacity hidden xl:inline">
-                BOOK DEMO
-              </a>
             )}
           </div>
         </div>
@@ -504,30 +502,7 @@ export default function Home() {
         {/* Helper overlay for text contrast if needed, though scene is dark */}
         <div className="absolute inset-0 bg-black/20 pointer-events-none" />
 
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center z-10 pointer-events-none">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="pointer-events-auto"
-          >
-            <h1 className="font-display text-[clamp(48px,6vw,96px)] font-light tracking-[-0.04em] leading-[1] text-white mix-blend-difference mb-6">
-              From Weeks<br />to Hours.
-            </h1>
-            <p className="text-lg md:text-xl text-white/60 font-light max-w-md mx-auto mb-10 leading-relaxed">
-              The AI-powered editor for professional wedding filmmakers.
-            </p>
-
-            <Link
-              href="#waitlist"
-              className="group relative inline-flex items-center gap-3 px-8 py-4 bg-white text-black rounded-full overflow-hidden transition-transform active:scale-95"
-            >
-              <span className="relative z-10 text-[13px] font-medium tracking-wide uppercase">Join the Waitlist</span>
-              <ArrowRight className="w-4 h-4 relative z-10 transition-transform group-hover:translate-x-1" />
-              <div className="absolute inset-0 bg-accent opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
-            </Link>
-          </motion.div>
-        </div>
+        <div className="absolute inset-0 z-10 pointer-events-none" />
       </section>
 
       {/* Key Benefits (Black - Clean) */}
