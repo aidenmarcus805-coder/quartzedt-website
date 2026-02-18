@@ -399,18 +399,18 @@ export default function Home() {
             className={`hidden md:flex items-center gap-12 text-[10px] tracking-[0.32em] font-light ${navOnLight ? 'text-black' : 'text-white'}`}
           >
             <Link href="#waitlist" className="link-underline hover:opacity-60 transition-opacity">WAITLIST</Link>
-            <Link href="/dashboard/download" className="link-underline hover:opacity-60 transition-opacity">DOWNLOAD</Link>
+            {/* <Link href="/dashboard/download" className="link-underline hover:opacity-60 transition-opacity">DOWNLOAD</Link> */}
           </div>
 
           <div
             className={`flex items-center gap-6 text-[10px] tracking-[0.32em] font-light ${navOnLight ? 'text-black' : 'text-white'}`}
           >
             {/* Only show START TRIAL if user is NOT signed in */}
-            {!session && (
+            {/* {!session && (
               <Link href={START_TRIAL_HREF} className="link-underline hover:opacity-60 transition-opacity">
                 START TRIAL
               </Link>
-            )}
+            )} */}
 
             {/* User Profile - Avatar dropdown for signed in, simple icon for signed out */}
             {session ? (
@@ -498,8 +498,36 @@ export default function Home() {
 
 
       {/* Hero - Fullscreen intro (scroll-driven) */}
-      <section ref={heroRef} className="relative">
+      <section ref={heroRef} className="relative h-screen">
         <CameraScene lowPowerMode={lowPowerMode} variant="full" />
+
+        {/* Helper overlay for text contrast if needed, though scene is dark */}
+        <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center z-10 pointer-events-none">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="pointer-events-auto"
+          >
+            <h1 className="font-display text-[clamp(48px,6vw,96px)] font-light tracking-[-0.04em] leading-[1] text-white mix-blend-difference mb-6">
+              From Weeks<br />to Hours.
+            </h1>
+            <p className="text-lg md:text-xl text-white/60 font-light max-w-md mx-auto mb-10 leading-relaxed">
+              The AI-powered editor for professional wedding filmmakers.
+            </p>
+
+            <Link
+              href="#waitlist"
+              className="group relative inline-flex items-center gap-3 px-8 py-4 bg-white text-black rounded-full overflow-hidden transition-transform active:scale-95"
+            >
+              <span className="relative z-10 text-[13px] font-medium tracking-wide uppercase">Join the Waitlist</span>
+              <ArrowRight className="w-4 h-4 relative z-10 transition-transform group-hover:translate-x-1" />
+              <div className="absolute inset-0 bg-accent opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
+            </Link>
+          </motion.div>
+        </div>
       </section>
 
       {/* Key Benefits (Black - Clean) */}
