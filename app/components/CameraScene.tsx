@@ -298,6 +298,12 @@ function MonitorModel({
               side: THREE.FrontSide,
               envMapIntensity: 0.18,
             });
+
+            // Shift ONLY the stand mesh up by ~20% of the screen height (0.192 units)
+            if (!child.userData.standHeightAdjusted) {
+              child.position.y += 0.162;
+              child.userData.standHeightAdjusted = true;
+            }
           }
 
           // Cache the "high quality" material so we can restore after low-power mode.
@@ -385,7 +391,8 @@ function MonitorModel({
     groupRef.current.position.x = -0.01 + floatX;
     // Drop the whole monitor slightly at the end of the scroll (scrollEase=1)
     // Nudge down a touch (~20px perceived) to give the hero typography more breathing room.
-    groupRef.current.position.y = -5.40 + (3.35) * scrollEase - 0.4 * scrollEase + floatY;
+    // Raised globally by ~8% (+0.6 units)
+    groupRef.current.position.y = -5.55 + (3.35) * scrollEase - 0.4 * scrollEase + floatY;
 
     // Rotation
     groupRef.current.rotation.y = -Math.PI / 2 + floatRot + mouseRotY;
@@ -553,12 +560,14 @@ function MonitorModel({
         renderOrder={1000}
         geometry={glossGeometry}
       >
-        <meshStandardMaterial
+        <meshPhysicalMaterial
           transparent={true}
-          opacity={0.03}
+          opacity={0.015} // Dimmer base opacity
           roughness={0.1}
-          metalness={0.0}
-          envMapIntensity={0.2}
+          metalness={0.05} // Toned down metalness
+          clearcoat={0.6} // Subtler clearcoat
+          clearcoatRoughness={0.2}
+          envMapIntensity={0.15}
           color="#ffffff"
         />
       </mesh>
@@ -581,7 +590,7 @@ function Scene({ scrollProgressRef, videoElement, mousePositionRef, hasUserScrol
     <group position={[0, 0, 0]}>
       {/* Environment for reflections */}
       {!lowPowerMode && <Environment preset="studio" environmentIntensity={0.28} />}
-      {!lowPowerMode && <Lighting />}
+      {!lowPowerMode && <Lighting scrollProgressRef={scrollProgressRef} />}
       <MonitorModel
         scrollProgressRef={scrollProgressRef}
         groupRef={monitorGroupRef}
@@ -611,7 +620,73 @@ function InvalidateBridge({
 }
 
 // Scene lighting for monitor - Clean studio lighting
-function Lighting() {
+function Lighting({ scrollProgressRef }: { scrollProgressRef: React.MutableRefObject<number> }) {
+  const animatedLightRef = useRef<THREE.PointLight>(null);
+
+  // State to track the single-shot animation timing
+  const sweepStatus = useRef({
+    triggered: false,
+    startTime: 0,
+    completed: false
+  });
+
+  useFrame((state) => {
+    if (!animatedLightRef.current) return;
+
+    const progress = scrollProgressRef.current;
+
+    // Reset if user scrolls back up
+    if (progress < 0.30) {
+      sweepStatus.current.triggered = false;
+      sweepStatus.current.completed = false;
+      animatedLightRef.current.intensity = 0;
+      return;
+    }
+
+    // Trigger the sweep exactly once when they reach 40% down
+    if (progress >= 0.40 && !sweepStatus.current.triggered && !sweepStatus.current.completed) {
+      sweepStatus.current.triggered = true;
+      sweepStatus.current.startTime = state.clock.getElapsedTime();
+    }
+
+    // If waiting or finished, ensure light is off
+    if (!sweepStatus.current.triggered || sweepStatus.current.completed) {
+      animatedLightRef.current.intensity = 0;
+      return;
+    }
+
+    const timeSinceTrigger = state.clock.getElapsedTime() - sweepStatus.current.startTime;
+    const animationDuration = 1.2; // Speeded up from 2.5s for more 'zip'
+
+    if (timeSinceTrigger > animationDuration) {
+      sweepStatus.current.completed = true;
+      animatedLightRef.current.intensity = 0;
+      return;
+    }
+
+    // Calculate normalized progress (0 to 1)
+    const animP = timeSinceTrigger / animationDuration;
+
+    // Sweep X linearly from -12 to +12 across the duration
+    const sweepX = -12 + (animP * 24);
+
+    // Point light anchors exactly to the monitor's final computed resting Y position (-2.1)
+    animatedLightRef.current.position.set(sweepX, -2.1, 4.5);
+
+    // Fade in at the start of the sweep, fade out at the end, peak in the middle
+    let intensityFactor = 1.0;
+    if (animP < 0.2) intensityFactor = animP / 0.2;
+    if (animP > 0.8) intensityFactor = (1 - animP) / 0.2;
+
+    const centerBoost = 1 - Math.abs(sweepX) / 12;
+
+    // Extremely high intensity required for physical PBR clearcoat to reflect as a bright hot-spot
+    // Reduced from 500 equivalent to 200 equivalent since reflection is softer.
+    const baseLight = 80;
+    const boostLight = 120;
+    animatedLightRef.current.intensity = (baseLight + centerBoost * boostLight) * intensityFactor;
+  });
+
   return (
     <>
       {/* Soft ambient for visibility */}
@@ -645,16 +720,15 @@ function Lighting() {
         color="#ffffff"
       />
 
-      {/* FRONT ACCENT - Subtle face illumination */}
+      {/* SWEEPING CINEMATIC LIGHT - Animated highlight on the bezel glass */}
       <pointLight
-        position={[0, 1.2, 10]}
-        intensity={0.9}
+        ref={animatedLightRef}
+        position={[0, -2.1, 4.5]}
+        intensity={0}
         color="#ffffff"
-        distance={26}
-        decay={2}
+        distance={25}
+        decay={1.8}
       />
-
-      {/* (Removed extra point lights to avoid harsh spec/hotspots) */}
 
       {/* Soft gradient environment */}
       <hemisphereLight args={['#ffffff', '#0b0b0c', 0.25]} />
@@ -1085,6 +1159,7 @@ export default function CameraScene({
 
         {/* 3D Canvas with optimized settings */}
         <Canvas
+          className="relative z-[5]"
           camera={{ position: [0, 0, variant === 'gallery' ? 6 : 5], fov: variant === 'gallery' ? 45 : 50 }}
           gl={{
             antialias: true,

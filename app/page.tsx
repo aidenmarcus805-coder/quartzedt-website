@@ -21,29 +21,57 @@ const CameraScene = dynamic<{
   className?: string;
 }>(() => import('./components/CameraScene'), {
   ssr: false,
-  loading: () => (
-    <div className="absolute inset-0 flex items-center justify-center bg-black">
-      <div className="flex flex-col items-center gap-6">
-        {/* Minimal Quartz-themed loader */}
-        <div className="relative h-[2px] w-24 overflow-hidden bg-white/10">
-          <motion.div
-            initial={{ x: '-100%' }}
-            animate={{ x: '100%' }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              ease: [0.16, 1, 0.3, 1]
-            }}
-            className="h-full w-full bg-accent"
-          />
-        </div>
-        <p className="text-[10px] tracking-[0.4em] text-white/30 font-light translate-y-2">
-          INITIALIZING SCENE
-        </p>
-      </div>
-    </div>
-  )
+  loading: () => <div className="absolute inset-0 bg-black z-0" />
 });
+
+import { useProgress } from '@react-three/drei';
+
+function GlobalLoader() {
+  const { progress } = useProgress();
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    // When 3D assets are fully loaded, wait 0.3s then trigger fade out
+    if (progress === 100) {
+      const timer = setTimeout(() => {
+        setIsVisible(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [progress]);
+
+  return (
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          initial={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+          className="fixed inset-0 z-[150] flex items-center justify-center bg-black pointer-events-none"
+        >
+          <div className="flex flex-col items-center gap-6">
+            {/* Minimal Quartz-themed loader */}
+            <div className="relative h-[2px] w-24 overflow-hidden bg-white/10">
+              <motion.div
+                initial={{ x: '-100%' }}
+                animate={{ x: '100%' }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: [0.16, 1, 0.3, 1]
+                }}
+                className="h-full w-full bg-accent"
+              />
+            </div>
+            <p className="text-[10px] tracking-[0.4em] text-white/30 font-light translate-y-2">
+              INITIALIZING SCENE
+            </p>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
 
 // Reveal animation wrapper - more subtle
 function Reveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
@@ -397,6 +425,7 @@ export default function Home() {
 
   return (
     <div ref={containerRef} className="bg-white text-black min-h-screen selection:bg-black selection:text-white antialiased">
+      <GlobalLoader />
 
       {/* Navigation - Cinema Bar (Pro Tech) */}
       <motion.nav
@@ -543,16 +572,16 @@ export default function Home() {
         <div className="w-full max-w-[1400px] mx-auto px-8 md:px-12 lg:px-16 space-y-32 md:space-y-48 relative z-10">
 
           {/* Feature 01: Intelligent Culling */}
-          <div className="flex flex-col items-center justify-center text-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
             <motion.div
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="relative mb-12 md:mb-16"
+              className="relative"
             >
-              <div className="relative z-10">
-                <div className="relative w-[300px] md:w-[500px] aspect-video rounded-xl overflow-hidden border border-white/10 bg-[#111]">
+              <div className="relative z-10 w-full mb-8 lg:mb-0">
+                <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-white/10 bg-[#111]">
                   <Image
                     src="/wedding-culling-ui.png"
                     alt="Wedding Culling Interface"
@@ -560,18 +589,18 @@ export default function Home() {
                     className="object-cover opacity-90"
                   />
 
-                  {/* Flat UI Overlay: Selection Highlight */}
+                  {/* Flat UI Overlay: Selection Highlight - Ultra thin */}
                   <motion.div
-                    className="absolute top-[38%] left-[38%] w-[24%] h-[24%] border-2 border-accent rounded-sm shadow-[0_0_15px_rgba(34,197,94,0.2)]"
-                    animate={{ opacity: [1, 0.5, 1] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute top-[38%] left-[38%] w-[24%] h-[24%] border-[0.5px] border-white/30 rounded-sm"
+                    animate={{ opacity: [1, 0.4, 1] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                   />
 
-                  {/* Flat UI Badge */}
-                  <div className="absolute top-4 right-4">
-                    <div className="flex items-center gap-2 px-3 py-1 bg-[#1a1a1a] shadow-sm rounded-md border border-white/10">
-                      <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-                      <span className="text-[10px] font-bold tracking-tight text-white uppercase">Processing</span>
+                  {/* Minimal Indicator - Apple-esque no-box design */}
+                  <div className="absolute top-5 right-6">
+                    <div className="flex items-center gap-2.5 opacity-90">
+                      <div className="w-1.5 h-1.5 rounded-full bg-white/60" />
+                      <span className="text-[10px] font-medium tracking-widest text-white/90 uppercase" style={{ fontFamily: 'var(--font-mono)' }}>Processing</span>
                     </div>
                   </div>
                 </div>
@@ -583,29 +612,29 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-2xl space-y-6"
+              className="max-w-xl space-y-6 lg:justify-self-start text-left lg:pl-8"
             >
-              <h3 className="font-extralight text-[28px] md:text-[40px] lg:text-[48px] leading-[1.3] tracking-[-0.03em] text-white/90">
+              <h3 className="font-light text-[32px] md:text-[40px] lg:text-[48px] leading-[1.2] tracking-[-0.02em] text-white">
                 Weeks of work.<br />
                 <span className="text-white/40">Done in moments.</span>
               </h3>
-              <p className="font-extralight text-[18px] md:text-[22px] leading-[1.5] tracking-[-0.02em] text-white/60">
+              <p className="font-light text-[18px] md:text-[22px] leading-[1.5] tracking-[-0.01em] text-white/60">
                 Quartz doesn&apos;t just organize; it builds. <span className="text-white/80">Your wedding footage</span> is intelligently culled, color-corrected, and assembled into a full, solid rough cut—saving you weeks of manual labor.
               </p>
             </motion.div>
           </div>
 
           {/* Feature 02: Audio Sync */}
-          <div className="flex flex-col items-center justify-center text-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
             <motion.div
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="relative mb-12 md:mb-16"
+              className="relative"
             >
-              <div className="relative z-10">
-                <div className="relative w-[300px] md:w-[500px] aspect-video rounded-xl overflow-hidden border border-white/10 bg-[#111]">
+              <div className="relative z-10 w-full mb-8 lg:mb-0">
+                <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-white/10 bg-[#111]">
                   <Image
                     src="/flat-audio-sync-ui.png"
                     alt="Audio Synchronization Interface"
@@ -615,28 +644,19 @@ export default function Home() {
 
                   {/* Scanning Playhead - Elegant and technical */}
                   <motion.div
-                    className="absolute top-0 bottom-0 w-[1px] bg-accent/80 shadow-[0_0_15px_rgba(34,197,94,0.3)] z-20"
+                    className="absolute top-0 bottom-0 w-[1px] bg-white/30 z-20"
                     initial={{ left: "0%", opacity: 0 }}
                     whileInView={{ left: "100%", opacity: 1 }}
-                    viewport={{ once: false }} // Re-run on scroll back
-                    transition={{ duration: 4, ease: "linear", repeat: Infinity }}
+                    viewport={{ once: false }}
+                    transition={{ duration: 6, ease: "linear", repeat: Infinity }}
                   />
 
-                  {/* "Synced" Badge */}
-                  <div className="absolute top-4 right-4 z-30">
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 1, duration: 0.4 }}
-                      className="flex items-center gap-2 px-3 py-1.5 bg-[#1a1a1a]/90 backdrop-blur-md border border-white/10 shadow-sm rounded-full"
-                    >
-                      <motion.div
-                        animate={{ opacity: [1, 0.4, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="w-1.5 h-1.5 rounded-full bg-accent"
-                      />
-                      <span className="text-[10px] font-medium tracking-widest text-white uppercase">Synced</span>
-                    </motion.div>
+                  {/* Minimal Indicator */}
+                  <div className="absolute top-5 left-6 z-30">
+                    <div className="flex items-center gap-2.5 opacity-90">
+                      <div className="w-1.5 h-1.5 rounded-full bg-white/60" />
+                      <span className="text-[10px] font-medium tracking-widest text-white/90 uppercase" style={{ fontFamily: 'var(--font-mono)' }}>Synced</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -647,29 +667,29 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-2xl space-y-6"
+              className="max-w-xl space-y-6 lg:justify-self-end text-left lg:pr-8 lg:order-first"
             >
-              <h3 className="font-extralight text-[28px] md:text-[40px] lg:text-[48px] leading-[1.3] tracking-[-0.03em] text-white/90">
+              <h3 className="font-light text-[32px] md:text-[40px] lg:text-[48px] leading-[1.2] tracking-[-0.02em] text-white">
                 Instantly synced.<br />
                 <span className="text-white/40">Perfectly aligned.</span>
               </h3>
-              <p className="font-extralight text-[18px] md:text-[22px] leading-[1.5] tracking-[-0.02em] text-white/60">
+              <p className="font-light text-[18px] md:text-[22px] leading-[1.5] tracking-[-0.01em] text-white/60">
                 Multi-cam sources, external recorders, and chaotic audio—instantly aligned. Quartz analyzes the waveform landscape to ensure every toast, vow, and laugh is perfectly in place.
               </p>
             </motion.div>
           </div>
 
           {/* Feature 03: Seamless Export */}
-          <div className="flex flex-col items-center justify-center text-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
             <motion.div
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="relative mb-12 md:mb-16"
+              className="relative"
             >
-              <div className="relative z-10">
-                <div className="relative w-[300px] md:w-[500px] aspect-video rounded-xl overflow-hidden border border-white/10 bg-[#111]">
+              <div className="relative z-10 w-full mb-8 lg:mb-0">
+                <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-white/10 bg-[#111]">
                   <Image
                     src="/flat-export-ui.png"
                     alt="Seamless Export Interface"
@@ -677,16 +697,16 @@ export default function Home() {
                     className="object-cover opacity-90"
                   />
 
-                  {/* Flat Success Toast */}
-                  <div className="absolute bottom-6 left-0 right-0 flex justify-center">
+                  {/* Minimal Indicator */}
+                  <div className="absolute bottom-6 left-0 right-0 flex justify-center z-30">
                     <motion.div
-                      initial={{ y: 20, opacity: 0 }}
-                      whileInView={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.5 }}
-                      className="bg-[#1a1a1a] border border-white/10 px-4 py-2 rounded-full shadow-lg flex items-center gap-2"
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      transition={{ delay: 0.5, duration: 0.8 }}
+                      className="flex items-center gap-2.5 opacity-90 mix-blend-difference" // mix-blend helps it pop against varying backgrounds
                     >
-                      <div className="w-1.5 h-1.5 rounded-full bg-accent" />
-                      <span className="text-[11px] font-semibold text-white tracking-wide">Ready to Edit</span>
+                      <div className="w-1.5 h-1.5 rounded-full bg-white/80" />
+                      <span className="text-[10px] font-medium text-white/90 tracking-widest uppercase" style={{ fontFamily: 'var(--font-mono)' }}>Ready to Edit</span>
                     </motion.div>
                   </div>
                 </div>
@@ -698,13 +718,13 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-2xl space-y-6"
+              className="max-w-xl space-y-6 lg:justify-self-start text-left lg:pl-8"
             >
-              <h3 className="font-extralight text-[28px] md:text-[40px] lg:text-[48px] leading-[1.3] tracking-[-0.03em] text-white/90">
+              <h3 className="font-light text-[32px] md:text-[40px] lg:text-[48px] leading-[1.2] tracking-[-0.02em] text-white">
                 Creative flow,<br />
                 <span className="text-white/40">unlocked.</span>
               </h3>
-              <p className="font-extralight text-[18px] md:text-[22px] leading-[1.5] tracking-[-0.02em] text-white/60">
+              <p className="font-light text-[18px] md:text-[22px] leading-[1.5] tracking-[-0.01em] text-white/60">
                 Skip the assembly drudgery entirely. Export a fully structured, <span className="text-white/80">color-graded</span> timeline directly to your NLE for any Highlight, Full Day, Ceremony, or Reception edit. Start with a finished foundation.
               </p>
             </motion.div>
