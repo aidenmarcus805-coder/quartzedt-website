@@ -409,11 +409,11 @@ export default function Home() {
         <div
           className={`pointer-events-auto transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center justify-between px-6
             ${isScrolled
-              ? `h-14 w-[calc(100%-4rem)] md:w-[calc(100%-6rem)] lg:w-[calc(100%-8rem)] max-w-[1800px] rounded-full border backdrop-blur-xl shadow-lg ${navOnLight
+              ? `h-14 w-[calc(100%-4rem)] md:w-[calc(100%-6rem)] lg:w-[calc(100%-8rem)] max-w-[calc(1800px-4rem)] md:max-w-[calc(1800px-6rem)] lg:max-w-[calc(1800px-8rem)] rounded-full border backdrop-blur-xl shadow-lg ${navOnLight
                 ? 'bg-gray-50/40 border-black/5 text-black'
                 : 'bg-neutral-900/40 border-white/5 text-white'
               }`
-              : `h-20 w-[calc(100%-4rem)] md:w-[calc(100%-6rem)] lg:w-[calc(100%-8rem)] max-w-[1800px] bg-transparent border-transparent ${navOnLight ? 'text-black' : 'text-white'
+              : `h-20 w-[calc(100%-4rem)] md:w-[calc(100%-6rem)] lg:w-[calc(100%-8rem)] max-w-[calc(1800px-4rem)] md:max-w-[calc(1800px-6rem)] lg:max-w-[calc(1800px-8rem)] bg-transparent border-transparent ${navOnLight ? 'text-black' : 'text-white'
               }`
             }
           `}
