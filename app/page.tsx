@@ -510,10 +510,10 @@ export default function Home() {
                 <AnimatePresence>
                   {isMenuOpen && (
                     <motion.div
-                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                      initial={{ opacity: 0, y: -8, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                      className="absolute top-full right-0 mt-3 w-60 bg-white border border-neutral-200 rounded-xl shadow-2xl overflow-hidden z-50 origin-top-right backdrop-blur-xl"
+                      exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                      className="absolute top-full right-0 mt-3 w-60 bg-white border border-neutral-200/60 rounded-xl shadow-xl overflow-hidden z-50 origin-top-right backdrop-blur-xl"
                     >
                       <div className="p-1.5">
                         <div className="px-3 py-2 text-xs text-neutral-500 border-b border-neutral-100 mb-1 truncate font-mono">

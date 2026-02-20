@@ -690,33 +690,33 @@ function Lighting({ scrollProgressRef }: { scrollProgressRef: React.MutableRefOb
   return (
     <>
       {/* Soft ambient for visibility */}
-      <ambientLight intensity={0.12} color="#ffffff" />
+      <ambientLight intensity={0.05} color="#ffffff" />
 
       {/* KEY LIGHT - Main illumination from top-right */}
       <directionalLight
         position={[6, 6, 7]}
-        intensity={1.15}
+        intensity={0.8}
         color="#fff4ee"
       />
 
       {/* RIM LIGHT - Subtle edge definition from back-left */}
       <directionalLight
         position={[-6, 4, -4]}
-        intensity={0.35}
+        intensity={0.2}
         color="#ffffff"
       />
 
       {/* FILL LIGHT - Soft from left side */}
       <directionalLight
         position={[-6, 2, 6]}
-        intensity={0.45}
+        intensity={0.2}
         color="#eef2ff"
       />
 
       {/* TOP LIGHT - Even from above */}
       <directionalLight
         position={[0, 8, 2]}
-        intensity={0.25}
+        intensity={0.15}
         color="#ffffff"
       />
 
@@ -731,7 +731,7 @@ function Lighting({ scrollProgressRef }: { scrollProgressRef: React.MutableRefOb
       />
 
       {/* Soft gradient environment */}
-      <hemisphereLight args={['#ffffff', '#0b0b0c', 0.25]} />
+      <hemisphereLight args={['#ffffff', '#0b0b0c', 0.15]} />
     </>
   );
 }
