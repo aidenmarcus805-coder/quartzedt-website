@@ -163,6 +163,35 @@ function SegmentVideo({
   );
 }
 
+function TypewriterText({ text, className, cursorClassName }: { text: string; className?: string; cursorClassName?: string }) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-20%" });
+  const [displayedText, setDisplayedText] = useState("");
+
+  useEffect(() => {
+    if (isInView) {
+      let i = 0;
+      const interval = setInterval(() => {
+        setDisplayedText(text.substring(0, i + 1));
+        i++;
+        if (i >= text.length) clearInterval(interval);
+      }, 25);
+      return () => clearInterval(interval);
+    }
+  }, [isInView, text]);
+
+  return (
+    <div ref={ref} className={className}>
+      {displayedText}
+      <motion.span
+        animate={{ opacity: [1, 0, 1] }}
+        transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+        className={`inline-block w-[3px] h-[0.9em] align-middle ${cursorClassName || 'bg-white/70'} ml-1 -mt-1`}
+      />
+    </div>
+  );
+}
+
 const WORKFLOW_STEPS = [
   {
     label: 'Ingest',
@@ -505,8 +534,10 @@ export default function Home() {
         <div className="absolute inset-0 z-10 pointer-events-none" />
       </section>
 
+
+
       {/* Key Benefits (Black - Clean) */}
-      <section className="relative bg-black text-white border-t border-white/5 py-32 overflow-hidden">
+      <section className="relative bg-black text-white border-t border-white/5 py-24 md:py-32 overflow-hidden">
         {/* Artifacts removed per user request for clean monochrome look */}
 
         <div className="w-full max-w-[1400px] mx-auto px-8 md:px-12 lg:px-16 space-y-32 md:space-y-48 relative z-10">
@@ -554,12 +585,12 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
               className="max-w-2xl space-y-6"
             >
-              <h3 className="font-display text-[32px] md:text-[48px] text-white font-extralight tracking-tight leading-[1.1]">
+              <h3 className="font-extralight text-[28px] md:text-[40px] lg:text-[48px] leading-[1.3] tracking-[-0.03em] text-white/90">
                 Weeks of work.<br />
                 <span className="text-white/40">Done in moments.</span>
               </h3>
-              <p className="text-[16px] md:text-[18px] leading-[1.8] text-white/50 font-light">
-                Quartz doesn&apos;t just organize; it builds. <span className="text-white/80 font-normal">Your wedding footage</span> is intelligently culled, color-corrected, and assembled into a full, solid rough cut—saving you weeks of manual labor.
+              <p className="font-extralight text-[18px] md:text-[22px] leading-[1.5] tracking-[-0.02em] text-white/60">
+                Quartz doesn&apos;t just organize; it builds. <span className="text-white/80">Your wedding footage</span> is intelligently culled, color-corrected, and assembled into a full, solid rough cut—saving you weeks of manual labor.
               </p>
             </motion.div>
           </div>
@@ -618,11 +649,11 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
               className="max-w-2xl space-y-6"
             >
-              <h3 className="font-display text-[32px] md:text-[48px] text-white font-extralight tracking-tight leading-[1.1]">
+              <h3 className="font-extralight text-[28px] md:text-[40px] lg:text-[48px] leading-[1.3] tracking-[-0.03em] text-white/90">
                 Instantly synced.<br />
                 <span className="text-white/40">Perfectly aligned.</span>
               </h3>
-              <p className="text-[16px] md:text-[18px] leading-[1.8] text-white/50 font-light">
+              <p className="font-extralight text-[18px] md:text-[22px] leading-[1.5] tracking-[-0.02em] text-white/60">
                 Multi-cam sources, external recorders, and chaotic audio—instantly aligned. Quartz analyzes the waveform landscape to ensure every toast, vow, and laugh is perfectly in place.
               </p>
             </motion.div>
@@ -669,12 +700,12 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
               className="max-w-2xl space-y-6"
             >
-              <h3 className="font-display text-[32px] md:text-[48px] text-white font-extralight tracking-tight leading-[1.1]">
+              <h3 className="font-extralight text-[28px] md:text-[40px] lg:text-[48px] leading-[1.3] tracking-[-0.03em] text-white/90">
                 Creative flow,<br />
                 <span className="text-white/40">unlocked.</span>
               </h3>
-              <p className="text-[16px] md:text-[18px] leading-[1.8] text-white/50 font-light">
-                Skip the assembly drudgery entirely. Export a fully structured, <span className="text-white/80 font-normal">color-graded</span> timeline directly to your NLE for any Highlight, Full Day, Ceremony, or Reception edit. Start with a finished foundation.
+              <p className="font-extralight text-[18px] md:text-[22px] leading-[1.5] tracking-[-0.02em] text-white/60">
+                Skip the assembly drudgery entirely. Export a fully structured, <span className="text-white/80">color-graded</span> timeline directly to your NLE for any Highlight, Full Day, Ceremony, or Reception edit. Start with a finished foundation.
               </p>
             </motion.div>
           </div>

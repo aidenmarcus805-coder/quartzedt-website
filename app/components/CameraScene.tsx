@@ -2,6 +2,7 @@
 
 import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber';
 import { Environment } from '@react-three/drei';
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRef, Suspense, useEffect, useState, useMemo, useCallback } from 'react';
@@ -376,7 +377,7 @@ function MonitorModel({
 
     // Scale (slightly larger overall per request)
     const startScale = 6.3;
-    const endScale = 3.45;
+    const endScale = 3.25;
     const currentScale = startScale + (endScale - startScale) * scrollEase; // Inline lerp
     groupRef.current.scale.setScalar(currentScale);
 
@@ -384,17 +385,17 @@ function MonitorModel({
     groupRef.current.position.x = -0.01 + floatX;
     // Drop the whole monitor slightly at the end of the scroll (scrollEase=1)
     // Nudge down a touch (~20px perceived) to give the hero typography more breathing room.
-    groupRef.current.position.y = -5.45 + (3.35) * scrollEase - 0.4 * scrollEase + floatY;
+    groupRef.current.position.y = -5.40 + (3.35) * scrollEase - 0.4 * scrollEase + floatY;
 
     // Rotation
     groupRef.current.rotation.y = -Math.PI / 2 + floatRot + mouseRotY;
     // No base tilt at scroll=0
-    groupRef.current.rotation.x = scrollEase * 0.03 + mouseRotX;
+    groupRef.current.rotation.x = mouseRotX;
 
     // Tilt screens up based on scroll
     // NOTE: The model has a baked-in ~2.5° upward tilt from Blender; we cancel it at scroll=0.
     const blenderBaseTilt = THREE.MathUtils.degToRad(2.5);
-    const endTilt = 0.09; // ~5° at scroll=1
+    const endTilt = 0; // No extra tilt at end of scroll
     const displayTilt = -blenderBaseTilt + (blenderBaseTilt + endTilt) * scrollEase;
 
     // If we have the display mesh + its bounds, drive screen placement from it (no more guessed numbers)
@@ -679,6 +680,26 @@ function LoadingFallback() {
   );
 }
 
+function PremiumWriteTo() {
+  return (
+    <span
+      className="inline-block lowercase text-[1.12em] tracking-normal pt-2 mx-1 select-none text-[#555555]"
+      style={{ fontFamily: 'var(--font-script)' }}
+    >
+      <span
+        id="premium-to-text"
+        className="inline-block"
+        style={{
+          clipPath: 'polygon(0 0, 0% 0, -20% 100%, 0 100%)',
+          transition: 'clip-path 1.2s cubic-bezier(0.16, 1, 0.3, 1)'
+        }}
+      >
+        to
+      </span>
+    </span>
+  );
+}
+
 // Main component with scroll hijacking
 export default function CameraScene({
   lowPowerMode = false,
@@ -707,6 +728,7 @@ export default function CameraScene({
   const isCompleteRef = useRef(variant === 'gallery'); // Ref for immediate checking
   const hasUserScrolledRef = useRef(false);
   const lowPowerModeRef = useRef(lowPowerMode);
+  const hasTriggeredWriteRef = useRef(false);
 
   // Ensure we never leave scroll locked if switching variants (or during hot reload).
   useEffect(() => {
@@ -784,6 +806,16 @@ export default function CameraScene({
       const t = p > 0.6 ? Math.min((p - 0.6) * 3, 1) : 0;
       const pct = (1 - t) * 100;
       h1.style.transform = `translate3d(0, ${pct}%, 0)`;
+    }
+
+    // Handwriting sequence triggers distinctly when text is mostly revealed
+    const toText = document.getElementById('premium-to-text');
+    if (toText) {
+      if (p > 0.75) {
+        toText.style.clipPath = 'polygon(0 0, 120% 0, 100% 100%, 0 100%)';
+      } else {
+        toText.style.clipPath = 'polygon(0 0, 0% 0, -20% 100%, 0 100%)';
+      }
     }
   }, []);
 
@@ -1005,14 +1037,25 @@ export default function CameraScene({
 
   return (
     <>
-      {/* Monitor Scene with hero overlay - pure black background */}
+      {/* Monitor Scene with hero overlay - Matte Studio Background */}
       <div
-        className={`w-full bg-black overflow-hidden ${variant === 'full' ? 'h-screen' : 'h-full'} ${className ?? ''}`}
+        className={`w-full overflow-hidden ${variant === 'full' ? 'h-screen' : 'h-full'} ${className ?? ''}`}
         style={{
           position: 'relative',
           zIndex: 10,
+          background: 'radial-gradient(circle at 50% 50%, #151515 0%, #000000 80%)',
         }}
       >
+        {/* SVG animated noise texture layer */}
+        <div
+          className="absolute inset-0 pointer-events-none z-[1] opacity-[0.025]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+            backgroundRepeat: 'repeat',
+            mixBlendMode: 'screen',
+          }}
+        />
+
         {/* Minimal vignette for depth */}
         <div
           className="absolute inset-0 pointer-events-none z-[5]"
@@ -1083,16 +1126,17 @@ export default function CameraScene({
                 willChange: 'opacity, transform',
               }}
             >
-              {/* Dark gradient for legibility (bottom anchored hero style) */}
+              {/* Much softer, taller gradient just to anchor text over the bright monitor edge */}
               <div
                 className="absolute inset-0 pointer-events-none"
                 style={{
-                  background: 'linear-gradient(to top, rgba(0,0,0,0.70) 0%, rgba(0,0,0,0.30) 30%, transparent 62%)',
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 40%, transparent 85%)',
                 }}
               />
 
-              <div className="relative z-10">
-                <div className="flex justify-center pl-[26px] pr-0">
+              {/* Clean Typography Intro */}
+              <div className="relative z-10 flex flex-col items-center pb-2">
+                <div className="flex justify-center pl-[26px] pr-0 pb-4">
                   <Image
                     src="/logo.png?v=20251223"
                     alt="Quartz"
@@ -1100,18 +1144,18 @@ export default function CameraScene({
                     height={305}
                     priority
                     unoptimized
-                    className="h-[clamp(72px,10vw,140px)] w-auto"
+                    className="h-[clamp(52px,8vw,120px)] w-auto"
                   />
                 </div>
-                <p className="mt-10 max-w-lg px-6 text-[15px] md:text-[17px] leading-[1.7] text-white/45 font-light mx-auto">
-                  Precise edits. Made automatically.
+
+                <p className="max-w-md px-6 text-[16px] md:text-[18px] leading-[1.6] text-white/50 font-light mx-auto mb-10">
+                  The first fully autonomous AI video editor.
                 </p>
 
                 {/* Minimal CTA */}
-                <div className="mt-12 pointer-events-auto flex justify-center">
-                  <Link href="#waitlist" className="group relative inline-flex items-center gap-3 px-8 py-4 bg-white text-black rounded-full overflow-hidden transition-transform active:scale-95">
-                    <span className="relative z-10 text-[13px] font-medium tracking-wide uppercase">Join the Waitlist</span>
-                    <div className="absolute inset-0 bg-accent opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
+                <div className="pointer-events-auto flex justify-center">
+                  <Link href="#waitlist" className="group relative inline-flex items-center gap-3 px-7 py-3.5 bg-white/10 hover:bg-white text-white hover:text-black border border-white/20 rounded-full transition-all duration-300">
+                    <span className="relative z-10 text-[12px] md:text-[13px] font-medium tracking-widest uppercase">Join the Waitlist</span>
                   </Link>
                 </div>
               </div>
@@ -1136,7 +1180,7 @@ export default function CameraScene({
               <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 w-full relative z-10">
                 <div className="mx-auto text-center w-full">
                   {/* Main title */}
-                  <div className="overflow-hidden">
+                  <div className="overflow-hidden pb-4">
                     <h1
                       ref={domTitleH1Ref}
                       className="text-[clamp(56px,10vw,140px)] font-extralight leading-[0.9] tracking-[-0.05em] text-white md:whitespace-nowrap"
@@ -1146,8 +1190,7 @@ export default function CameraScene({
                         willChange: 'transform',
                       }}
                     >
-                      From Weeks to{' '}
-                      <span className="text-white/60">Hours.</span>
+                      From Weeks <PremiumWriteTo /> <span>Hours.</span>
                     </h1>
                   </div>
                 </div>
