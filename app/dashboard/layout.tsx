@@ -3,11 +3,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Home, CreditCard, Download, LogOut } from 'lucide-react';
+import { House, CreditCard, Download, SignOut } from '@phosphor-icons/react';
 import { useSession, signOut } from 'next-auth/react';
 
 const SIDEBAR_ITEMS = [
-    { label: 'Overview', href: '/dashboard', icon: Home },
+    { label: 'Overview', href: '/dashboard', icon: House },
     { label: 'Subscription', href: '/dashboard/billing', icon: CreditCard },
     { label: 'Download', href: '/dashboard/download', icon: Download },
 ];
@@ -79,7 +79,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                 className="p-2 rounded-lg hover:bg-black/5 text-black/50 hover:text-red-500 transition-colors"
                                 aria-label="Sign out"
                             >
-                                <LogOut className="w-4 h-4" />
+                                <SignOut className="w-4 h-4" />
                             </button>
                         </div>
                     ) : (

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useInView } from 'framer-motion';
-import { ArrowRight, Minus } from 'lucide-react';
+import { ArrowRight, Minus } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -10,7 +10,7 @@ import Image from 'next/image';
 const Reveal = ({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
-  
+
   return (
     <div ref={ref}>
       <motion.div
@@ -123,7 +123,7 @@ export default function About() {
 
   return (
     <div className="bg-black text-white min-h-screen selection:bg-white selection:text-black antialiased">
-      
+
       {/* Navigation */}
       <motion.nav
         ref={navRef}
@@ -143,9 +143,8 @@ export default function About() {
                 sizes="80px"
                 priority
                 unoptimized
-                className={`object-contain transition-opacity duration-150 ${
-                  navOnLight ? 'opacity-0' : 'opacity-100'
-                }`}
+                className={`object-contain transition-opacity duration-150 ${navOnLight ? 'opacity-0' : 'opacity-100'
+                  }`}
               />
               <Image
                 src="/logoBlack.png?v=20251223"
@@ -155,17 +154,15 @@ export default function About() {
                 sizes="80px"
                 priority
                 unoptimized
-                className={`object-contain transition-opacity duration-150 ${
-                  navOnLight ? 'opacity-100' : 'opacity-0'
-                }`}
+                className={`object-contain transition-opacity duration-150 ${navOnLight ? 'opacity-100' : 'opacity-0'
+                  }`}
               />
             </span>
           </Link>
-          
+
           <div
-            className={`hidden md:flex items-center gap-16 text-[10px] tracking-[0.4em] font-light ${
-              navOnLight ? 'text-black' : 'text-white'
-            }`}
+            className={`hidden md:flex items-center gap-16 text-[10px] tracking-[0.4em] font-light ${navOnLight ? 'text-black' : 'text-white'
+              }`}
           >
             <Link href="/#workflow" className="hover:opacity-50 transition-opacity">WORK</Link>
             <Link href="/pricing" className="hover:opacity-50 transition-opacity">PRICING</Link>
@@ -174,9 +171,8 @@ export default function About() {
 
           <Link
             href="/signin?next=/download"
-            className={`text-[10px] tracking-[0.4em] font-light hover:opacity-50 transition-opacity ${
-              navOnLight ? 'text-black' : 'text-white'
-            }`}
+            className={`text-[10px] tracking-[0.4em] font-light hover:opacity-50 transition-opacity ${navOnLight ? 'text-black' : 'text-white'
+              }`}
           >
             SIGN IN
           </Link>
@@ -215,25 +211,25 @@ export default function About() {
                 </h2>
               </Reveal>
             </div>
-            
+
             {/* Right column */}
             <div className="lg:col-span-7 space-y-12">
               <Reveal delay={0.1}>
                 <p className="text-[17px] md:text-[19px] font-light leading-[1.8] text-white/60">
-                  It started with watching my dad edit wedding videos. 
-                  <span className="text-white"> Weeks of work for a single film.</span> The 
+                  It started with watching my dad edit wedding videos.
+                  <span className="text-white"> Weeks of work for a single film.</span> The
                   passion was there, but the process was breaking him.
                 </p>
               </Reveal>
-              
+
               <Reveal delay={0.2}>
                 <p className="text-[17px] md:text-[19px] font-light leading-[1.8] text-white/60">
-                  I spoke with dozens of top wedding videographers. The story was always 
-                  the same: <span className="text-white">drowning in footage, missing deadlines, 
-                  losing the joy</span> that brought them to filmmaking.
+                  I spoke with dozens of top wedding videographers. The story was always
+                  the same: <span className="text-white">drowning in footage, missing deadlines,
+                    losing the joy</span> that brought them to filmmaking.
                 </p>
               </Reveal>
-              
+
               <Reveal delay={0.3}>
                 <div className="border-l border-white/10 pl-8 py-4">
                   <p className="text-[24px] md:text-[32px] font-extralight leading-[1.3] tracking-[-0.02em]">
@@ -262,7 +258,7 @@ export default function About() {
               </h2>
             </div>
           </Reveal>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-px bg-black/5">
             {problems.map((problem, idx) => (
               <Reveal key={problem.title} delay={idx * 0.1}>
@@ -295,13 +291,13 @@ export default function About() {
                   The breakthrough
                 </h2>
                 <p className="text-[17px] font-light leading-[1.8] text-white/50">
-                  We realized AI could do more than transcribe or color correct. 
-                  It could <span className="text-white">understand the emotional arc</span> of 
+                  We realized AI could do more than transcribe or color correct.
+                  It could <span className="text-white">understand the emotional arc</span> of
                   a wedding day.
                 </p>
               </Reveal>
             </div>
-            
+
             {/* Right */}
             <div className="lg:col-span-7 lg:col-start-6">
               {breakthroughs.map((item, idx) => (
@@ -340,7 +336,7 @@ export default function About() {
               </h2>
             </div>
           </Reveal>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-paper/5">
             {videographerStories.map((story, idx) => (
               <Reveal key={story.name} delay={idx * 0.15}>
@@ -349,7 +345,7 @@ export default function About() {
                   <p className="text-[19px] md:text-[22px] font-extralight leading-[1.6] tracking-[-0.01em] mb-10">
                     &ldquo;{story.quote}&rdquo;
                   </p>
-                  
+
                   {/* Attribution */}
                   <div className="flex items-end justify-between">
                     <div>
@@ -357,7 +353,7 @@ export default function About() {
                       <p className="text-[13px] font-light text-white/40 mt-1">{story.role}</p>
                     </div>
                   </div>
-                  
+
                   {/* Insight tag */}
                   <div className="mt-8 pt-8 border-t border-white/5">
                     <p className="text-[10px] tracking-[0.4em] text-white/30 mb-2">REQUESTED FEATURE</p>
@@ -367,7 +363,7 @@ export default function About() {
               </Reveal>
             ))}
           </div>
-          
+
           <Reveal delay={0.4}>
             <p className="text-center text-[13px] tracking-[0.3em] text-white/30 mt-16 font-light">
               100+ HOURS OF FEEDBACK SESSIONS
@@ -386,21 +382,21 @@ export default function About() {
                 OUR MISSION
               </h2>
             </Reveal>
-            
+
             <Reveal delay={0.2}>
               <p className="text-[32px] md:text-[48px] lg:text-[56px] font-extralight leading-[1.2] tracking-[-0.03em]">
-                We believe videographers deserve to 
+                We believe videographers deserve to
                 <span className="text-black/30"> create, not drown in timelines.</span>
               </p>
             </Reveal>
-            
+
             <Reveal delay={0.3}>
               <p className="text-[19px] md:text-[22px] font-light leading-[1.7] text-black/50 mt-12 max-w-2xl mx-auto">
-                Cutline exists to turn weeks of work into days — 
+                Cutline exists to turn weeks of work into days —
                 without losing the soul of your story.
               </p>
             </Reveal>
-            
+
             <Reveal delay={0.4}>
               <div className="flex items-center justify-center gap-4 mt-16">
                 <div className="h-[1px] w-16 bg-black/10" />
@@ -429,7 +425,7 @@ export default function About() {
                 </h2>
               </Reveal>
             </div>
-            
+
             {/* Right */}
             <div className="lg:col-span-7 space-y-16">
               <Reveal delay={0.1}>
@@ -440,35 +436,35 @@ export default function About() {
                     </div>
                     <h3 className="text-[16px] font-light">No Cloud Fees</h3>
                     <p className="text-[14px] font-light text-white/40 leading-[1.7]">
-                      Your footage stays on your machine. Process locally, 
+                      Your footage stays on your machine. Process locally,
                       keep your data yours.
                     </p>
                   </div>
-                  
+
                   <div className="space-y-4">
                     <div className="w-12 h-12 border border-white/10 flex items-center justify-center">
                       <span className="text-[20px] font-extralight">◈</span>
                     </div>
                     <h3 className="text-[16px] font-light">Local AI</h3>
                     <p className="text-[14px] font-light text-white/40 leading-[1.7]">
-                      No dependence on external services. Cutline runs 
+                      No dependence on external services. Cutline runs
                       entirely on your hardware.
                     </p>
                   </div>
-                  
+
                   <div className="space-y-4">
                     <div className="w-12 h-12 border border-white/10 flex items-center justify-center">
                       <span className="text-[20px] font-extralight">△</span>
                     </div>
                     <h3 className="text-[16px] font-light">Built to Last</h3>
                     <p className="text-[14px] font-light text-white/40 leading-[1.7]">
-                      Professional-grade stability. This is your business 
+                      Professional-grade stability. This is your business
                       tool, not a side project.
                     </p>
                   </div>
                 </div>
               </Reveal>
-              
+
               <Reveal delay={0.2}>
                 <div className="border border-white/10 p-10 md:p-14">
                   <p className="text-[10px] tracking-[0.4em] text-white/30 mb-6">COMING SOON</p>
@@ -476,10 +472,10 @@ export default function About() {
                     MAX Mode
                   </h3>
                   <p className="text-[15px] font-light text-white/50 leading-[1.7] max-w-xl">
-                    Full AI autonomy. Upload your footage, define your style, and Cutline 
+                    Full AI autonomy. Upload your footage, define your style, and Cutline
                     delivers a complete first cut — ready for your creative polish.
                   </p>
-                  
+
                   <button className="mt-8 group inline-flex items-center gap-4 text-[10px] tracking-[0.4em] text-white/40 hover:text-white transition-colors">
                     <Minus className="w-8 h-[1px] text-white/20 group-hover:text-white/60 transition-colors" />
                     JOIN WAITLIST
@@ -502,10 +498,10 @@ export default function About() {
                 <span className="text-black/30">your time?</span>
               </h2>
             </Reveal>
-            
+
             <Reveal delay={0.2}>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                <Link 
+                <Link
                   href="/pricing"
                   className="px-12 py-5 bg-black text-white text-[10px] tracking-[0.4em] hover:bg-black/90 transition-colors font-light"
                 >
@@ -539,7 +535,7 @@ export default function About() {
                 AI-powered video editing engineered for filmmakers who value craft.
               </p>
             </div>
-            
+
             <div className="md:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-12 md:gap-8">
               <div className="space-y-6">
                 <span className="text-[10px] tracking-[0.4em] text-white/20 font-light">PRODUCT</span>
@@ -549,7 +545,7 @@ export default function About() {
                   <a href="#" className="block text-white/40 hover:text-white transition-colors">Changelog</a>
                 </nav>
               </div>
-              
+
               <div className="space-y-6">
                 <span className="text-[10px] tracking-[0.4em] text-white/20 font-light">COMPANY</span>
                 <nav className="space-y-4 text-[13px] font-light">
@@ -558,7 +554,7 @@ export default function About() {
                   <a href="#" className="block text-white/40 hover:text-white transition-colors">Careers</a>
                 </nav>
               </div>
-              
+
               <div className="space-y-6">
                 <span className="text-[10px] tracking-[0.4em] text-white/20 font-light">LEGAL</span>
                 <nav className="space-y-4 text-[13px] font-light">
@@ -568,7 +564,7 @@ export default function About() {
               </div>
             </div>
           </div>
-          
+
           <div className="mt-24 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <p className="text-[10px] tracking-[0.3em] text-white/20 font-light">
               © 2024 CUTLINE

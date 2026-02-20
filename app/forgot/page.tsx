@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Mail, ArrowLeft, Loader2, CheckCircle2 } from 'lucide-react';
+import { Envelope, ArrowLeft, CircleNotch, CheckCircle } from '@phosphor-icons/react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ForgotPasswordPage() {
@@ -66,7 +66,7 @@ export default function ForgotPasswordPage() {
                                 <form onSubmit={handleSubmit} className="space-y-4">
                                     <div className="relative overflow-hidden rounded-xl bg-black/40 border border-white/[0.08] focus-within:border-white/20 transition-all h-12 flex items-center">
                                         <div className="absolute left-4">
-                                            <Mail className="w-4 h-4 text-white/20" />
+                                            <Envelope className="w-4 h-4 text-white/20" />
                                         </div>
                                         <input
                                             type="email"
@@ -84,7 +84,7 @@ export default function ForgotPasswordPage() {
                                         className="w-full bg-white text-black rounded-xl h-12 text-sm font-semibold hover:bg-[#eee] transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
                                     >
                                         {isLoading ? (
-                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            <CircleNotch className="w-4 h-4 animate-spin" />
                                         ) : (
                                             "Send Reset Link"
                                         )}
@@ -110,7 +110,7 @@ export default function ForgotPasswordPage() {
                             >
                                 <div className="flex justify-center">
                                     <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center border border-accent/20">
-                                        <CheckCircle2 className="w-8 h-8 text-accent" />
+                                        <CheckCircle className="w-8 h-8 text-accent" />
                                     </div>
                                 </div>
 

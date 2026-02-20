@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Download, ExternalLink, CreditCard, CheckCircle2, Zap } from 'lucide-react';
+import { Download, ArrowSquareOut, CreditCard, Lightning } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 
@@ -81,7 +81,7 @@ export default function DashboardPage() {
                     <div className="p-8 rounded-2xl bg-black text-white border border-black/5 flex flex-col relative overflow-hidden">
                         <div className="relative z-10">
                             <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mb-6">
-                                <Zap className="w-5 h-5 text-white" />
+                                <Lightning className="w-5 h-5 text-white" />
                             </div>
                             <h3 className="font-medium text-lg mb-1">Quartz Desktop</h3>
                             <p className="text-sm text-white/50 mb-8">Version 1.2.0 • Latest Build</p>
@@ -91,7 +91,7 @@ export default function DashboardPage() {
                                     href={`${DESKTOP_SCHEME}://open`}
                                     className="flex items-center gap-2 text-sm bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-white/90 transition-colors"
                                 >
-                                    <ExternalLink className="w-4 h-4" />
+                                    <ArrowSquareOut className="w-4 h-4" />
                                     Open
                                 </a>
                                 <Link

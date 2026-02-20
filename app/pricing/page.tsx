@@ -2,7 +2,7 @@
 
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, ArrowLeft, ArrowRight, User } from 'lucide-react';
+import { Check, ArrowLeft, ArrowRight, User } from '@phosphor-icons/react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';

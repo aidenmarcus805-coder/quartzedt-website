@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, CreditCard, Shield } from 'lucide-react';
+import { Check, CreditCard, ShieldCheck } from '@phosphor-icons/react';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 import { PRICING_PLAN } from '../../lib/constants/pricing';
@@ -149,7 +149,7 @@ export default function BillingPage() {
 
             <div className="p-6 rounded-xl bg-black/[0.02] border border-black/5 flex items-center justify-between text-sm">
                 <div className="flex items-center gap-3">
-                    <Shield className="w-4 h-4 text-black/50" />
+                    <ShieldCheck className="w-4 h-4 text-black/50" />
                     <span className="text-black/60">Payments are securely processed by Creem.io. canceling is easy.</span>
                 </div>
                 <a href="mailto:support@quartzeditor.com" className="text-black/60 hover:text-black hover:underline"> Need help?</a>

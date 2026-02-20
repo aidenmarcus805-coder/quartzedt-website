@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Copy, Check, ArrowRight } from 'lucide-react';
+import { CircleNotch, Copy, Check, ArrowRight } from '@phosphor-icons/react';
 
 import { Suspense } from 'react';
 
@@ -138,7 +138,7 @@ export default function HandshakePage() {
     return (
         <Suspense fallback={
             <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-                <Loader2 className="w-6 h-6 text-white/5 animate-spin" />
+                <CircleNotch className="w-6 h-6 text-white/5 animate-spin" />
             </div>
         }>
             <HandshakeContent />

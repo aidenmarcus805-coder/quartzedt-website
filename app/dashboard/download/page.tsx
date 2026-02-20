@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Copy, Check, ExternalLink } from 'lucide-react';
+import { Copy, Check, ArrowSquareOut } from '@phosphor-icons/react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
@@ -70,7 +70,7 @@ export default function DownloadPage() {
                   <p className="text-xs text-white/50">Apple Silicon & Intel</p>
                 </div>
               </div>
-              <ExternalLink className="w-5 h-5 opacity-50" />
+              <ArrowSquareOut className="w-5 h-5 opacity-50" />
             </a>
 
             <a
@@ -86,7 +86,7 @@ export default function DownloadPage() {
                   <p className="text-xs text-black/40">Windows 10/11</p>
                 </div>
               </div>
-              <ExternalLink className="w-5 h-5 opacity-30" />
+              <ArrowSquareOut className="w-5 h-5 opacity-30" />
             </a>
           </div>
         </section>
@@ -142,7 +142,7 @@ export default function DownloadPage() {
                   href={deepLink}
                   className="flex items-center justify-center gap-2 w-full h-12 rounded-xl border border-black/10 bg-white text-sm font-medium hover:border-black/30 transition-all"
                 >
-                  <ExternalLink className="w-4 h-4" />
+                  <ArrowSquareOut className="w-4 h-4" />
                   Open Desktop App
                 </a>
               </div>

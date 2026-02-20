@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion, useInView } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Check, ChevronDown, Film, MessageCircle, FileText, Map, Minus, Scissors, Search, Upload, User } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, FilmStrip, Minus, Scissors, MagnifyingGlass, UploadSimple, User } from '@phosphor-icons/react';
 
 // PRICING_PLAN and PLAN removed
 
@@ -223,14 +223,14 @@ function TypewriterText({ text, className, cursorClassName }: { text: string; cl
 const WORKFLOW_STEPS = [
   {
     label: 'Ingest',
-    icon: Upload,
+    icon: UploadSimple,
     start: 2,
     end: 12,
     desc: 'Deep-scan volumes. Automatic metadata extraction and proxy generation.',
   },
   {
     label: 'Cull',
-    icon: Search,
+    icon: MagnifyingGlass,
     start: 24,
     end: 34,
     desc: 'AI detects highlights, triage selects, and filters junk in seconds.',
@@ -244,7 +244,7 @@ const WORKFLOW_STEPS = [
   },
   {
     label: 'Assemble',
-    icon: Film,
+    icon: FilmStrip,
     start: 68,
     end: 78,
     desc: 'Smart-cutting based on emotional context and narrative structure.',

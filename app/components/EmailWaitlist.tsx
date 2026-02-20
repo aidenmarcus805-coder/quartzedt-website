@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Check, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowRight, Check, CircleNotch, WarningCircle } from '@phosphor-icons/react';
 
 export default function EmailWaitlist() {
     const [email, setEmail] = useState('');
@@ -73,7 +73,7 @@ export default function EmailWaitlist() {
                                     exit={{ opacity: 0, scale: 0.8 }}
                                     className="text-white/50"
                                 >
-                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    <CircleNotch className="w-5 h-5 animate-spin" />
                                 </motion.div>
                             )}
 
@@ -97,7 +97,7 @@ export default function EmailWaitlist() {
                                     onClick={() => setStatus('idle')}
                                     className="text-red-500 hover:text-red-400 transition-colors"
                                 >
-                                    <AlertCircle className="w-5 h-5" />
+                                    <WarningCircle className="w-5 h-5" />
                                 </motion.button>
                             )}
                         </AnimatePresence>

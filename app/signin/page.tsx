@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Suspense, useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Chrome, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
+import { Envelope, Lock, CircleNotch } from '@phosphor-icons/react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function SignInContent() {
@@ -137,7 +137,7 @@ function SignInContent() {
                   className="flex items-center shrink-0 overflow-hidden"
                 >
                   <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-white/40" />
+                    <Envelope className="w-4 h-4 text-white/40" />
                     <div className="w-px h-4 bg-white/10" />
                   </div>
                 </motion.div>
@@ -193,7 +193,7 @@ function SignInContent() {
               className="w-full bg-white text-black rounded-lg h-[46px] text-sm font-semibold hover:bg-[#eee] transition-all flex items-center justify-center gap-2 shadow-xl"
             >
               {isLoading === 'credentials' ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <CircleNotch className="w-4 h-4 animate-spin" />
               ) : (
                 "Sign In"
               )}
@@ -216,7 +216,7 @@ function SignInContent() {
               className="w-full bg-[#0A0A0A] border border-white/[0.08] hover:border-white/20 rounded-lg h-[46px] text-[13px] font-medium text-white transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
             >
               {isLoading === 'google' ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <CircleNotch className="w-4 h-4 animate-spin" />
               ) : (
                 <>
                   <svg width="18" height="18" viewBox="0 0 18 18">
@@ -267,7 +267,7 @@ export default function SignInPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-        <Loader2 className="w-6 h-6 text-white/5 animate-spin" />
+        <CircleNotch className="w-6 h-6 text-white/5 animate-spin" />
       </div>
     }>
       <SignInContent />

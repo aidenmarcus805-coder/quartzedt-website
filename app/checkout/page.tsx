@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Check, ArrowLeft, Loader2, ShieldCheck, CreditCard, Lock } from 'lucide-react';
+import { Check, ArrowLeft, CircleNotch, ShieldCheck, CreditCard, Lock } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
@@ -49,7 +49,7 @@ export default function CheckoutPage() {
     if (status === 'loading') {
         return (
             <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white">
-                <Loader2 className="animate-spin text-white/20" />
+                <CircleNotch className="animate-spin text-white/20" />
             </div>
         );
     }
@@ -177,7 +177,7 @@ export default function CheckoutPage() {
                             disabled={isRedirecting}
                             className="w-full py-4 bg-white text-black font-semibold rounded-lg hover:bg-zinc-200 transition-all flex items-center justify-center gap-2 mb-4"
                         >
-                            {isRedirecting ? <Loader2 className="animate-spin" size={18} /> : "Proceed to Payment"}
+                            {isRedirecting ? <CircleNotch className="animate-spin" size={18} /> : "Proceed to Payment"}
                         </button>
 
                         <div className="flex items-center justify-center gap-4 text-white/20 mb-6">

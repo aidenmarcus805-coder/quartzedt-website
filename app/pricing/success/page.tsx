@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect } from 'react';
-import { Check, ArrowRight } from 'lucide-react';
+import { Check, ArrowRight } from '@phosphor-icons/react';
 
 export default function SuccessPage() {
     useEffect(() => {
