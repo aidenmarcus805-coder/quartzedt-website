@@ -32,10 +32,31 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: 'Email', type: 'email', placeholder: 'you@studio.com' },
         password: { label: 'Password', type: 'password' },
+        turnstileToken: { label: 'Turnstile Token', type: 'text' },
       },
       async authorize(credentials) {
         const email = credentials?.email?.trim()?.toLowerCase();
         if (!email) return null;
+
+        const turnstileToken = credentials?.turnstileToken;
+        if (!turnstileToken) {
+          throw new Error("Missing captcha token.");
+        }
+
+        const formData = new URLSearchParams();
+        formData.append('secret', '0x4AAAAAACgT6K7hkQIgkfaxSu2b0rDjQQc.');
+        formData.append('response', turnstileToken);
+
+        const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const verifyData = await verifyRes.json();
+
+        if (!verifyData.success) {
+          throw new Error('Invalid captcha.');
+        }
 
         // Find or create user in database
         let user = await prisma.user.findUnique({ where: { email } });
