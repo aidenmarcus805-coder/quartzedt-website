@@ -574,63 +574,48 @@ export default function Home() {
       </div>
 
       {/* 01 // THE ENGINE - Asymmetrical Editorial Intro */}
-      <section className="relative z-10 bg-[#050505] text-white pt-12 pb-32 md:pt-20 md:pb-48 px-6 md:px-12 lg:px-16 overflow-hidden">
-        {/* Background Visual Element */}
-        <div className="absolute top-0 right-[-10%] w-[60%] h-full pointer-events-none z-0 overflow-visible opacity-30">
-          <motion.div
-            initial={{ opacity: 0, x: 40, scale: 0.95 }}
-            whileInView={{ opacity: 1, x: 0, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full h-full"
-          >
-            <video
-              src="/element1.mp4"
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-l from-transparent via-[#050505]/80 to-[#050505]" />
-          </motion.div>
-        </div>
-
-        {/* Asymmetrical layout starts below notch */}
-
+      <section className="relative z-10 bg-[#050505] text-white pt-32 pb-32 md:pt-48 md:pb-48 px-6 md:px-12 lg:px-16 overflow-hidden">
         <div className="max-w-[1400px] mx-auto relative z-10 w-full">
-          {/* Structural Line & Monospace Eyebrow */}
-          <div className="flex flex-col md:flex-row mb-16 md:mb-24 relative">
-            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-white/20 to-transparent" />
-            <div className="pt-6 flex gap-8">
-              <span className="text-[10px] sm:text-[11px] font-medium tracking-widest text-white/40 uppercase" style={{ fontFamily: 'var(--font-mono)' }}>01</span>
-              <span className="text-[10px] sm:text-[11px] font-medium tracking-[0.15em] text-white/40 uppercase" style={{ fontFamily: 'var(--font-mono)' }}>// The Engine</span>
-            </div>
-          </div>
+          {/* Editorial Intro content starts directly */}
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-16 lg:gap-24 items-end">
-
-            {/* Massive Left Column Headline (8 cols config) */}
-            <div className="lg:col-span-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 items-center">
+            {/* Left Column: Minimalist Editorial Text */}
+            <div className="lg:col-span-6 space-y-16">
               <Reveal>
-                <h2 className="text-[44px] sm:text-[56px] md:text-[72px] lg:text-[84px] font-light leading-[1.05] tracking-tight text-white/95 text-balance">
-                  An autonomous editing engine{' '}
-                  <span className="text-white/30 block mt-2 lg:mt-4 italic">for wedding filmmakers.</span>
-                </h2>
+                <div className="space-y-4">
+                  <h2 className="text-[48px] sm:text-[64px] lg:text-[82px] font-extralight leading-[0.95] tracking-tight text-white/95">
+                    An autonomous<br />
+                    <span className="text-white/30 italic">editing engine.</span>
+                  </h2>
+                </div>
               </Reveal>
-            </div>
 
-            {/* Right Anchored paragraph (4 cols) */}
-            <div className="lg:col-span-4 lg:pb-3">
               <Reveal delay={0.2}>
-                <div className="relative pl-6 md:pl-8 before:absolute before:inset-y-0 before:left-0 before:w-[1px] before:bg-gradient-to-b before:from-white/20 before:to-transparent">
-                  <p className="text-[18px] md:text-[20px] leading-[1.6] text-white/50 font-light text-pretty">
-                    Quartz isn't a plugin or a preset pack. It is a standalone desktop application that ingests your raw, chaotic multicam folders and outputs a fully structured, color-corrected rough cut directly to your NLE timeline.
+                <div className="max-w-md space-y-8">
+                  <p className="text-[19px] md:text-[21px] leading-relaxed text-white/40 font-light">
+                    Quartz transforms raw multicam chaos into structured narratives. Not a plugin—a standalone leap in post-production.
                   </p>
                 </div>
               </Reveal>
             </div>
 
+            <div className="lg:col-span-6 relative flex justify-end items-center -mr-12 lg:-mr-32">
+              <motion.div
+                initial={{ opacity: 0, x: 40, scale: 0.98 }}
+                whileInView={{ opacity: 1, x: 0, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
+                className="relative w-full aspect-square max-w-[840px] group"
+              >
+                <video
+                  src="/element1.mp4"
+                  autoPlay
+                  muted
+                  playsInline
+                  className="w-full h-full object-contain relative z-10 opacity-80 group-hover:opacity-100 transition-opacity duration-1000"
+                />
+              </motion.div>
+            </div>
           </div>
         </div>
       </section>
@@ -642,8 +627,7 @@ export default function Home() {
         <div className="w-full max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16 space-y-40 md:space-y-64 relative z-10">
 
           {/* Feature 01: Intelligent Culling */}
-          <div className="relative pt-16 md:pt-24">
-            <div className="absolute top-0 left-0 w-full md:w-[150%] h-[1px] bg-gradient-to-r from-white/20 via-white/5 to-transparent" />
+          <div className="relative pt-8 md:pt-12">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
               <motion.div
                 initial={{ opacity: 0, y: 40 }}
@@ -664,33 +648,20 @@ export default function Home() {
                 </div>
               </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="max-w-xl lg:justify-self-start text-left lg:pl-12"
-              >
-                <div className="flex gap-6 mb-8 mt-8 lg:mt-0">
-                  <span className="text-[10px] sm:text-[11px] font-medium tracking-widest text-white/40 uppercase" style={{ fontFamily: 'var(--font-mono)' }}>02</span>
-                  <span className="text-[10px] sm:text-[11px] font-medium tracking-[0.15em] text-white/40 uppercase" style={{ fontFamily: 'var(--font-mono)' }}>// Assembly</span>
-                </div>
-                <h3 className="font-light text-[40px] md:text-[56px] lg:text-[64px] leading-[1.05] tracking-tight text-white mb-8 text-balance">
-                  Weeks of work.<br />
-                  <span className="text-white/30 italic block mt-2">Done in moments.</span>
-                </h3>
-                <div className="relative pl-6 md:pl-8 before:absolute before:inset-y-0 before:left-0 before:w-[1px] before:bg-gradient-to-b before:from-white/20 before:to-transparent">
-                  <p className="font-light text-[18px] md:text-[20px] leading-[1.6] text-white/50 text-pretty">
-                    Quartz doesn&apos;t just organize; it builds. <span className="text-white/80">Your wedding footage</span> is intelligently culled, color-corrected, and assembled into a full, solid rough cut—saving you weeks of manual labor.
-                  </p>
-                </div>
-              </motion.div>
+              <h3 className="font-light text-[40px] md:text-[56px] lg:text-[64px] leading-[1.05] tracking-tight text-white mb-8 text-balance">
+                Weeks of work.<br />
+                <span className="text-white/30 italic block mt-2">Done in moments.</span>
+              </h3>
+              <div className="max-w-md">
+                <p className="font-light text-[18px] md:text-[20px] leading-[1.6] text-white/50">
+                  Quartz builds as it goes. Raw footage is intelligently culled and assembled into a structured rough cut in seconds.
+                </p>
+              </div>
             </div>
           </div>
 
           {/* Feature 02: Audio Sync */}
           <div className="relative pt-16 md:pt-24">
-            <div className="absolute top-0 right-0 w-full md:w-[150%] h-[1px] bg-gradient-to-l from-white/20 via-white/5 to-transparent" />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
               <motion.div
                 initial={{ opacity: 0, y: 40 }}
@@ -718,17 +689,13 @@ export default function Home() {
                 transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                 className="max-w-xl lg:justify-self-end text-left lg:pr-12 lg:order-first"
               >
-                <div className="flex gap-6 mb-8 mt-8 lg:mt-0">
-                  <span className="text-[10px] sm:text-[11px] font-medium tracking-widest text-white/40 uppercase" style={{ fontFamily: 'var(--font-mono)' }}>03</span>
-                  <span className="text-[10px] sm:text-[11px] font-medium tracking-[0.15em] text-white/40 uppercase" style={{ fontFamily: 'var(--font-mono)' }}>// Synchronization</span>
-                </div>
                 <h3 className="font-light text-[40px] md:text-[56px] lg:text-[64px] leading-[1.05] tracking-tight text-white mb-8 text-balance">
                   Instantly synced.<br />
                   <span className="text-white/30 italic block mt-2">Perfectly aligned.</span>
                 </h3>
-                <div className="relative pl-6 md:pl-8 before:absolute before:inset-y-0 before:left-0 before:w-[1px] before:bg-gradient-to-b before:from-white/20 before:to-transparent">
-                  <p className="font-light text-[18px] md:text-[20px] leading-[1.6] text-white/50 text-pretty">
-                    Multi-cam sources, external recorders, and chaotic audio—instantly aligned. Quartz analyzes the waveform landscape to ensure every toast, vow, and laugh is perfectly in place.
+                <div className="max-w-md">
+                  <p className="font-light text-[18px] md:text-[20px] leading-[1.6] text-white/50">
+                    Waveform analysis that handles the drift for you. Multi-cam sources and external recorders, unified in one click.
                   </p>
                 </div>
               </motion.div>
@@ -737,7 +704,6 @@ export default function Home() {
 
           {/* Feature 03: Seamless Export */}
           <div className="relative pt-16 md:pt-24">
-            <div className="absolute top-0 left-0 w-full md:w-[150%] h-[1px] bg-gradient-to-r from-white/20 via-white/5 to-transparent" />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
               <motion.div
                 initial={{ opacity: 0, y: 40 }}
@@ -765,17 +731,13 @@ export default function Home() {
                 transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                 className="max-w-xl lg:justify-self-start text-left lg:pl-12"
               >
-                <div className="flex gap-6 mb-8 mt-8 lg:mt-0">
-                  <span className="text-[10px] sm:text-[11px] font-medium tracking-widest text-white/40 uppercase" style={{ fontFamily: 'var(--font-mono)' }}>04</span>
-                  <span className="text-[10px] sm:text-[11px] font-medium tracking-[0.15em] text-white/40 uppercase" style={{ fontFamily: 'var(--font-mono)' }}>// Seamless Export</span>
-                </div>
                 <h3 className="font-light text-[40px] md:text-[56px] lg:text-[64px] leading-[1.05] tracking-tight text-white mb-8 text-balance">
                   Creative flow,<br />
                   <span className="text-white/30 italic block mt-2">Unlocked.</span>
                 </h3>
-                <div className="relative pl-6 md:pl-8 before:absolute before:inset-y-0 before:left-0 before:w-[1px] before:bg-gradient-to-b before:from-white/20 before:to-transparent">
-                  <p className="font-light text-[18px] md:text-[20px] leading-[1.6] text-white/50 text-pretty">
-                    Skip the assembly drudgery entirely. Export a fully structured, <span className="text-white/80">color-graded</span> timeline directly to your NLE for any Highlight, Full Day, Ceremony, or Reception edit. Start with a finished foundation.
+                <div className="max-w-md">
+                  <p className="font-light text-[18px] md:text-[20px] leading-[1.6] text-white/50">
+                    Skip the assembly drudgery. Move directly to your NLE with a fully structured foundation. Edit for craft, not for organization.
                   </p>
                 </div>
               </motion.div>
@@ -884,11 +846,10 @@ export default function Home() {
               {/* Title (gallery rhythm: aligned to content grid) */}
               <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 flex-none w-full text-left">
                 <h2 className="font-display text-[clamp(56px,5.5vw,96px)] font-light tracking-[-0.06em] leading-[0.92]">
-                  The Workflow
-                  <BleepDot className="ml-4" />
+                  The Workflow.
                 </h2>
                 <p className="mt-3 text-lg md:text-xl text-neutral-400 font-light max-w-2xl tracking-wide">
-                  Automate your entire post-production pipeline.
+                  Automated from intake to timeline.
                 </p>
               </div>
 
@@ -1175,13 +1136,6 @@ export default function Home() {
                 The problems we solve.
               </h2>
             </Reveal>
-            <div className="hidden md:block">
-              <Reveal delay={0.1}>
-                <p className="text-black/40 text-xs tracking-widest font-mono uppercase">
-                  Real solutions for real workflow pain
-                </p>
-              </Reveal>
-            </div>
           </div>
 
           <div className="space-y-0 border-t border-black/10">
@@ -1216,10 +1170,7 @@ export default function Home() {
                       </p>
                     </div>
                     <div className="md:col-span-4 flex items-center gap-3 pt-1 md:pt-0">
-                      <div className="w-8 h-8 rounded-full border border-black/10 flex items-center justify-center flex-shrink-0 text-accent opacity-50 group-hover:opacity-100 transition-opacity">
-                        <Check className="w-4 h-4" />
-                      </div>
-                      <span className="text-sm text-black/60 font-mono">{t.solution}</span>
+                      <span className="text-sm text-black/40 font-mono">— {t.solution}</span>
                     </div>
                   </div>
                 </div>
@@ -1243,23 +1194,13 @@ export default function Home() {
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className="space-y-12 text-left"
             >
-              <div className="space-y-6">
-                <div className="flex items-center gap-2">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
-                  </span>
-                  <span className="text-xs font-mono uppercase tracking-widest text-white/40">Early Access</span>
-                </div>
+              <h2 className="text-5xl md:text-7xl font-extralight tracking-[-0.04em] leading-[0.95] text-white mix-blend-difference">
+                Join the waitlist.
+              </h2>
 
-                <h2 className="text-5xl md:text-7xl font-light tracking-[-0.04em] leading-[0.95] text-white mix-blend-difference">
-                  Join the waitlist.
-                </h2>
-
-                <p className="text-lg text-white/40 font-light max-w-md leading-relaxed">
-                  Quartz is currently in private beta. Available for small businesses and agencies.
-                </p>
-              </div>
+              <p className="text-lg text-white/40 font-light max-w-md leading-relaxed">
+                Available for select studios and agencies.
+              </p>
 
               <div className="max-w-md">
                 <EmailWaitlist />
@@ -1268,11 +1209,11 @@ export default function Home() {
 
             {/* Right Column: UI Element MP4 */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, x: 30 }}
+              initial={{ opacity: 0, scale: 0.98, x: 20 }}
               whileInView={{ opacity: 1, scale: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-              className="relative aspect-square md:aspect-video lg:aspect-square w-full rounded-2xl overflow-hidden bg-black backdrop-blur-sm group z-10"
+              transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+              className="relative aspect-square md:aspect-video lg:aspect-square w-full group overflow-hidden"
             >
               <video
                 src="/element1.mp4"
@@ -1326,7 +1267,7 @@ export default function Home() {
             {/* Links - 7 cols */}
             <div className="md:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-12 md:gap-8">
               <div className="space-y-6">
-                <span className="text-[10px] tracking-[0.4em] text-white/20 font-light">PRODUCT</span>
+                <span className="text-[10px] tracking-[0.4em] text-white/10 font-light">Product</span>
                 <nav className="space-y-4 text-[13px] font-light">
                   <a href="#workflow" className="block text-white/40 hover:text-white transition-colors">Workflow</a>
                   <Link href="#waitlist" className="block text-white/40 hover:text-white transition-colors">Waitlist</Link>
@@ -1335,7 +1276,7 @@ export default function Home() {
               </div>
 
               <div className="space-y-6">
-                <span className="text-[10px] tracking-[0.4em] text-white/20 font-light">COMPANY</span>
+                <span className="text-[10px] tracking-[0.4em] text-white/10 font-light">Company</span>
                 <nav className="space-y-4 text-[13px] font-light">
                   <Link href="/about" className="block text-white/40 hover:text-white transition-colors">About</Link>
                   <a href="#" className="block text-white/40 hover:text-white transition-colors">Contact</a>
@@ -1344,7 +1285,7 @@ export default function Home() {
               </div>
 
               <div className="space-y-6">
-                <span className="text-[10px] tracking-[0.4em] text-white/20 font-light">LEGAL</span>
+                <span className="text-[10px] tracking-[0.4em] text-white/10 font-light">Legal</span>
                 <nav className="space-y-4 text-[13px] font-light">
                   <a href="#" className="block text-white/40 hover:text-white transition-colors">Privacy</a>
                   <a href="#" className="block text-white/40 hover:text-white transition-colors">Terms</a>
