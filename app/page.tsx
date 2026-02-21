@@ -31,11 +31,10 @@ function GlobalLoader() {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    // When 3D assets are fully loaded, wait 0.3s then trigger fade out
     if (progress === 100) {
       const timer = setTimeout(() => {
         setIsVisible(false);
-      }, 300);
+      }, 400);
       return () => clearTimeout(timer);
     }
   }, [progress]);
@@ -46,27 +45,51 @@ function GlobalLoader() {
         <motion.div
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.8, ease: "easeInOut" }}
+          transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
           className="fixed inset-0 z-[150] flex items-center justify-center bg-black pointer-events-none"
         >
-          <div className="flex flex-col items-center gap-6">
-            {/* Minimal Quartz-themed loader */}
-            <div className="relative h-[2px] w-24 overflow-hidden bg-white/10">
-              <motion.div
-                initial={{ x: '-100%' }}
-                animate={{ x: '100%' }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  ease: [0.16, 1, 0.3, 1]
+          {/* Minimalist animated camera aperture icon */}
+          <motion.svg
+            width="24"
+            height="24"
+            viewBox="0 0 100 100"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{
+              opacity: 1,
+              scale: [1, 0.92, 1],
+              rotate: [0, 60, 120],
+            }}
+            transition={{
+              opacity: { duration: 0.6, ease: "easeOut" },
+              scale: {
+                duration: 2.4,
+                repeat: Infinity,
+                ease: [0.16, 1, 0.3, 1],
+              },
+              rotate: {
+                duration: 2.4,
+                repeat: Infinity,
+                ease: [0.16, 1, 0.3, 1],
+              },
+            }}
+          >
+            {/* 6-blade camera iris */}
+            {[0, 60, 120, 180, 240, 300].map((angle) => (
+              <motion.path
+                key={angle}
+                d="M50 50 L50 12 A38 38 0 0 1 82.9 31 Z"
+                fill="white"
+                style={{
+                  transformOrigin: '50px 50px',
+                  transform: `rotate(${angle}deg)`,
                 }}
-                className="h-full w-full bg-accent"
               />
-            </div>
-            <p className="text-[10px] tracking-[0.4em] text-white/30 font-light translate-y-2">
-              INITIALIZING SCENE
-            </p>
-          </div>
+            ))}
+            {/* Center hole */}
+            <circle cx="50" cy="50" r="14" fill="black" />
+          </motion.svg>
         </motion.div>
       )}
     </AnimatePresence>
@@ -191,34 +214,7 @@ function SegmentVideo({
   );
 }
 
-function TypewriterText({ text, className, cursorClassName }: { text: string; className?: string; cursorClassName?: string }) {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-20%" });
-  const [displayedText, setDisplayedText] = useState("");
 
-  useEffect(() => {
-    if (isInView) {
-      let i = 0;
-      const interval = setInterval(() => {
-        setDisplayedText(text.substring(0, i + 1));
-        i++;
-        if (i >= text.length) clearInterval(interval);
-      }, 25);
-      return () => clearInterval(interval);
-    }
-  }, [isInView, text]);
-
-  return (
-    <div ref={ref} className={className}>
-      {displayedText}
-      <motion.span
-        animate={{ opacity: [1, 0, 1] }}
-        transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
-        className={`inline-block w-[3px] h-[0.9em] align-middle ${cursorClassName || 'bg-white/70'} ml-1 -mt-1`}
-      />
-    </div>
-  );
-}
 
 const WORKFLOW_STEPS = [
   {
@@ -289,14 +285,6 @@ export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // Handle scroll for HUD state
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
   const firstWhiteRef = useRef<HTMLElement>(null);
   const firstDarkRef = useRef<HTMLElement>(null);
 
@@ -326,6 +314,7 @@ export default function Home() {
 
   const [lowPowerMode, setLowPowerMode] = useState(false);
 
+  // Handle scroll for HUD state and color toggling
   useEffect(() => {
     // Detect low-power mode or high-res screens
     const detectPerformance = () => {
@@ -341,13 +330,22 @@ export default function Home() {
       const NAV_THRESHOLD = 80; // pixels from top where nav sits
 
       let inLightZone = false;
+      let inWorkflowZone = false;
+
+      // Check if we're over the Hero section (light gray) up to 90vh scroll
+      if (heroRef.current) {
+        if (window.scrollY < window.innerHeight * 0.9) {
+          inLightZone = true;
+        }
+      }
 
       // Check if we're over the Workflow section (white)
-      if (firstWhiteRef.current) {
+      if (!inLightZone && firstWhiteRef.current) {
         const workflowRect = firstWhiteRef.current.getBoundingClientRect();
         // We're in Workflow if its top is above the nav threshold and its bottom is below
         if (workflowRect.top <= NAV_THRESHOLD && workflowRect.bottom > NAV_THRESHOLD) {
           inLightZone = true;
+          inWorkflowZone = true;
         }
       }
 
@@ -360,6 +358,10 @@ export default function Home() {
       }
 
       setNavOnLight(inLightZone);
+
+      // Relax the navbar (larger, transparent) if we're in the initial hero OR in the workflow zone
+      const scrolledPastHero = window.scrollY > window.innerHeight * 0.9;
+      setIsScrolled(scrolledPastHero && !inWorkflowZone);
 
       if (!firstWhiteRef.current) return;
       const rect = firstWhiteRef.current.getBoundingClientRect();
@@ -436,13 +438,13 @@ export default function Home() {
         className="fixed top-6 left-0 right-0 z-[100] flex justify-center pointer-events-none"
       >
         <div
-          className={`pointer-events-auto transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center justify-between px-6
+          className={`pointer-events-auto transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center justify-between
             ${isScrolled
-              ? `h-14 w-[calc(100%-4rem)] md:w-[calc(100%-6rem)] lg:w-[calc(100%-8rem)] max-w-[calc(1800px-4rem)] md:max-w-[calc(1800px-6rem)] lg:max-w-[calc(1800px-8rem)] rounded-full border backdrop-blur-xl shadow-sm ${navOnLight
+              ? `h-14 px-6 w-[calc(100%-4rem)] md:w-[calc(100%-6rem)] lg:w-[calc(100%-8rem)] max-w-[calc(1800px-4rem)] md:max-w-[calc(1800px-6rem)] lg:max-w-[calc(1800px-8rem)] rounded-full border backdrop-blur-xl shadow-sm ${navOnLight
                 ? 'bg-gray-50/40 border-black/5 text-black'
                 : 'bg-neutral-900/40 border-white/5 text-white'
               }`
-              : `h-20 w-[calc(100%-4rem)] md:w-[calc(100%-6rem)] lg:w-[calc(100%-8rem)] max-w-[calc(1800px-4rem)] md:max-w-[calc(1800px-6rem)] lg:max-w-[calc(1800px-8rem)] bg-transparent border-transparent ${navOnLight ? 'text-black' : 'text-white'
+              : `h-20 px-7 md:px-11 lg:px-14 w-full max-w-[1800px] bg-transparent border-transparent ${navOnLight ? 'text-black' : 'text-white'
               }`
             }
           `}
@@ -553,8 +555,8 @@ export default function Home() {
 
 
 
-      {/* Hero - Fullscreen intro (scroll-driven) */}
-      <section ref={heroRef} className="relative h-screen">
+      {/* Hero - Fullscreen intro Sticky Curtain */}
+      <section ref={heroRef} data-nav="light" className="sticky top-0 h-screen w-full z-0 overflow-hidden">
         <CameraScene lowPowerMode={lowPowerMode} variant="full" />
 
         {/* Helper overlay for text contrast if needed, though scene is dark */}
@@ -563,171 +565,200 @@ export default function Home() {
         <div className="absolute inset-0 z-10 pointer-events-none" />
       </section>
 
+      {/* iPhone-style transparent notch transition sliding over sticky Hero */}
+      <div className="relative z-10 w-full h-[8vh] md:h-[12vh] text-[#050505] fill-current pointer-events-none -mb-1">
+        <svg viewBox="0 0 1000 100" preserveAspectRatio="none" className="w-full h-full block">
+          {/* Ultra-tight iPhone X style notch with mechanical corners and 1px safety offset */}
+          <path d="M0,100 L0,1 L340,1 C355,1 358,2 360,10 L366,42 C370,58 380,64 410,64 L590,64 C620,64 630,58 634,42 L640,10 C642,2 645,1 660,1 L1000,1 L1000,100 Z" />
+        </svg>
+      </div>
 
+      {/* 01 // THE ENGINE - Asymmetrical Editorial Intro */}
+      <section className="relative z-10 bg-[#050505] text-white pt-12 pb-32 md:pt-20 md:pb-48 px-6 md:px-12 lg:px-16 overflow-hidden">
+        {/* Asymmetrical layout starts below notch */}
 
-      {/* Key Benefits (Black - Clean) */}
-      <section className="relative bg-black text-white border-t border-white/5 py-24 md:py-32 overflow-hidden">
+        <div className="max-w-[1400px] mx-auto relative z-10 w-full">
+          {/* Structural Line & Monospace Eyebrow */}
+          <div className="flex flex-col md:flex-row mb-16 md:mb-24 relative">
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-white/20 to-transparent" />
+            <div className="pt-6 flex gap-8">
+              <span className="text-[10px] sm:text-[11px] font-medium tracking-widest text-white/40 uppercase" style={{ fontFamily: 'var(--font-mono)' }}>01</span>
+              <span className="text-[10px] sm:text-[11px] font-medium tracking-[0.15em] text-white/40 uppercase" style={{ fontFamily: 'var(--font-mono)' }}>// The Engine</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-16 lg:gap-24 items-end">
+
+            {/* Massive Left Column Headline (8 cols config) */}
+            <div className="lg:col-span-8">
+              <Reveal>
+                <h2 className="text-[44px] sm:text-[56px] md:text-[72px] lg:text-[84px] font-light leading-[1.05] tracking-tight text-white/95 text-balance">
+                  An autonomous editing engine{' '}
+                  <span className="text-white/30 block mt-2 lg:mt-4 italic">for wedding filmmakers.</span>
+                </h2>
+              </Reveal>
+            </div>
+
+            {/* Right Anchored paragraph (4 cols) */}
+            <div className="lg:col-span-4 lg:pb-3">
+              <Reveal delay={0.2}>
+                <div className="relative pl-6 md:pl-8 before:absolute before:inset-y-0 before:left-0 before:w-[1px] before:bg-gradient-to-b before:from-white/20 before:to-transparent">
+                  <p className="text-[18px] md:text-[20px] leading-[1.6] text-white/50 font-light text-pretty">
+                    Quartz isn't a plugin or a preset pack. It is a standalone desktop application that ingests your raw, chaotic multicam folders and outputs a fully structured, color-corrected rough cut directly to your NLE timeline.
+                  </p>
+                </div>
+              </Reveal>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* Key Benefits (Awwwards Editorial) */}
+      <section className="relative bg-[#050505] text-white border-t border-white/5 py-32 md:py-48 overflow-hidden">
         {/* Artifacts removed per user request for clean monochrome look */}
 
-        <div className="w-full max-w-[1400px] mx-auto px-8 md:px-12 lg:px-16 space-y-32 md:space-y-48 relative z-10">
+        <div className="w-full max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16 space-y-40 md:space-y-64 relative z-10">
 
           {/* Feature 01: Intelligent Culling */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="relative"
-            >
-              <div className="relative z-10 w-full mb-8 lg:mb-0">
-                <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-white/10 bg-[#111]">
-                  <Image
-                    src="/wedding-culling-ui.png"
-                    alt="Wedding Culling Interface"
-                    fill
-                    className="object-cover opacity-90"
-                  />
-
-                  {/* Flat UI Overlay: Selection Highlight - Ultra thin */}
-                  <motion.div
-                    className="absolute top-[38%] left-[38%] w-[24%] h-[24%] border-[0.5px] border-white/30 rounded-sm"
-                    animate={{ opacity: [1, 0.4, 1] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  />
-
-                  {/* Minimal Indicator - Apple-esque no-box design */}
-                  <div className="absolute top-5 right-6">
-                    <div className="flex items-center gap-2.5 opacity-90">
-                      <div className="w-1.5 h-1.5 rounded-full bg-white/60" />
-                      <span className="text-[10px] font-medium tracking-widest text-white/90 uppercase" style={{ fontFamily: 'var(--font-mono)' }}>Processing</span>
-                    </div>
+          <div className="relative pt-16 md:pt-24">
+            <div className="absolute top-0 left-0 w-full md:w-[150%] h-[1px] bg-gradient-to-r from-white/20 via-white/5 to-transparent" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                className="relative"
+              >
+                <div className="relative z-10 w-full mb-8 lg:mb-0">
+                  <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-[#111]">
+                    <Image
+                      src="/wedding-culling-ui.png"
+                      alt="Wedding Culling Interface"
+                      fill
+                      className="object-cover opacity-90"
+                    />
                   </div>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-xl space-y-6 lg:justify-self-start text-left lg:pl-8"
-            >
-              <h3 className="font-light text-[32px] md:text-[40px] lg:text-[48px] leading-[1.2] tracking-[-0.02em] text-white">
-                Weeks of work.<br />
-                <span className="text-white/40">Done in moments.</span>
-              </h3>
-              <p className="font-light text-[18px] md:text-[22px] leading-[1.5] tracking-[-0.01em] text-white/60">
-                Quartz doesn&apos;t just organize; it builds. <span className="text-white/80">Your wedding footage</span> is intelligently culled, color-corrected, and assembled into a full, solid rough cut—saving you weeks of manual labor.
-              </p>
-            </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="max-w-xl lg:justify-self-start text-left lg:pl-12"
+              >
+                <div className="flex gap-6 mb-8 mt-8 lg:mt-0">
+                  <span className="text-[10px] sm:text-[11px] font-medium tracking-widest text-white/40 uppercase" style={{ fontFamily: 'var(--font-mono)' }}>02</span>
+                  <span className="text-[10px] sm:text-[11px] font-medium tracking-[0.15em] text-white/40 uppercase" style={{ fontFamily: 'var(--font-mono)' }}>// Assembly</span>
+                </div>
+                <h3 className="font-light text-[40px] md:text-[56px] lg:text-[64px] leading-[1.05] tracking-tight text-white mb-8 text-balance">
+                  Weeks of work.<br />
+                  <span className="text-white/30 italic block mt-2">Done in moments.</span>
+                </h3>
+                <div className="relative pl-6 md:pl-8 before:absolute before:inset-y-0 before:left-0 before:w-[1px] before:bg-gradient-to-b before:from-white/20 before:to-transparent">
+                  <p className="font-light text-[18px] md:text-[20px] leading-[1.6] text-white/50 text-pretty">
+                    Quartz doesn&apos;t just organize; it builds. <span className="text-white/80">Your wedding footage</span> is intelligently culled, color-corrected, and assembled into a full, solid rough cut—saving you weeks of manual labor.
+                  </p>
+                </div>
+              </motion.div>
+            </div>
           </div>
 
           {/* Feature 02: Audio Sync */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="relative"
-            >
-              <div className="relative z-10 w-full mb-8 lg:mb-0">
-                <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-white/10 bg-[#111]">
-                  <Image
-                    src="/flat-audio-sync-ui.png"
-                    alt="Audio Synchronization Interface"
-                    fill
-                    className="object-cover opacity-90"
-                  />
-
-                  {/* Scanning Playhead - Elegant and technical */}
-                  <motion.div
-                    className="absolute top-0 bottom-0 w-[1px] bg-white/30 z-20"
-                    initial={{ left: "0%", opacity: 0 }}
-                    whileInView={{ left: "100%", opacity: 1 }}
-                    viewport={{ once: false }}
-                    transition={{ duration: 6, ease: "linear", repeat: Infinity }}
-                  />
-
-                  {/* Minimal Indicator */}
-                  <div className="absolute top-5 left-6 z-30">
-                    <div className="flex items-center gap-2.5 opacity-90">
-                      <div className="w-1.5 h-1.5 rounded-full bg-white/60" />
-                      <span className="text-[10px] font-medium tracking-widest text-white/90 uppercase" style={{ fontFamily: 'var(--font-mono)' }}>Synced</span>
-                    </div>
+          <div className="relative pt-16 md:pt-24">
+            <div className="absolute top-0 right-0 w-full md:w-[150%] h-[1px] bg-gradient-to-l from-white/20 via-white/5 to-transparent" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                className="relative"
+              >
+                <div className="relative z-10 w-full mb-8 lg:mb-0">
+                  <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-[#111]">
+                    <Image
+                      src="/flat-audio-sync-ui.png"
+                      alt="Audio Synchronization Interface"
+                      fill
+                      className="object-cover opacity-90"
+                    />
                   </div>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-xl space-y-6 lg:justify-self-end text-left lg:pr-8 lg:order-first"
-            >
-              <h3 className="font-light text-[32px] md:text-[40px] lg:text-[48px] leading-[1.2] tracking-[-0.02em] text-white">
-                Instantly synced.<br />
-                <span className="text-white/40">Perfectly aligned.</span>
-              </h3>
-              <p className="font-light text-[18px] md:text-[22px] leading-[1.5] tracking-[-0.01em] text-white/60">
-                Multi-cam sources, external recorders, and chaotic audio—instantly aligned. Quartz analyzes the waveform landscape to ensure every toast, vow, and laugh is perfectly in place.
-              </p>
-            </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="max-w-xl lg:justify-self-end text-left lg:pr-12 lg:order-first"
+              >
+                <div className="flex gap-6 mb-8 mt-8 lg:mt-0">
+                  <span className="text-[10px] sm:text-[11px] font-medium tracking-widest text-white/40 uppercase" style={{ fontFamily: 'var(--font-mono)' }}>03</span>
+                  <span className="text-[10px] sm:text-[11px] font-medium tracking-[0.15em] text-white/40 uppercase" style={{ fontFamily: 'var(--font-mono)' }}>// Synchronization</span>
+                </div>
+                <h3 className="font-light text-[40px] md:text-[56px] lg:text-[64px] leading-[1.05] tracking-tight text-white mb-8 text-balance">
+                  Instantly synced.<br />
+                  <span className="text-white/30 italic block mt-2">Perfectly aligned.</span>
+                </h3>
+                <div className="relative pl-6 md:pl-8 before:absolute before:inset-y-0 before:left-0 before:w-[1px] before:bg-gradient-to-b before:from-white/20 before:to-transparent">
+                  <p className="font-light text-[18px] md:text-[20px] leading-[1.6] text-white/50 text-pretty">
+                    Multi-cam sources, external recorders, and chaotic audio—instantly aligned. Quartz analyzes the waveform landscape to ensure every toast, vow, and laugh is perfectly in place.
+                  </p>
+                </div>
+              </motion.div>
+            </div>
           </div>
 
           {/* Feature 03: Seamless Export */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="relative"
-            >
-              <div className="relative z-10 w-full mb-8 lg:mb-0">
-                <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-white/10 bg-[#111]">
-                  <Image
-                    src="/flat-export-ui.png"
-                    alt="Seamless Export Interface"
-                    fill
-                    className="object-cover opacity-90"
-                  />
-
-                  {/* Minimal Indicator */}
-                  <div className="absolute bottom-6 left-0 right-0 flex justify-center z-30">
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      transition={{ delay: 0.5, duration: 0.8 }}
-                      className="flex items-center gap-2.5 opacity-90 mix-blend-difference" // mix-blend helps it pop against varying backgrounds
-                    >
-                      <div className="w-1.5 h-1.5 rounded-full bg-white/80" />
-                      <span className="text-[10px] font-medium text-white/90 tracking-widest uppercase" style={{ fontFamily: 'var(--font-mono)' }}>Ready to Edit</span>
-                    </motion.div>
+          <div className="relative pt-16 md:pt-24">
+            <div className="absolute top-0 left-0 w-full md:w-[150%] h-[1px] bg-gradient-to-r from-white/20 via-white/5 to-transparent" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                className="relative"
+              >
+                <div className="relative z-10 w-full mb-8 lg:mb-0">
+                  <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-[#111]">
+                    <Image
+                      src="/flat-export-ui.png"
+                      alt="Seamless Export Interface"
+                      fill
+                      className="object-cover opacity-90"
+                    />
                   </div>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-xl space-y-6 lg:justify-self-start text-left lg:pl-8"
-            >
-              <h3 className="font-light text-[32px] md:text-[40px] lg:text-[48px] leading-[1.2] tracking-[-0.02em] text-white">
-                Creative flow,<br />
-                <span className="text-white/40">unlocked.</span>
-              </h3>
-              <p className="font-light text-[18px] md:text-[22px] leading-[1.5] tracking-[-0.01em] text-white/60">
-                Skip the assembly drudgery entirely. Export a fully structured, <span className="text-white/80">color-graded</span> timeline directly to your NLE for any Highlight, Full Day, Ceremony, or Reception edit. Start with a finished foundation.
-              </p>
-            </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="max-w-xl lg:justify-self-start text-left lg:pl-12"
+              >
+                <div className="flex gap-6 mb-8 mt-8 lg:mt-0">
+                  <span className="text-[10px] sm:text-[11px] font-medium tracking-widest text-white/40 uppercase" style={{ fontFamily: 'var(--font-mono)' }}>04</span>
+                  <span className="text-[10px] sm:text-[11px] font-medium tracking-[0.15em] text-white/40 uppercase" style={{ fontFamily: 'var(--font-mono)' }}>// Seamless Export</span>
+                </div>
+                <h3 className="font-light text-[40px] md:text-[56px] lg:text-[64px] leading-[1.05] tracking-tight text-white mb-8 text-balance">
+                  Creative flow,<br />
+                  <span className="text-white/30 italic block mt-2">Unlocked.</span>
+                </h3>
+                <div className="relative pl-6 md:pl-8 before:absolute before:inset-y-0 before:left-0 before:w-[1px] before:bg-gradient-to-b before:from-white/20 before:to-transparent">
+                  <p className="font-light text-[18px] md:text-[20px] leading-[1.6] text-white/50 text-pretty">
+                    Skip the assembly drudgery entirely. Export a fully structured, <span className="text-white/80">color-graded</span> timeline directly to your NLE for any Highlight, Full Day, Ceremony, or Reception edit. Start with a finished foundation.
+                  </p>
+                </div>
+              </motion.div>
+            </div>
           </div>
         </div>
       </section>

@@ -268,17 +268,17 @@ function MonitorModel({
               };
             }
 
-            // Bezel / display housing: dark, slightly satin (less "flat grey").
+            // Bezel / display housing: Pure Matte Void. Removes all "plastic/tech" reflections.
             child.material = new THREE.MeshPhysicalMaterial({
               map: textures.baseColor,
               normalMap: textures.baseNormal,
-              normalScale: new THREE.Vector2(0.35, 0.35),
-              color: new THREE.Color('#141416'),
-              metalness: 0.15,
-              roughness: 0.55,
-              clearcoat: 0.08,
-              clearcoatRoughness: 0.85,
-              envMapIntensity: 0.25,
+              normalScale: new THREE.Vector2(0.1, 0.1), // Flatten bumps further
+              color: new THREE.Color('#030303'), // Deepest black
+              metalness: 0.0, // Zero metal
+              roughness: 1.0, // Fully diffuse/matte
+              clearcoat: 0.0, // No glass layer
+              clearcoatRoughness: 1.0,
+              envMapIntensity: 0.0, // Catches zero HDR reflections
               side: THREE.FrontSide,
             });
           }
@@ -753,11 +753,11 @@ function LoadingFallback() {
     </mesh>
   );
 }
-
-function PremiumWriteTo() {
+function PremiumWriteTo({ variant = 'dark' }: { variant?: 'dark' | 'light' }) {
+  const isLight = variant === 'light';
   return (
     <span
-      className="inline-block lowercase text-[1.12em] tracking-normal pt-2 mx-1 select-none text-[#555555]"
+      className={`inline-block lowercase text-[1.12em] tracking-normal pt-2 mx-1 select-none ${isLight ? 'text-black/30' : 'text-[#333333]'}`}
       style={{ fontFamily: 'var(--font-script)' }}
     >
       <span
@@ -773,6 +773,8 @@ function PremiumWriteTo() {
     </span>
   );
 }
+
+
 
 // Main component with scroll hijacking
 export default function CameraScene({
@@ -799,6 +801,7 @@ export default function CameraScene({
   const domIntroRef = useRef<HTMLDivElement | null>(null);
   const domTitleWrapRef = useRef<HTMLDivElement | null>(null);
   const domTitleH1Ref = useRef<HTMLHeadingElement | null>(null);
+  const domContainerRef = useRef<HTMLDivElement | null>(null);
   const isCompleteRef = useRef(variant === 'gallery'); // Ref for immediate checking
   const hasUserScrolledRef = useRef(false);
   const lowPowerModeRef = useRef(lowPowerMode);
@@ -890,6 +893,26 @@ export default function CameraScene({
       } else {
         toText.style.clipPath = 'polygon(0 0, 0% 0, -20% 100%, 0 100%)';
       }
+    }
+
+    // Dynamic Background Transition: Black (0%) -> Light Gray (100%)
+    const container = domContainerRef.current;
+    if (container) {
+      // Color interpolation: Black (#151515, #000000) to Light Gray (#f7f7f9, #e2e2e7)
+      // Quick fade in the first 30% of scroll
+      const bgProgress = Math.min(1, p * 3.33);
+
+      const r1 = Math.round(21 + (247 - 21) * bgProgress); // 15 to f7
+      const g1 = Math.round(21 + (247 - 21) * bgProgress);
+      const b1 = Math.round(21 + (249 - 21) * bgProgress); // slightly blueish gray
+
+      const r2 = Math.round(0 + (226 - 0) * bgProgress); // 00 to e2
+      const g2 = Math.round(0 + (226 - 0) * bgProgress);
+      const b2 = Math.round(0 + (231 - 0) * bgProgress); // slightly blueish gray
+
+      container.style.background = `radial-gradient(circle at 50% 50%, rgb(${r1}, ${g1}, ${b1}) 0%, rgb(${r2}, ${g2}, ${b2}) 80%)`;
+      // We also need to invert the text as the background gets bright
+      container.style.color = bgProgress > 0.5 ? 'black' : 'white';
     }
   }, []);
 
@@ -1111,30 +1134,33 @@ export default function CameraScene({
 
   return (
     <>
-      {/* Monitor Scene with hero overlay - Matte Studio Background */}
+      {/* Monitor Scene with hero overlay - Bright Minimalist Background */}
       <div
+        ref={domContainerRef}
         className={`w-full overflow-hidden ${variant === 'full' ? 'h-screen' : 'h-full'} ${className ?? ''}`}
         style={{
           position: 'relative',
           zIndex: 10,
-          background: 'radial-gradient(circle at 50% 50%, #151515 0%, #000000 80%)',
+          background: 'radial-gradient(circle at 50% 50%, #151515 0%, #000000 80%)', // Starts dark
+          color: 'white', // Starts with white text
+          transition: 'color 0.5s ease',
         }}
       >
-        {/* SVG animated noise texture layer */}
+        {/* SVG animated noise texture layer - very subtle on light bg */}
         <div
-          className="absolute inset-0 pointer-events-none z-[1] opacity-[0.025]"
+          className="absolute inset-0 pointer-events-none z-[1] opacity-[0.04]"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
             backgroundRepeat: 'repeat',
-            mixBlendMode: 'screen',
+            mixBlendMode: 'multiply',
           }}
         />
 
-        {/* Minimal vignette for depth */}
+        {/* Minimal vignette for depth - soft gray shadow */}
         <div
           className="absolute inset-0 pointer-events-none z-[5]"
           style={{
-            background: 'radial-gradient(ellipse 70% 70% at 50% 50%, transparent 0%, rgba(0,0,0,0.4) 100%)',
+            background: 'radial-gradient(ellipse 70% 70% at 50% 50%, transparent 0%, rgba(0,0,0,0.06) 100%)',
           }}
         />
 
@@ -1142,7 +1168,7 @@ export default function CameraScene({
         <div
           className="absolute bottom-0 left-0 right-0 h-[40vh] pointer-events-none z-[4]"
           style={{
-            background: 'radial-gradient(ellipse 50% 60% at 50% 100%, rgba(0,0,0,0.3) 0%, transparent 60%)',
+            background: 'radial-gradient(ellipse 50% 60% at 50% 100%, rgba(0,0,0,0.1) 0%, transparent 60%)',
           }}
         />
 
@@ -1201,15 +1227,10 @@ export default function CameraScene({
                 willChange: 'opacity, transform',
               }}
             >
-              {/* Much softer, taller gradient just to anchor text over the bright monitor edge */}
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 40%, transparent 85%)',
-                }}
-              />
+              {/* Initial black anchor gradient for legibility over bright video frames */}
+              <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none z-0" />
 
-              {/* Clean Typography Intro */}
+              {/* Clean Typography Intro - Dark against Light bg */}
               <div className="relative z-10 flex flex-col items-center pb-2">
                 <div className="flex justify-center pl-[26px] pr-0 pb-4">
                   <Image
@@ -1223,14 +1244,14 @@ export default function CameraScene({
                   />
                 </div>
 
-                <p className="max-w-md px-6 text-[16px] md:text-[18px] leading-[1.6] text-white/50 font-light mx-auto mb-10">
+                <p className="max-w-md px-6 text-[16px] md:text-[18px] leading-[1.6] opacity-60 font-light mx-auto mb-10 transition-colors duration-500">
                   The first fully autonomous AI video editor.
                 </p>
 
                 {/* Minimal CTA */}
                 <div className="pointer-events-auto flex justify-center">
-                  <Link href="#waitlist" className="group relative inline-flex items-center gap-3 px-7 py-3.5 bg-white/10 hover:bg-white text-white hover:text-black border border-white/20 rounded-full transition-all duration-300">
-                    <span className="relative z-10 text-[12px] md:text-[13px] font-medium tracking-widest uppercase">Join the Waitlist</span>
+                  <Link href="#waitlist" className="group relative inline-flex items-center gap-3 px-7 py-3.5 bg-Current hover:bg-black font-medium text-current hover:text-white border border-current/20 hover:border-black rounded-full transition-all duration-300">
+                    <span className="relative z-10 text-[12px] md:text-[13px] tracking-widest uppercase opacity-80 group-hover:opacity-100">Join the Waitlist</span>
                   </Link>
                 </div>
               </div>
@@ -1246,10 +1267,8 @@ export default function CameraScene({
                 willChange: 'opacity',
               }}
             >
-              {/* Text with subtle dark gradient for legibility */}
-              <div className="absolute inset-0 pointer-events-none" style={{
-                background: 'linear-gradient(to top, rgba(0,0,0,0.70) 0%, rgba(0,0,0,0.25) 34%, transparent 66%)',
-              }} />
+              {/* Very soft gradient for legibility - completely dialed back, just a hint of gray instead of white */}
+              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#e2e2e7]/60 to-transparent pointer-events-none z-0" />
 
               {/* Content aligned to grid */}
               <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 w-full relative z-10">
@@ -1258,10 +1277,9 @@ export default function CameraScene({
                   <div className="overflow-hidden pb-4">
                     <h1
                       ref={domTitleH1Ref}
-                      className="text-[clamp(56px,10vw,140px)] font-extralight leading-[0.9] tracking-[-0.05em] text-white md:whitespace-nowrap"
+                      className="text-[clamp(56px,10vw,140px)] font-extralight leading-[0.9] tracking-[-0.05em] text-current md:whitespace-nowrap transition-colors duration-500"
                       style={{
                         transform: 'translate3d(0, 100%, 0)',
-                        textShadow: '0 2px 40px rgba(0,0,0,0.3)',
                         willChange: 'transform',
                       }}
                     >
