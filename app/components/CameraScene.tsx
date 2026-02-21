@@ -710,7 +710,7 @@ function Lighting({ scrollProgressRef }: { scrollProgressRef: React.MutableRefOb
       <directionalLight
         position={[-6, 2, 6]}
         intensity={0.2}
-        color="#eef2ff"
+        color="#f5f5f5"
       />
 
       {/* TOP LIGHT - Even from above */}
@@ -904,11 +904,11 @@ export default function CameraScene({
 
       const r1 = Math.round(21 + (247 - 21) * bgProgress); // 15 to f7
       const g1 = Math.round(21 + (247 - 21) * bgProgress);
-      const b1 = Math.round(21 + (249 - 21) * bgProgress); // slightly blueish gray
+      const b1 = Math.round(21 + (247 - 21) * bgProgress); // neutral gray
 
       const r2 = Math.round(0 + (226 - 0) * bgProgress); // 00 to e2
       const g2 = Math.round(0 + (226 - 0) * bgProgress);
-      const b2 = Math.round(0 + (231 - 0) * bgProgress); // slightly blueish gray
+      const b2 = Math.round(0 + (226 - 0) * bgProgress); // neutral gray
 
       container.style.background = `radial-gradient(circle at 50% 50%, rgb(${r1}, ${g1}, ${b1}) 0%, rgb(${r2}, ${g2}, ${b2}) 80%)`;
       // We also need to invert the text as the background gets bright
