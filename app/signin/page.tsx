@@ -271,7 +271,7 @@ function SignInContent() {
                         <label className="block text-[12px] font-medium text-gray-700 ml-1">Password</label>
                         <div className="relative flex items-center">
                           <AnimatePresence>
-                            {focusedField === 'password' && (
+                            {focusedField === 'password' && !password && (
                               <motion.div
                                 initial={{ opacity: 0, y: 2 }}
                                 animate={{ opacity: 1, y: 0 }}
