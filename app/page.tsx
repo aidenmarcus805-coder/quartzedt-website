@@ -1210,42 +1210,60 @@ export default function Home() {
 
       {/* Waitlist - Stark & Direct (Black - Clean) */}
       <section id="waitlist" ref={firstDarkRef} data-nav="light" className="relative bg-black text-white border-y border-white/5 min-h-[80vh] flex items-center justify-center overflow-hidden">
-        {/* Artifacts: Plus signs grid */}
-        <div className="absolute inset-0 pointer-events-none opacity-[0.15]" aria-hidden="true"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M0 0h1v1H0zM39 0h1v1h-1zM0 39h1v1H0zM39 39h1v1h-1z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-            backgroundSize: '40px 40px'
-          }}
-        />
 
-        <div className="relative z-10 w-full max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 flex flex-col items-center text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="max-w-xl mx-auto space-y-12"
-          >
-            <div className="space-y-6">
-              <div className="flex items-center justify-center gap-2">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
-                </span>
-                <span className="text-xs font-mono uppercase tracking-widest text-white/40">Early Access</span>
+
+        <div className="relative z-10 w-full max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+            {/* Left Column: Text & Form */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="space-y-12 text-left"
+            >
+              <div className="space-y-6">
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                  </span>
+                  <span className="text-xs font-mono uppercase tracking-widest text-white/40">Early Access</span>
+                </div>
+
+                <h2 className="text-5xl md:text-7xl font-light tracking-[-0.04em] leading-[0.95] text-white mix-blend-difference">
+                  Join the waitlist.
+                </h2>
+
+                <p className="text-lg text-white/40 font-light max-w-md leading-relaxed">
+                  Quartz is currently in private beta. Available for small businesses and agencies.
+                </p>
               </div>
 
-              <h2 className="text-5xl md:text-7xl font-light tracking-[-0.04em] leading-[0.95] text-white mix-blend-difference">
-                Join the waitlist.
-              </h2>
+              <div className="max-w-md">
+                <EmailWaitlist />
+              </div>
+            </motion.div>
 
-              <p className="text-lg text-white/40 font-light max-w-md mx-auto leading-relaxed">
-                Quartz is currently in private beta. Available for small businesses and agencies.
-              </p>
-            </div>
-
-            <EmailWaitlist />
-          </motion.div>
+            {/* Right Column: UI Element MP4 */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, x: 30 }}
+              whileInView={{ opacity: 1, scale: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+              className="relative aspect-square md:aspect-video lg:aspect-square w-full rounded-2xl overflow-hidden bg-black backdrop-blur-sm group z-10"
+            >
+              <video
+                src="/element1.mp4"
+                autoPlay
+                muted
+                playsInline
+                className="w-full h-full object-cover pointer-events-none"
+              />
+              {/* Subtle overlay gradient */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent pointer-events-none" />
+            </motion.div>
+          </div>
         </div>
       </section>
 
