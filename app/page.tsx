@@ -575,6 +575,27 @@ export default function Home() {
 
       {/* 01 // THE ENGINE - Asymmetrical Editorial Intro */}
       <section className="relative z-10 bg-[#050505] text-white pt-12 pb-32 md:pt-20 md:pb-48 px-6 md:px-12 lg:px-16 overflow-hidden">
+        {/* Background Visual Element */}
+        <div className="absolute top-0 right-[-10%] w-[60%] h-full pointer-events-none z-0 overflow-visible opacity-30">
+          <motion.div
+            initial={{ opacity: 0, x: 40, scale: 0.95 }}
+            whileInView={{ opacity: 1, x: 0, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full h-full"
+          >
+            <video
+              src="/element1.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-l from-transparent via-[#050505]/80 to-[#050505]" />
+          </motion.div>
+        </div>
+
         {/* Asymmetrical layout starts below notch */}
 
         <div className="max-w-[1400px] mx-auto relative z-10 w-full">
