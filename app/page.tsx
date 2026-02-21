@@ -648,15 +648,23 @@ export default function Home() {
                 </div>
               </motion.div>
 
-              <h3 className="font-light text-[40px] md:text-[56px] lg:text-[64px] leading-[1.05] tracking-tight text-white mb-8 text-balance">
-                Weeks of work.<br />
-                <span className="text-white/30 italic block mt-2">Done in moments.</span>
-              </h3>
-              <div className="max-w-md">
-                <p className="font-light text-[18px] md:text-[20px] leading-[1.6] text-white/50">
-                  Quartz builds as it goes. Raw footage is intelligently culled and assembled into a structured rough cut in seconds.
-                </p>
-              </div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="max-w-xl"
+              >
+                <h3 className="font-light text-[40px] md:text-[56px] lg:text-[64px] leading-[1.05] tracking-tight text-white mb-8 text-balance">
+                  Weeks of work.<br />
+                  <span className="text-white/30 italic block mt-2">Done in moments.</span>
+                </h3>
+                <div className="max-w-md">
+                  <p className="font-light text-[18px] md:text-[20px] leading-[1.6] text-white/50">
+                    Intelligent assembly. Raw footage is automatically culled and structured into a rough cut in seconds.
+                  </p>
+                </div>
+              </motion.div>
             </div>
           </div>
 
