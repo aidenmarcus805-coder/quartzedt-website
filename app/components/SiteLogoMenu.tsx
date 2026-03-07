@@ -5,17 +5,31 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 
-const MENU_ITEMS = [
-  { label: 'Home', href: '/' },
-  { label: 'About', href: '/about' },
-  { label: 'Pricing', href: '/pricing' },
-  { label: 'Roadmap', href: '/roadmap' },
-  { label: 'Blog', href: '/blog' },
-  { label: 'Guide', href: '/guide' },
-  { label: 'Docs', href: '/docs' },
-  { label: 'Features', href: '/features' },
-  { label: 'Support', href: '/support' },
-  { label: 'Dashboard', href: '/dashboard' },
+const MENU_COLUMNS = [
+  {
+    heading: 'Product',
+    items: [
+      { label: 'Features', href: '/features' },
+      { label: 'Pricing', href: '/pricing' },
+      { label: 'Roadmap', href: '/roadmap' },
+      { label: 'Dashboard', href: '/dashboard' },
+    ],
+  },
+  {
+    heading: 'Learn',
+    items: [
+      { label: 'Guide', href: '/guide' },
+      { label: 'Docs', href: '/docs' },
+      { label: 'Blog', href: '/blog' },
+    ],
+  },
+  {
+    heading: 'Company',
+    items: [
+      { label: 'About', href: '/about' },
+      { label: 'Support', href: '/support' },
+    ],
+  },
 ];
 
 type SiteLogoMenuProps = {
@@ -72,29 +86,31 @@ export function SiteLogoMenu({
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.98 }}
+            initial={{ opacity: 0, y: 8, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.98 }}
-            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute left-0 top-full z-[140] mt-4 w-[320px] rounded-[28px] border border-black/10 bg-white p-3 text-black shadow-[0_24px_80px_rgba(0,0,0,0.14)] backdrop-blur-xl"
+            exit={{ opacity: 0, y: 6, scale: 0.98 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute left-0 top-full z-[140] mt-3 rounded-2xl border border-black/[0.08] bg-white px-6 py-5 text-black shadow-[0_8px_40px_rgba(0,0,0,0.12)]"
+            style={{ minWidth: 380 }}
           >
-            <div className="px-3 pb-3 pt-2">
-              <p className="text-[10px] font-medium uppercase tracking-[0.35em] text-black/35">Explore Quartz</p>
-              <p className="mt-2 text-sm leading-6 text-black/55">
-                Quick access to every major surface on the site.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              {MENU_ITEMS.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="rounded-2xl border border-transparent px-4 py-3 text-sm font-medium text-black/75 transition hover:border-black/10 hover:bg-black/[0.03] hover:text-black"
-                  onClick={() => setIsOpen(false)}
-                >
-                  {item.label}
-                </Link>
+            {/* Columns */}
+            <div className="flex gap-10">
+              {MENU_COLUMNS.map((col) => (
+                <div key={col.heading} className="flex flex-col gap-3">
+                  <p className="text-[11px] font-semibold text-black">
+                    {col.heading}
+                  </p>
+                  {col.items.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsOpen(false)}
+                      className="text-sm text-black/40 transition-colors duration-150 hover:text-black/75"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
               ))}
             </div>
           </motion.div>
