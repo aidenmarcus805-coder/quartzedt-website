@@ -77,7 +77,7 @@ export default function PricingPage() {
           <div className="flex items-center gap-4">
             <Link href="/download" className="text-sm text-white/50 hover:text-white transition-colors hidden md:block">Download</Link>
             {session ? <UserMenu session={session} /> : (
-              <Link href="/signin?next=/pricing" className="text-sm text-white/50 hover:text-white transition-colors">Sign in</Link>
+              <Link href="/signup?next=/pricing" className="text-sm text-white/50 hover:text-white transition-colors">Sign in</Link>
             )}
           </div>
         </div>
@@ -170,7 +170,7 @@ export default function PricingPage() {
                 <button
                   onClick={async () => {
                     if (!session) {
-                      window.location.href = '/signin?next=/pricing';
+                      window.location.href = '/signup?next=/pricing';
                       return;
                     }
 

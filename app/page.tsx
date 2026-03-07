@@ -261,7 +261,7 @@ const WORKFLOW_STEPS = [
   },
 ];
 
-const START_TRIAL_HREF = '/signin?next=/dashboard/download';
+const START_TRIAL_HREF = '/signup?next=/dashboard/download';
 const BOOK_DEMO_HREF = '#waitlist';
 const SHOW_BOOK_DEMO = false;
 
@@ -517,7 +517,7 @@ export default function Home() {
                       exit={{ opacity: 0, y: -8, scale: 0.95 }}
                       className="absolute top-full right-0 mt-3 w-60 bg-white border border-neutral-200/60 rounded-xl shadow-xl overflow-hidden z-50 origin-top-right backdrop-blur-xl"
                     >
-                      <div className="p-1.5">
+              <div className="p-1.5">
                         <div className="px-3 py-2 text-xs text-neutral-500 border-b border-neutral-100 mb-1 truncate font-mono">
                           {session.user?.email}
                         </div>

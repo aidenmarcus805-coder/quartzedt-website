@@ -324,7 +324,7 @@ function SignInContent() {
 
           {/* Bottom Links */}
           <div className="pt-2 flex flex-col items-start gap-4 mx-auto md:mx-0 pr-8 md:pr-0 pl-1">
-            <Link href="#" className="text-[13px] text-gray-500 hover:text-black hover:underline font-medium block transition-colors">
+            <Link href="/forgot" className="text-[13px] text-gray-500 hover:text-black hover:underline font-medium block transition-colors">
               Get help signing in
             </Link>
           </div>

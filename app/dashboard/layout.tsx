@@ -3,13 +3,17 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { House, CreditCard, Download, SignOut } from '@phosphor-icons/react';
+import { House, CreditCard, Download, BookOpen, Lifebuoy, Sparkle, Gear, SignOut } from '@phosphor-icons/react';
 import { useSession, signOut } from 'next-auth/react';
 
 const SIDEBAR_ITEMS = [
     { label: 'Overview', href: '/dashboard', icon: House },
     { label: 'Subscription', href: '/dashboard/billing', icon: CreditCard },
     { label: 'Download', href: '/dashboard/download', icon: Download },
+    { label: 'Guide', href: '/guide', icon: BookOpen },
+    { label: 'Features', href: '/features', icon: Sparkle },
+    { label: 'Support', href: '/support', icon: Lifebuoy },
+    { label: 'Settings', href: '/dashboard/settings', icon: Gear },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -84,7 +88,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         </div>
                     ) : (
                         <Link
-                            href="/signin?next=/dashboard"
+                            href="/signup?next=/dashboard"
                             className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl bg-black text-white text-sm font-medium hover:bg-black/90 transition-all hover:scale-[1.02] shadow-lg shadow-black/10"
                         >
                             Sign In

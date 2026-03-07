@@ -32,6 +32,7 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: 'Email', type: 'email', placeholder: 'you@studio.com' },
         password: { label: 'Password', type: 'password' },
+        name: { label: 'Name', type: 'text' },
         turnstileToken: { label: 'Turnstile Token', type: 'text' },
       },
       async authorize(credentials) {
@@ -62,7 +63,10 @@ export const authOptions: NextAuthOptions = {
         let user = await prisma.user.findUnique({ where: { email } });
         if (!user) {
           user = await prisma.user.create({
-            data: { email, name: email.split('@')[0] },
+            data: {
+              email,
+              name: credentials?.name || email.split('@')[0]
+            },
           });
         }
 
