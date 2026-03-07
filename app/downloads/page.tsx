@@ -1,6 +1,7 @@
-'use client';
-
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { User } from '@phosphor-icons/react';
+import { useSession, signOut } from 'next-auth/react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowSquareOut } from '@phosphor-icons/react';
@@ -10,36 +11,124 @@ const MAC_URL = process.env.NEXT_PUBLIC_DESKTOP_DOWNLOAD_MAC_URL || '';
 const WINDOWS_URL = process.env.NEXT_PUBLIC_DESKTOP_DOWNLOAD_WINDOWS_URL || '';
 
 const SYSTEM_REQUIREMENTS = [
-    { label: 'macOS', value: 'Ventura 13.0 or later' },
+    { label: 'macOS', value: 'Monterey 12.3 or later' },
     { label: 'Windows', value: 'Windows 10 / 11 (64-bit)' },
     { label: 'Processor', value: 'Apple Silicon or Intel x86-64' },
     { label: 'Memory', value: '8 GB RAM minimum' },
-    { label: 'Storage', value: '2 GB available disk space' },
+    { label: 'Storage', value: '20 GB available disk space' },
 ];
 
 export default function DownloadsPage() {
+    const { data: session } = useSession();
+    const [navOnLight, setNavOnLight] = useState(true);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
+    const navRef = useRef<HTMLElement>(null);
+
+    useEffect(() => {
+        const onScroll = () => {
+            const scrolled = window.scrollY > 40;
+            setIsScrolled(scrolled);
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
+
     return (
         <div className="min-h-screen bg-[#f5f5f0] text-black antialiased selection:bg-black selection:text-white">
 
-            {/* ── Navbar ─────────────────────────────────────────── */}
-            <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between h-16 px-8 md:px-14">
-                <SiteLogoMenu darkLogoVisible />
+            {/* ── Navigation - Cinema Bar (Unfied with Home) ─────────────────── */}
+            <motion.nav
+                ref={navRef}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1.2, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="fixed top-6 left-0 right-0 z-[100] flex justify-center pointer-events-none"
+            >
+                <div
+                    className={`pointer-events-auto transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center justify-between
+            ${isScrolled
+                            ? `h-14 px-6 w-[calc(100%-4rem)] md:w-[calc(100%-6rem)] lg:w-[calc(100%-8rem)] max-w-[calc(1800px-4rem)] md:max-w-[calc(1800px-6rem)] lg:max-w-[calc(1800px-8rem)] rounded-full border backdrop-blur-xl shadow-sm bg-gray-50/40 border-black/5 text-black`
+                            : `h-20 px-7 md:px-11 lg:px-14 w-full max-w-[1800px] bg-transparent border-transparent text-black`
+                        }
+          `}
+                >
+                    {/* Left: Logo */}
+                    <SiteLogoMenu darkLogoVisible={true} />
 
-                <div className="flex items-center gap-3">
-                    <Link
-                        href="/pricing"
-                        className="text-[13px] font-medium text-black/60 hover:text-black transition-colors"
-                    >
-                        Pricing
-                    </Link>
-                    <Link
-                        href="/signup?next=/dashboard/download"
-                        className="ml-2 px-5 py-2 rounded-full bg-black text-white text-[13px] font-medium hover:bg-black/80 transition-colors shadow-lg"
-                    >
-                        Get started
-                    </Link>
+                    {/* Center: Empty */}
+                    <div className="flex-1" />
+
+                    {/* Right: Actions */}
+                    <div className="flex items-center gap-3">
+                        <Link
+                            href="/#waitlist"
+                            className="px-5 py-2 rounded-full text-[13px] font-medium transition-all duration-300 bg-black text-white hover:bg-black/80 shadow-lg hover:shadow-xl"
+                        >
+                            Join Waitlist
+                        </Link>
+
+                        {/* User Profile */}
+                        {session ? (
+                            <div className="relative">
+                                <button
+                                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                    className="flex items-center justify-center rounded-full transition-transform active:scale-95"
+                                    aria-label="User menu"
+                                >
+                                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium overflow-hidden ring-1 bg-black/5 ring-black/10">
+                                        {session.user?.image ? (
+                                            <img src={session.user.image} alt="" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <span className="text-black/60">
+                                                {session.user?.email?.charAt(0).toUpperCase() || 'U'}
+                                            </span>
+                                        )}
+                                    </div>
+                                </button>
+
+                                <AnimatePresence>
+                                    {isMenuOpen && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                                            className="absolute top-full right-0 mt-3 w-60 bg-white border border-neutral-200/60 rounded-xl shadow-xl overflow-hidden z-50 origin-top-right backdrop-blur-xl"
+                                        >
+                                            <div className="p-1.5">
+                                                <div className="px-3 py-2 text-xs text-neutral-500 border-b border-neutral-100 mb-1 truncate font-mono">
+                                                    {session.user?.email}
+                                                </div>
+                                                <Link
+                                                    href="/dashboard"
+                                                    className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-800 hover:text-black hover:bg-neutral-50 rounded-lg transition-colors"
+                                                    onClick={() => setIsMenuOpen(false)}
+                                                >
+                                                    Dashboard
+                                                </Link>
+                                                <button
+                                                    onClick={() => signOut()}
+                                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors text-left"
+                                                >
+                                                    Sign out
+                                                </button>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        ) : (
+                            <Link
+                                href="/signin?next=/downloads"
+                                className="w-8 h-8 rounded-full transition-all duration-300 active:scale-95 flex items-center justify-center group/signin hover:bg-black/10"
+                                aria-label="Sign In"
+                            >
+                                <User className="w-4 h-4 transition-colors duration-300 text-black/70 group-hover/signin:text-accent" />
+                            </Link>
+                        )}
+                    </div>
                 </div>
-            </nav>
+            </motion.nav>
 
             {/* ── Hero ───────────────────────────────────────────── */}
             <div className="relative w-full" style={{ height: '78vh', minHeight: 520 }}>
@@ -137,7 +226,7 @@ export default function DownloadsPage() {
                     transition={{ duration: 0.8, delay: 0.55 }}
                     className="text-center text-[13px] text-black/40 mt-5"
                 >
-                    Quartz requires macOS Ventura 13 or later / Windows 10 64-bit or later.{' '}
+                    Quartz requires macOS Monterey 12.3 or later / Windows 10 64-bit or later.{' '}
                     <Link href="/signup?next=/dashboard/download" className="underline underline-offset-2 hover:text-black transition-colors">
                         Sign in to connect&nbsp;your&nbsp;account.
                     </Link>

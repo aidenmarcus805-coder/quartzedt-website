@@ -60,7 +60,7 @@ export function SiteLogoMenu({
         }
       }}
     >
-      <Link href="/" className="flex items-center pl-2 pr-3 py-2 rounded-2xl">
+      <Link href="/" className="relative z-[150] flex items-center pl-2 pr-3 py-2 rounded-2xl">
         <span className={`relative shrink-0 ${sizeClassName}`}>
           <Image
             src={lightLogoSrc}
@@ -91,7 +91,7 @@ export function SiteLogoMenu({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.98 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute left-0 top-full z-[140] mt-3 rounded-2xl border border-black/[0.08] bg-white px-6 py-5 text-black shadow-[0_8px_40px_rgba(0,0,0,0.12)]"
+            className="absolute left-0 top-0 z-[140] rounded-2xl border border-black/[0.08] bg-white px-6 pb-5 pt-[52px] text-black shadow-[0_8px_40px_rgba(0,0,0,0.12)]"
             style={{ minWidth: 380 }}
           >
             {/* Columns */}
