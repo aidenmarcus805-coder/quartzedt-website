@@ -12,6 +12,7 @@ const MENU_COLUMNS = [
       { label: 'Features', href: '/features' },
       { label: 'Pricing', href: '/pricing' },
       { label: 'Roadmap', href: '/roadmap' },
+      { label: 'Downloads', href: '/downloads' },
       { label: 'Dashboard', href: '/dashboard' },
     ],
   },
