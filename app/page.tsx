@@ -11,6 +11,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
 import EmailWaitlist from './components/EmailWaitlist';
+import { SiteLogoMenu } from './components/SiteLogoMenu';
 
 // Dynamic import for 3D scene (client-side only)
 // ShutterReveal component removed (inlined)
@@ -450,29 +451,7 @@ export default function Home() {
           `}
         >
           {/* Left: Logo */}
-          <Link href="/" className="flex items-center pl-2">
-            <span className="relative h-5 w-auto aspect-[256/65] shrink-0">
-              <Image
-                src="/logo.png"
-                alt="Quartz Editor"
-                fill
-                sizes="120px"
-                priority
-                unoptimized
-                className={`object-contain transition-opacity duration-200 ${navOnLight ? 'opacity-0' : 'opacity-100'}`}
-              />
-              <Image
-                src="/logoBlack.png"
-                alt=""
-                aria-hidden="true"
-                fill
-                sizes="120px"
-                priority
-                unoptimized
-                className={`object-contain transition-opacity duration-200 ${navOnLight ? 'opacity-100' : 'opacity-0'}`}
-              />
-            </span>
-          </Link>
+          <SiteLogoMenu darkLogoVisible={navOnLight} />
 
           {/* Center: Empty for now (Pro tools keep the center clear for content focus) */}
           <div className="flex-1" />

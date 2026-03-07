@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { House, CreditCard, Download, BookOpen, Lifebuoy, Sparkle, Gear, SignOut } from '@phosphor-icons/react';
 import { useSession, signOut } from 'next-auth/react';
+import { SiteLogoMenu } from '../components/SiteLogoMenu';
 
 const SIDEBAR_ITEMS = [
     { label: 'Overview', href: '/dashboard', icon: House },
@@ -29,16 +30,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <aside className="fixed left-0 top-0 bottom-0 w-64 border-r border-black/5 bg-white z-40 flex flex-col">
                 {/* Logo */}
                 <div className="h-24 px-8 flex items-center border-b border-black/5">
-                    <Link href="/" className="block relative h-6 w-auto aspect-[256/65]">
-                        <Image
-                            src="/logoBlack.png"
-                            alt="Quartz"
-                            fill
-                            className="object-contain"
-                            priority
-                            unoptimized
-                        />
-                    </Link>
+                    <SiteLogoMenu darkLogoVisible={true} sizeClassName="h-6 w-auto aspect-[256/65]" />
                 </div>
 
                 {/* Nav */}

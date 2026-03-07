@@ -5,6 +5,7 @@ import { ArrowRight, Minus } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { SiteLogoMenu } from '../components/SiteLogoMenu';
 
 // Reveal animation wrapper
 const Reveal = ({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) => {
@@ -133,32 +134,12 @@ export default function About() {
         className="fixed top-0 left-0 right-0 z-[100]"
       >
         <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 h-24 flex items-center justify-between">
-          <Link href="/" className="inline-flex items-center">
-            {/* Preload both logo variants so switching on light sections is instant (no "lag-behind"). */}
-            <span className="relative h-5 w-auto aspect-[256/65] shrink-0">
-              <Image
-                src="/logo.png?v=20251223"
-                alt="Cutline"
-                fill
-                sizes="80px"
-                priority
-                unoptimized
-                className={`object-contain transition-opacity duration-150 ${navOnLight ? 'opacity-0' : 'opacity-100'
-                  }`}
-              />
-              <Image
-                src="/logoBlack.png?v=20251223"
-                alt=""
-                aria-hidden="true"
-                fill
-                sizes="80px"
-                priority
-                unoptimized
-                className={`object-contain transition-opacity duration-150 ${navOnLight ? 'opacity-100' : 'opacity-0'
-                  }`}
-              />
-            </span>
-          </Link>
+          <SiteLogoMenu
+            darkLogoVisible={navOnLight}
+            darkLogoSrc="/logoBlack.png?v=20251223"
+            lightLogoSrc="/logo.png?v=20251223"
+            sizeClassName="h-5 w-auto aspect-[256/65]"
+          />
 
           <div
             className={`hidden md:flex items-center gap-16 text-[10px] tracking-[0.4em] font-light ${navOnLight ? 'text-black' : 'text-white'
