@@ -14,7 +14,7 @@ const SYSTEM_REQUIREMENTS = [
     { label: 'macOS', value: 'Monterey 12.3 or later' },
     { label: 'Windows', value: 'Windows 10 / 11 (64-bit)' },
     { label: 'Processor', value: 'Apple Silicon or Intel x86-64' },
-    { label: 'Memory', value: '8 GB RAM minimum' },
+    { label: 'VRAM', value: '8 GB minimum' },
     { label: 'Storage', value: '20 GB available disk space' },
 ];
 
