@@ -12,6 +12,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import EmailWaitlist from './components/EmailWaitlist';
 import { SiteLogoMenu } from './components/SiteLogoMenu';
+import { UserMenu } from './components/UserMenu';
 
 const NAV_CATEGORIES = [
   {
@@ -564,47 +565,7 @@ export default function Home() {
 
             {/* User Profile */}
             {session ? (
-              <div className="relative">
-                <button
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="flex items-center justify-center rounded-full transition-transform active:scale-95"
-                  aria-label="User menu"
-                >
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium overflow-hidden ring-1 ${navOnLight ? 'bg-black/5 ring-black/10' : 'bg-white/10 ring-white/20'
-                    }`}>
-                    {session.user?.image ? (
-                      <img src={session.user.image} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className={navOnLight ? 'text-black/60' : 'text-white/60'}>
-                        {session.user?.email?.charAt(0).toUpperCase() || 'U'}
-                      </span>
-                    )}
-                  </div>
-                </button>
-
-                <AnimatePresence>
-                  {isMenuOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -8, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                      className="absolute top-full right-0 mt-3 w-60 bg-white border border-neutral-200/60 rounded-xl shadow-xl overflow-hidden z-50 origin-top-right backdrop-blur-xl"
-                    >
-                      <div className="p-1.5">
-                        <div className="px-3 py-2 text-xs text-neutral-500 border-b border-neutral-100 mb-1 truncate font-mono">
-                          {session.user?.email}
-                        </div>
-                        <button
-                          onClick={() => signOut()}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors text-left"
-                        >
-                          Sign out
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+              <UserMenu session={session} navOnLight={navOnLight} />
             ) : (
               <Link
                 href="/signin?next=/dashboard/download"

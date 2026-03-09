@@ -20,37 +20,9 @@ declare global {
 
 
 import { PRICING_PLAN } from '../lib/constants/pricing';
+import { UserMenu } from '../components/UserMenu';
 
 const PLAN = PRICING_PLAN;
-
-const UserMenu = ({ session }: { session: any }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setIsOpen(false);
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  return (
-    <div className="relative" ref={menuRef}>
-      <button onClick={() => setIsOpen(!isOpen)} className="p-2 rounded-full border border-white/10 hover:border-white/20 hover:bg-white/5 transition-all">
-        <User className="w-4 h-4 text-white/70" />
-      </button>
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }} className="absolute right-0 top-full mt-2 w-48 rounded-lg border border-white/10 bg-[#111] shadow-2xl z-50 py-1">
-            <div className="px-3 py-2 text-xs text-white/40 border-b border-white/5 mb-1">{session.user?.email}</div>
-            <button onClick={() => signOut()} className="w-full text-left px-3 py-2 text-sm text-white/50 hover:text-red-400 hover:bg-white/5">Sign out</button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-};
 
 export default function PricingPage() {
   const { data: session } = useSession();
