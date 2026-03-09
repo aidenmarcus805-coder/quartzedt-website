@@ -15,13 +15,13 @@ export default async function DashboardLayout({
     }
 
     return (
-        <div className="min-h-screen bg-[#f5f5f0] text-black antialiased selection:bg-black selection:text-white flex">
+        <div className="min-h-screen bg-white text-black antialiased selection:bg-black selection:text-white flex">
             {/* Sidebar Navigation */}
             <Sidebar />
 
             {/* Main Content Area */}
-            <main className="flex-1 min-w-0 flex flex-col pt-16 md:pt-20 px-6 md:px-12 lg:px-20 pb-24 h-screen overflow-y-auto">
-                <div className="max-w-[1200px] w-full mx-auto">
+            <main className="flex-1 min-w-0 flex flex-col pt-16 md:pt-20 px-4 md:px-10 lg:px-16 pb-24 h-screen overflow-y-auto">
+                <div className="max-w-[1400px] w-full mx-auto">
                     {children}
                 </div>
             </main>
