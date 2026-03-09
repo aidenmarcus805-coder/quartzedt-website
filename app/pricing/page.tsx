@@ -44,8 +44,6 @@ const UserMenu = ({ session }: { session: any }) => {
         {isOpen && (
           <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }} className="absolute right-0 top-full mt-2 w-48 rounded-lg border border-white/10 bg-[#111] shadow-2xl z-50 py-1">
             <div className="px-3 py-2 text-xs text-white/40 border-b border-white/5 mb-1">{session.user?.email}</div>
-            <Link href="/dashboard" className="block px-3 py-2 text-sm text-white/70 hover:bg-white/5 hover:text-white" onClick={() => setIsOpen(false)}>Dashboard</Link>
-            <Link href="/dashboard/settings" className="block px-3 py-2 text-sm text-white/70 hover:bg-white/5 hover:text-white" onClick={() => setIsOpen(false)}>Settings</Link>
             <button onClick={() => signOut()} className="w-full text-left px-3 py-2 text-sm text-white/50 hover:text-red-400 hover:bg-white/5">Sign out</button>
           </motion.div>
         )}

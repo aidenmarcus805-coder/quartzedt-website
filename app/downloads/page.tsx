@@ -1,5 +1,7 @@
+'use client';
+
 import { AnimatePresence, motion } from 'framer-motion';
-import { User } from '@phosphor-icons/react';
+import { User, CaretDown } from '@phosphor-icons/react';
 import { useSession, signOut } from 'next-auth/react';
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
@@ -17,6 +19,95 @@ const SYSTEM_REQUIREMENTS = [
     { label: 'VRAM', value: '8 GB minimum' },
     { label: 'Storage', value: '20 GB available disk space' },
 ];
+
+const NAV_CATEGORIES = [
+    {
+        label: 'Product',
+        links: [
+            { label: 'Features', href: '/features' },
+            { label: 'Pricing', href: '/pricing' },
+            { label: 'Downloads', href: '/downloads' },
+        ],
+    },
+    {
+        label: 'Learn',
+        links: [
+            { label: 'Guide', href: '/guide' },
+            { label: 'Docs', href: '/docs' },
+            { label: 'Blog', href: '/blog' },
+        ],
+    },
+    {
+        label: 'Company',
+        links: [
+            { label: 'About', href: '/about' },
+            { label: 'Support', href: '/support' },
+        ],
+    },
+];
+
+function NavDropdown({ category, navOnLight, isScrolled }: { category: typeof NAV_CATEGORIES[0]; navOnLight: boolean; isScrolled: boolean }) {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return (
+        <div
+            className="relative h-full flex items-center"
+            onMouseEnter={() => setIsOpen(true)}
+            onMouseLeave={() => setIsOpen(false)}
+        >
+            <button
+                className={`px-4 h-full text-[13px] font-bold tracking-tight transition-colors duration-300 flex items-center gap-1.5 ${navOnLight ? 'text-black/60 hover:text-black' : 'text-white/60 hover:text-white'
+                    }`}
+            >
+                <span>{category.label}</span>
+                <CaretDown
+                    weight="bold"
+                    className={`w-3 h-3 transition-transform duration-300 ${isOpen ? 'rotate-180 opacity-100' : 'opacity-40'}`}
+                />
+            </button>
+
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 4 }}
+                        transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+                        className={`absolute top-[calc(100%-24px)] left-[-8px] pt-[4px] z-[110]`}
+                    >
+                        <div
+                            className={`min-w-[200px] p-2 rounded-b-[22px] transition-all duration-500 ${isScrolled
+                                ? `border backdrop-blur-3xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] ${navOnLight
+                                    ? 'bg-white/40 border-black/[0.05] text-black'
+                                    : 'bg-[#0a0a0a]/40 border-white/[0.08] text-white shadow-[0_30px_60px_-15px_rgba(0,0,0,0.6)]'
+                                }`
+                                : 'bg-transparent border-transparent text-current shadow-none'
+                                }`}
+                        >
+                            <div className="flex flex-col gap-0.5">
+                                {category.links.map((link) => (
+                                    <Link
+                                        key={link.href}
+                                        href={link.href}
+                                        className={`group block px-4 py-2.5 text-[14px] font-medium rounded-[14px] transition-all duration-300 ${navOnLight
+                                            ? 'text-black/50 hover:text-black hover:bg-black/[0.04]'
+                                            : 'text-white/50 hover:text-white hover:bg-white/[0.06]'
+                                            }`}
+                                    >
+                                        <span className="inline-block transition-transform duration-300 group-hover:translate-x-0.5">
+                                            {link.label}
+                                        </span>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
+
 
 export default function DownloadsPage() {
     const { data: session } = useSession();
@@ -56,7 +147,14 @@ export default function DownloadsPage() {
                     {/* Left: Logo */}
                     <SiteLogoMenu darkLogoVisible={true} />
 
-                    {/* Center: Empty */}
+                    {/* Center: Persistent Categories */}
+                    <div className="hidden md:flex items-center h-full ml-8">
+                        {NAV_CATEGORIES.map((cat) => (
+                            <NavDropdown key={cat.label} category={cat} navOnLight={true} isScrolled={isScrolled} />
+                        ))}
+                    </div>
+
+                    {/* Center Span to push content */}
                     <div className="flex-1" />
 
                     {/* Right: Actions */}
@@ -99,13 +197,6 @@ export default function DownloadsPage() {
                                                 <div className="px-3 py-2 text-xs text-neutral-500 border-b border-neutral-100 mb-1 truncate font-mono">
                                                     {session.user?.email}
                                                 </div>
-                                                <Link
-                                                    href="/dashboard"
-                                                    className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-800 hover:text-black hover:bg-neutral-50 rounded-lg transition-colors"
-                                                    onClick={() => setIsMenuOpen(false)}
-                                                >
-                                                    Dashboard
-                                                </Link>
                                                 <button
                                                     onClick={() => signOut()}
                                                     className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors text-left"
@@ -227,7 +318,7 @@ export default function DownloadsPage() {
                     className="text-center text-[13px] text-black/40 mt-5"
                 >
                     Quartz requires macOS Monterey 12.3 or later / Windows 10 64-bit or later.{' '}
-                    <Link href="/signup?next=/dashboard/download" className="underline underline-offset-2 hover:text-black transition-colors">
+                    <Link href="/downloads" className="underline underline-offset-2 hover:text-black transition-colors">
                         Sign in to connect&nbsp;your&nbsp;account.
                     </Link>
                 </motion.p>

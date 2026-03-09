@@ -36,7 +36,7 @@ export async function POST(req: Request) {
                 customer: {
                     email: session.user.email,
                 },
-                success_url: `${process.env.NEXTAUTH_URL}/dashboard?checkout=success`,
+                success_url: `${process.env.NEXTAUTH_URL}/pricing/success`,
                 // cancel_url: Not supported by Creem API v1
             })
         });

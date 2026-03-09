@@ -18,7 +18,7 @@ const GETTING_STARTED_STEPS = [
     step: '01',
     title: 'Download and install Quartz Desktop',
     body: 'Install the Mac or Windows build, launch Quartz, and sign in with your account before creating your first wedding edit.',
-    cta: { label: 'Open downloads', href: '/dashboard/download' },
+    cta: { label: 'Open downloads', href: '/downloads' },
   },
   {
     step: '02',
@@ -102,7 +102,7 @@ export default function GuidePage() {
             </p>
             <div className="mt-10 flex flex-wrap gap-3">
               <Link
-                href="/dashboard/download"
+                href="/downloads"
                 className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-3 text-sm font-medium text-white transition hover:bg-black/90"
               >
                 Download desktop

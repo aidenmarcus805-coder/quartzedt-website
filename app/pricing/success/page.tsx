@@ -35,10 +35,10 @@ export default function SuccessPage() {
                     </a>
 
                     <Link
-                        href="/dashboard"
+                        href="/"
                         className="block py-4 text-sm text-white/30 hover:text-white transition-colors"
                     >
-                        Back to Dashboard
+                        Back to Home
                     </Link>
                 </div>
             </div>
