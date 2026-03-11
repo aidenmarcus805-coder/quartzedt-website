@@ -52,17 +52,11 @@ export default async function DashboardPage() {
                         <div className="text-lg font-medium text-black/90">{user.email}</div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-black/5">
+                    <div className="pt-4 border-t border-black/5">
                         <div>
                             <label className="text-xs font-semibold text-black/40 uppercase tracking-wider mb-1 block">Member Since</label>
                             <div className="text-sm font-medium text-black/70">
                                 {new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                            </div>
-                        </div>
-                        <div>
-                            <label className="text-xs font-semibold text-black/40 uppercase tracking-wider mb-1 block">Current Plan</label>
-                            <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-black/5 text-black/70 capitalize border border-black/5">
-                                {user.plan}
                             </div>
                         </div>
                     </div>

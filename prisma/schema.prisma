@@ -91,7 +91,9 @@ model DesktopDevice {
 }
 
 model Waitlist {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  createdAt DateTime @default(now())
+  id              String   @id @default(cuid())
+  email           String   @unique
+  gpu             String?
+  weddingsPerYear String?
+  createdAt       DateTime @default(now())
 }

@@ -19,7 +19,6 @@ const NAV_CATEGORIES = [
     label: 'Product',
     links: [
       { label: 'Features', href: '/features' },
-      { label: 'Pricing', href: '/pricing' },
       { label: 'Downloads', href: '/downloads' },
     ],
   },

@@ -9,7 +9,6 @@ import { SiteLogoMenu } from '../components/SiteLogoMenu';
 
 const NAV_ITEMS = [
     { label: 'Profile', href: '/dashboard', icon: User },
-    { label: 'Billing', href: '/dashboard/billing', icon: CreditCard },
     { label: 'Downloads & Devices', href: '/dashboard/downloads', icon: Download },
     { label: 'Settings', href: '/dashboard/settings', icon: Gear },
 ];

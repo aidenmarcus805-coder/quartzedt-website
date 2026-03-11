@@ -3,7 +3,7 @@ import { prisma } from '@/app/lib/prisma';
 
 export async function POST(req: NextRequest) {
     try {
-        const { email } = await req.json();
+        const { email, gpu, weddings } = await req.json();
 
         if (!email || typeof email !== 'string' || !email.includes('@')) {
             return NextResponse.json(
@@ -16,6 +16,8 @@ export async function POST(req: NextRequest) {
             await prisma.waitlist.create({
                 data: {
                     email,
+                    gpu,
+                    weddingsPerYear: weddings,
                 },
             });
         } catch (e: any) {
