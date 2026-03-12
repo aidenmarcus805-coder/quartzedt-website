@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion, useInView } from 'framer-motion';
-import { ArrowLeft, ArrowRight, CaretDown, Check, FilmStrip, Minus, Scissors, MagnifyingGlass, UploadSimple, User } from '@phosphor-icons/react';
+import { ArrowLeft, ArrowRight, Check, FilmStrip, Minus, Scissors, MagnifyingGlass, UploadSimple, User } from '@phosphor-icons/react';
 
 // PRICING_PLAN and PLAN removed
 
@@ -13,6 +13,7 @@ import Image from 'next/image';
 import EmailWaitlist from './components/EmailWaitlist';
 import { SiteLogoMenu } from './components/SiteLogoMenu';
 import { UserMenu } from './components/UserMenu';
+import { NavDropdown } from './components/NavDropdown';
 
 const NAV_CATEGORIES = [
   {
@@ -39,67 +40,7 @@ const NAV_CATEGORIES = [
   },
 ];
 
-function NavDropdown({ category, navOnLight, isScrolled }: { category: typeof NAV_CATEGORIES[0]; navOnLight: boolean; isScrolled: boolean }) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div
-      className="relative h-full flex items-center"
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
-    >
-      <button
-        className={`px-4 h-full text-[13px] font-bold tracking-tight transition-colors duration-300 flex items-center gap-1.5 ${navOnLight ? 'text-black/60 hover:text-black' : 'text-white/60 hover:text-white'
-          }`}
-      >
-        <span>{category.label}</span>
-        <CaretDown
-          weight="bold"
-          className={`w-3 h-3 transition-transform duration-300 ${isOpen ? 'rotate-180 opacity-100' : 'opacity-40'}`}
-        />
-      </button>
-
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 4 }}
-            transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-            className={`absolute top-[calc(100%-24px)] left-[-8px] pt-[4px] z-[110]`}
-          >
-            <div
-              className={`min-w-[200px] p-2 rounded-b-[22px] transition-all duration-500 ${isScrolled
-                ? `border backdrop-blur-3xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] ${navOnLight
-                  ? 'bg-white/40 border-black/[0.05] text-black'
-                  : 'bg-[#0a0a0a]/40 border-white/[0.08] text-white shadow-[0_30px_60px_-15px_rgba(0,0,0,0.6)]'
-                }`
-                : 'bg-transparent border-transparent text-current shadow-none'
-                }`}
-            >
-              <div className="flex flex-col gap-0.5">
-                {category.links.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={`group block px-4 py-2.5 text-[14px] font-medium rounded-[14px] transition-all duration-300 ${navOnLight
-                      ? 'text-black/50 hover:text-black hover:bg-black/[0.04]'
-                      : 'text-white/50 hover:text-white hover:bg-white/[0.06]'
-                      }`}
-                  >
-                    <span className="inline-block transition-transform duration-300 group-hover:translate-x-0.5">
-                      {link.label}
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
+// NavDropdown is now imported from ./components/NavDropdown
 
 // Dynamic import for 3D scene (client-side only)
 // ShutterReveal component removed (inlined)
