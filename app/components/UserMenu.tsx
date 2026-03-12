@@ -53,10 +53,10 @@ export function UserMenu({ session, navOnLight = false }: UserMenuProps) {
                         transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                         className="absolute top-full right-0 mt-3 w-64 origin-top-right z-50"
                     >
-                        <div className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-2xl border border-black/5 dark:border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden">
-                            <div className="px-4 py-3.5 border-b border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02]">
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-neutral-400 mb-1">Account</p>
-                                <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">
+                        <div className="bg-white/80 dark:bg-neutral-900/80 backdrop-blur-2xl border border-black/5 dark:border-white/10 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.25)] dark:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] overflow-hidden">
+                            <div className="px-5 py-4 border-b border-black/[0.04] dark:border-white/[0.04]">
+                                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-neutral-400 dark:text-neutral-500 mb-1.5">Account</p>
+                                <p className="text-[13.5px] font-semibold text-neutral-900 dark:text-neutral-100 truncate">
                                     {session.user?.email}
                                 </p>
                             </div>
@@ -65,11 +65,9 @@ export function UserMenu({ session, navOnLight = false }: UserMenuProps) {
                                 <Link
                                     href="/dashboard"
                                     onClick={() => setIsOpen(false)}
-                                    className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.06] rounded-xl transition-all group"
+                                    className="flex items-center gap-3 px-3.5 py-2.5 text-[14px] font-medium text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/[0.05] rounded-[14px] transition-all group"
                                 >
-                                    <div className="w-8 h-8 rounded-lg bg-black/5 dark:bg-white/5 flex items-center justify-center group-hover:bg-accent/10 transition-colors">
-                                        <Layout className="w-4 h-4 group-hover:text-accent transition-colors" />
-                                    </div>
+                                    <Layout weight="bold" className="w-4.5 h-4.5 opacity-60 group-hover:opacity-100 transition-opacity" />
                                     Dashboard
                                 </Link>
 
@@ -78,11 +76,9 @@ export function UserMenu({ session, navOnLight = false }: UserMenuProps) {
                                         setIsOpen(false);
                                         signOut();
                                     }}
-                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-500/80 hover:text-red-500 hover:bg-red-500/5 rounded-xl transition-all group"
+                                    className="w-full flex items-center gap-3 px-3.5 py-2.5 text-[14px] font-medium text-red-500/70 hover:text-red-500 hover:bg-red-500/[0.04] rounded-[14px] transition-all group"
                                 >
-                                    <div className="w-8 h-8 rounded-lg bg-red-500/5 flex items-center justify-center group-hover:bg-red-500/10 transition-colors">
-                                        <SignOut className="w-4 h-4" />
-                                    </div>
+                                    <SignOut weight="bold" className="w-4.5 h-4.5 opacity-60 group-hover:opacity-100 transition-opacity" />
                                     Sign out
                                 </button>
                             </div>
