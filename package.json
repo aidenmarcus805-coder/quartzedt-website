@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "npx prisma generate && next build",
-    "start": "npx prisma db push && npx next start -p ${PORT:-3000} --hostname 0.0.0.0",
+    "start": "npx prisma db push && npx next start --hostname 0.0.0.0 --port ${PORT:-3000}",
     "lint": "eslint"
   },
   "dependencies": {
