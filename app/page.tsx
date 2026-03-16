@@ -699,20 +699,60 @@ export default function Home() {
             height: `calc(100vh + ${WORKFLOW_DOOR_SCROLL_PX + WORKFLOW_SCROLL_PX_PER_STEP * WORKFLOW_STEPS.length}px)`,
           }}
         >
-          {/* Loading overlay - animated logo only */}
+          {/* Shutter Layer - Sticky on top of content (SVG Aperture) */}
           <div
             ref={shutterContainerRef}
-            className="sticky top-0 h-screen w-full z-50 pointer-events-none flex items-center justify-center bg-[#050504]"
+            className="sticky top-0 h-screen w-full z-50 pointer-events-none overflow-hidden flex items-center justify-center"
             style={{
               opacity: 'var(--shutter-opacity, 1)',
             }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logoAnimated.gif"
-              alt="Quartz"
-              className="h-16 w-auto"
-            />
+            {/* 8 Blades - Squares that translate outward.
+                 Start: 8 squares meeting at center.
+                 End: They move outward radially.
+             */}
+            {/* SVG Mask Shutter - Guaranteed clean geometry + Mechanical lines */}
+            <svg
+              className="absolute inset-0 w-full h-full"
+              viewBox="0 0 100 100"
+              preserveAspectRatio="xMidYMid slice"
+            >
+              <defs>
+                <mask id="irisMask">
+                  <rect x="0" y="0" width="100" height="100" fill="white" />
+                  {/* The Hole: An Octagon that rotates and scales */}
+                  <polygon
+                    points="29.29,0 70.71,0 100,29.29 100,70.71 70.71,100 29.29,100 0,70.71 0,29.29"
+                    fill="black"
+                    style={{
+                      transformOrigin: '50% 50%',
+                      transform: 'rotate(calc(var(--shutter-progress, 0) * 720deg)) scale(calc(var(--shutter-progress, 0) * 20))',
+                    }}
+                  />
+                </mask>
+              </defs>
+              <rect x="0" y="0" width="100%" height="100%" fill="#000000" mask="url(#irisMask)" />
+
+              {/* Cosmetic Blade Edges - Adds "Mechanical" texture to avoid "flat cube" look */}
+              <g
+                style={{
+                  transformOrigin: '50% 50%',
+                  transform: 'rotate(calc(var(--shutter-progress, 0) * 720deg)) scale(calc(var(--shutter-progress, 0) * 20))',
+                  opacity: 0.15,
+                  pointerEvents: 'none',
+                }}
+              >
+                {/* 8 Spiral Lines radiating from the octagon vertices */}
+                <path d="M 70.71,0 L 100,-50" stroke="white" strokeWidth="0.5" />
+                <path d="M 100,29.29 L 150,0" stroke="white" strokeWidth="0.5" />
+                <path d="M 100,70.71 L 150,100" stroke="white" strokeWidth="0.5" />
+                <path d="M 70.71,100 L 100,150" stroke="white" strokeWidth="0.5" />
+                <path d="M 29.29,100 L 0,150" stroke="white" strokeWidth="0.5" />
+                <path d="M 0,70.71 L -50,100" stroke="white" strokeWidth="0.5" />
+                <path d="M 0,29.29 L -50,0" stroke="white" strokeWidth="0.5" />
+                <path d="M 29.29,0 L 0,-50" stroke="white" strokeWidth="0.5" />
+              </g>
+            </svg>
           </div>
 
 
