@@ -1,76 +1,51 @@
 'use client';
 
-import { Monitor, Trash, Clock, Calendar } from '@phosphor-icons/react';
-import { revokeDevice } from './actions';
-import { useTransition } from 'react';
+import { Desktop, Clock, Trash, Tag } from "@phosphor-icons/react";
 
-type Device = {
-    id: string;
-    name: string | null;
-    machineId: string;
-    lastSeen: Date;
-    createdAt: Date;
-};
-
-export default function DeviceList({ devices }: { devices: Device[] }) {
-    const [isPending, startTransition] = useTransition();
-
-    const handleRevoke = (id: string) => {
-        if (confirm("Revoke workstation access? You will be logged out of this device immediately.")) {
-            startTransition(() => {
-                revokeDevice(id);
-            });
-        }
-    };
-
-    if (devices.length === 0) {
-        return (
-            <div className="text-[13px] text-black/40 bg-black/[0.02] rounded-xl p-10 border border-black/5 flex flex-col items-center justify-center text-center">
-                <Monitor className="w-9 h-9 text-black/20 mb-4" />
-                <p className="font-medium text-black/60">No active workstations</p>
-                <p className="mt-1 max-w-[200px]">Link your first device by signing into the Quartz desktop app.</p>
-            </div>
-        );
+const DEVICES = [
+    {
+        id: '1',
+        name: "Aiden's MacBook Pro",
+        os: "macOS 14.2.1",
+        lastSeen: "Online Now",
+        added: "Feb 12, 2026",
     }
+];
 
+export default function DeviceList() {
     return (
-        <div className="divide-y divide-black/[0.04]">
-            {devices.map(device => (
-                <div key={device.id} className="py-5 flex items-center justify-between group transition-colors">
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-black/[0.03] border border-black/[0.05] flex items-center justify-center text-black/40 group-hover:bg-black group-hover:text-white transition-all duration-300">
-                            <Monitor weight="bold" className="w-5 h-5" />
+        <div className="divide-y divide-white/[0.04]">
+            {DEVICES.map((device) => (
+                <div key={device.id} className="group p-8 hover:bg-white/[0.01] transition-all duration-300">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-start gap-5">
+                            <div className="w-12 h-12 rounded-xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center text-white/20 group-hover:text-white/40 group-hover:border-white/10 transition-all duration-500">
+                                <Desktop weight="light" className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="text-[16px] font-light text-white/90 mb-1 flex items-center gap-3">
+                                    {device.name}
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
+                                </h3>
+                                <div className="flex flex-wrap items-center gap-y-2 gap-x-5 mt-2">
+                                    <div className="flex items-center gap-2 text-[12px] text-white/30 font-light">
+                                        <Tag className="w-3.5 h-3.5" />
+                                        {device.os}
+                                    </div>
+                                    <div className="flex items-center gap-2 text-[12px] text-white/30 font-light">
+                                        <Clock className="w-3.5 h-3.5" />
+                                        Last seen {device.lastSeen}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <div className="flex items-center gap-2">
-                                <h4 className="text-[14px] font-semibold text-black tracking-tight leading-none">
-                                    {device.name || "Unknown Workstation"}
-                                </h4>
-                                {new Date().getTime() - new Date(device.lastSeen).getTime() < 1000 * 60 * 60 * 24 ? (
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Online recently" />
-                                ) : null}
-                            </div>
-                            <div className="flex items-center gap-3 mt-1.5">
-                                <div className="flex items-center gap-1 text-[11px] font-medium text-black/40">
-                                    <Calendar className="w-3 h-3" />
-                                    Added {new Date(device.createdAt).toLocaleDateString()}
-                                </div>
-                                <div className="flex items-center gap-1 text-[11px] font-medium text-black/40">
-                                    <Clock className="w-3 h-3" />
-                                    Seen {new Date(device.lastSeen).toLocaleDateString()}
-                                </div>
-                            </div>
+
+                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <button className="p-2.5 rounded-lg bg-white/[0.05] border border-white/[0.1] text-white/40 hover:text-red-400 hover:border-red-400/30 transition-all" title="Deauthorize Device">
+                                <Trash weight="light" className="w-4.5 h-4.5" />
+                            </button>
                         </div>
                     </div>
-
-                    <button
-                        onClick={() => handleRevoke(device.id)}
-                        disabled={isPending}
-                        className="p-2.5 text-black/30 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all disabled:opacity-50"
-                        title="Revoke access"
-                    >
-                        <Trash weight="bold" className="w-4 h-4" />
-                    </button>
                 </div>
             ))}
         </div>

@@ -25,77 +25,79 @@ export default async function DashboardPage() {
     const monthsActive = Math.max(1, Math.round((Date.now() - memberSince.getTime()) / (1000 * 60 * 60 * 24 * 30)));
 
     return (
-        <div className="max-w-3xl py-10">
+        <div className="max-w-4xl">
             {/* Header */}
-            <div className="mb-10">
-                <h1 className="text-[28px] font-semibold tracking-tight text-black mb-1">
+            <div className="mb-12">
+                <h1 className="text-[42px] font-extralight tracking-[-0.04em] text-white leading-tight mb-2">
                     Welcome back{user.name ? `, ${user.name.split(' ')[0]}` : ''}.
                 </h1>
-                <p className="text-black/40 text-[14px]">Here's an overview of your Quartz account.</p>
+                <p className="text-white/30 text-[15px] font-light">Your Quartz account at a glance.</p>
             </div>
 
             {/* Stat Cards */}
-            <div className="grid grid-cols-3 gap-3 mb-8">
-                <div className="bg-white border border-black/[0.06] rounded-2xl p-5">
-                    <p className="text-[11px] font-semibold uppercase tracking-widest text-black/30 mb-2">Plan</p>
-                    <p className="text-[22px] font-semibold text-black tracking-tight">{isPro ? 'Pro' : 'Free'}</p>
-                    <p className="text-[12px] text-black/40 mt-1">{isPro ? 'Full access' : 'Limited access'}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+                <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.05] rounded-2xl p-6">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/20 mb-3">Plan</p>
+                    <p className="text-[24px] font-light text-white tracking-tight">{isPro ? 'Pro' : 'Free'}</p>
+                    <p className="text-[13px] text-white/30 mt-1 font-light">{isPro ? 'Unlimited Access' : 'Trialing Access'}</p>
                 </div>
-                <div className="bg-white border border-black/[0.06] rounded-2xl p-5">
-                    <p className="text-[11px] font-semibold uppercase tracking-widest text-black/30 mb-2">Member For</p>
-                    <p className="text-[22px] font-semibold text-black tracking-tight">{monthsActive}<span className="text-sm font-normal text-black/40 ml-1">mo</span></p>
-                    <p className="text-[12px] text-black/40 mt-1">Since {memberSince.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</p>
+                <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.05] rounded-2xl p-6">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/20 mb-3">Active For</p>
+                    <p className="text-[24px] font-light text-white tracking-tight">{monthsActive}<span className="text-[15px] font-extralight text-white/30 ml-1.5 whitespace-nowrap">Months</span></p>
+                    <p className="text-[13px] text-white/30 mt-1 font-light">Since {memberSince.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</p>
                 </div>
-                <div className="bg-white border border-black/[0.06] rounded-2xl p-5">
-                    <p className="text-[11px] font-semibold uppercase tracking-widest text-black/30 mb-2">Status</p>
-                    <div className="flex items-center gap-2 mt-1">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
-                        <p className="text-[22px] font-semibold text-black tracking-tight leading-none">Active</p>
+                <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.05] rounded-2xl p-6">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/20 mb-3">Status</p>
+                    <div className="flex items-center gap-2.5 mt-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
+                        <p className="text-[24px] font-light text-white tracking-tight leading-none">Active</p>
                     </div>
-                    <p className="text-[12px] text-black/40 mt-1">Account in good standing</p>
+                    <p className="text-[13px] text-white/30 mt-1 font-light">Verified Account</p>
                 </div>
             </div>
 
             {/* Profile Card */}
-            <div className="bg-white rounded-2xl border border-black/[0.06] overflow-hidden mb-4">
-                <div className="px-7 py-5 border-b border-black/[0.05] flex items-center justify-between">
-                    <h2 className="text-[14px] font-semibold text-black">Personal Information</h2>
+            <div className="bg-white/[0.02] border border-white/[0.04] rounded-2xl overflow-hidden mb-6">
+                <div className="px-8 flex items-center h-16 border-b border-white/[0.04]">
+                    <h2 className="text-[13px] font-bold uppercase tracking-[0.12em] text-white/20">Profile Details</h2>
                 </div>
-                <div className="p-7 flex flex-col md:flex-row gap-8 items-start">
+                <div className="p-8 flex flex-col md:flex-row gap-10 items-center md:items-start text-center md:text-left">
                     {/* Avatar */}
-                    <div className="w-20 h-20 rounded-full bg-black/5 border border-black/10 flex items-center justify-center text-2xl font-medium text-black/40 overflow-hidden flex-shrink-0">
+                    <div className="w-24 h-24 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-3xl font-extralight text-white/20 overflow-hidden flex-shrink-0 shadow-inner">
                         {user.image ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={user.image} alt="Avatar" className="w-full h-full object-cover" />
+                            <img src={user.image} alt="Avatar" className="w-full h-full object-cover grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-700" />
                         ) : (
                             <span>{user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'}</span>
                         )}
                     </div>
 
                     {/* Fields */}
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
                         <div>
-                            <label className="text-[11px] font-semibold text-black/35 uppercase tracking-wider mb-1.5 block">Full Name</label>
-                            <div className="text-[15px] font-medium text-black/90">{user.name || <span className="text-black/30 italic">Not provided</span>}</div>
+                            <label className="text-[10px] font-bold text-white/20 uppercase tracking-[0.15em] mb-2 block">Identity</label>
+                            <div className="text-[16px] font-light text-white/90">{user.name || <span className="text-white/20 italic">Anonymous</span>}</div>
                         </div>
                         <div>
-                            <label className="text-[11px] font-semibold text-black/35 uppercase tracking-wider mb-1.5 block">Email Address</label>
-                            <div className="text-[15px] font-medium text-black/90">{user.email}</div>
+                            <label className="text-[10px] font-bold text-white/20 uppercase tracking-[0.15em] mb-2 block">Communication</label>
+                            <div className="text-[16px] font-light text-white/90">{user.email}</div>
                         </div>
                         <div>
-                            <label className="text-[11px] font-semibold text-black/35 uppercase tracking-wider mb-1.5 block">Member Since</label>
-                            <div className="text-[15px] font-medium text-black/70">
-                                {memberSince.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                            <label className="text-[10px] font-bold text-white/20 uppercase tracking-[0.15em] mb-2 block">Origin</label>
+                            <div className="text-[16px] font-light text-white/50">
+                                {memberSince.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                             </div>
                         </div>
                         <div>
-                            <label className="text-[11px] font-semibold text-black/35 uppercase tracking-wider mb-1.5 block">Subscription</label>
-                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[12px] font-medium ${isPro
-                                ? 'bg-black text-white'
-                                : 'bg-black/[0.06] text-black/60'
-                                }`}>
-                                {isPro ? 'Pro Plan' : 'Free Tier'}
-                            </span>
+                            <label className="text-[10px] font-bold text-white/20 uppercase tracking-[0.15em] mb-2 block">License</label>
+                            <div className="pt-0.5">
+                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] font-medium tracking-wide ${isPro
+                                    ? 'bg-white text-black'
+                                    : 'bg-white/[0.05] text-white/40'
+                                    }`}>
+                                    {isPro ? 'QUARTZ PRO' : 'FREE TIER'}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -103,16 +105,16 @@ export default async function DashboardPage() {
 
             {/* Quick Links */}
             {!isPro && (
-                <div className="bg-black rounded-2xl p-6 flex items-center justify-between">
-                    <div>
-                        <p className="text-white font-semibold text-[15px] mb-1">Upgrade to Pro</p>
-                        <p className="text-white/50 text-[13px]">Get full access to AI culling, audio sync, and XML export.</p>
+                <div className="bg-white text-black rounded-2xl p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_20px_40px_rgba(0,0,0,0.3)]">
+                    <div className="text-center md:text-left">
+                        <p className="font-semibold text-[18px] tracking-tight mb-1">Scale your studio with Pro.</p>
+                        <p className="text-black/50 text-[14px] font-light">Unlock automated project assembly and multi-seat licensing.</p>
                     </div>
                     <Link
                         href="/pricing"
-                        className="flex-shrink-0 ml-6 px-5 py-2.5 bg-white text-black text-[13px] font-semibold rounded-xl hover:bg-white/90 transition-colors"
+                        className="flex-shrink-0 px-6 py-3 bg-black text-white text-[13px] font-bold uppercase tracking-widest rounded-xl hover:scale-[1.02] transition-all duration-300"
                     >
-                        View Plans →
+                        Explore Pro
                     </Link>
                 </div>
             )}
