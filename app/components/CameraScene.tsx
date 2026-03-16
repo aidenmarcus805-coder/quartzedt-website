@@ -9,6 +9,9 @@ import { useRef, Suspense, useEffect, useState, useMemo, useCallback } from 'rea
 import * as THREE from 'three';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
+import { Syne } from 'next/font/google';
+
+const syneFont = Syne({ subsets: ['latin'], weight: ['800'] });
 
 // Create rounded rectangle geometry with proper UVs
 function createRoundedRectGeometry(width: number, height: number, radius: number) {
@@ -1277,7 +1280,7 @@ export default function CameraScene({
                   <div className="overflow-hidden pb-4">
                     <h1
                       ref={domTitleH1Ref}
-                      className="text-[clamp(56px,10vw,140px)] font-extralight leading-[0.9] tracking-[-0.05em] text-current md:whitespace-nowrap transition-colors duration-500"
+                      className={`${syneFont.className} text-[clamp(48px,8vw,120px)] font-semibold leading-[0.85] tracking-[-0.06em] text-current md:whitespace-nowrap transition-colors duration-500 font-syne`}
                       style={{
                         transform: 'translate3d(0, 100%, 0)',
                         willChange: 'transform',

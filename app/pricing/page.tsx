@@ -9,6 +9,9 @@ import { NavDropdown } from '../components/NavDropdown';
 import { useSession } from 'next-auth/react';
 import { UserMenu } from '../components/UserMenu';
 import { Slider } from "@/components/ui/slider";
+import { Syne } from 'next/font/google';
+
+const syneFont = Syne({ subsets: ['latin'] });
 
 const NAV_CATEGORIES = [
   {
@@ -35,21 +38,16 @@ const NAV_CATEGORIES = [
   },
 ];
 
-const CONTACT_TIERS = [1, 5, 10, 15, 1000]; // 1K to 1M (represented as 1000K)
+const CONTACT_TIERS = [1, 2, 4, 8, 12]; // Weddings per month tiers
 
 export default function PricingPage() {
   const { data: session } = useSession();
-  const [contacts, setContacts] = useState([5]); // Default to 5K
+  const [weddings, setWeddings] = useState([2]); // Default to 2 weddings
 
-  const currentContacts = contacts[0];
+  const currentWeddings = weddings[0];
 
-  const getPrice = (base: number) => {
-    // Simple logic to scale price with volume
-    if (currentContacts <= 5) return base;
-    if (currentContacts <= 10) return base + 20;
-    if (currentContacts <= 15) return base + 40;
-    return base + 200; // 1M tier
-  };
+  const getSoloPrice = () => 79.99;
+  const getStudioPrice = () => 199.99;
 
   return (
     <main className="min-h-screen bg-white text-[#050504] selection:bg-[#E5E5E5] selection:text-[#050504] antialiased flex flex-col items-center pb-32">
@@ -94,60 +92,76 @@ export default function PricingPage() {
            initial={{ opacity: 0, y: 16 }}
            animate={{ opacity: 1, y: 0 }}
            transition={{ duration: 0.8 }}
-           className="max-w-2xl mx-auto"
+           className="max-w-5xl mx-auto"
         >
-          <h1 className="text-[44px] md:text-[56px] tracking-tighter font-bold text-[#050504] leading-[1.05] mb-4">
-            Start your journey today
+          <h1 className={`${syneFont.className} text-[36px] md:text-[52px] tracking-tighter font-semibold text-[#1a1a1a] leading-[1.1] mb-6 font-syne`}>
+            Give your films the time they deserve.
           </h1>
-          <p className="text-[16px] md:text-[18px] text-zinc-500 font-normal max-w-lg mx-auto leading-relaxed">
-            Start creating realtime design experiences for free. Upgrade for extra features and collaboration with your team.
+          <p className="text-[17px] md:text-[19px] text-zinc-500 font-normal max-w-xl mx-auto leading-relaxed">
+            Stop spending weekends buried in timelines. Quartz builds story-driven, NLE-ready wedding sequences while you sleep.
           </p>
         </motion.div>
       </section>
 
       {/* Slider Section */}
-      <section className="w-full max-w-2xl mx-auto px-6 mb-20 text-center">
-        <div className="mb-6">
-            <span className="text-sm font-medium text-zinc-500">{currentContacts === 1000 ? '1M' : `${currentContacts}K`} contacts/month</span>
-        </div>
-        <div className="relative pt-2 pb-8">
+      <section className="w-full max-w-md mx-auto px-6 mb-24 text-center">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="mb-8"
+        >
+            <span className="text-[14px] font-syne tracking-tight text-black font-bold">{currentWeddings} weddings / month</span>
+        </motion.div>
+        <div className="relative group px-1">
             <Slider 
-                defaultValue={[5]} 
-                max={15} 
+                defaultValue={[2]} 
+                max={12} 
                 min={1} 
                 step={1} 
-                value={contacts}
-                onValueChange={(val: number[]) => setContacts(val)}
+                value={weddings}
+                onValueChange={(val) => setWeddings(Array.isArray(val) ? val : [val])}
                 className="w-full"
             />
             {/* Custom Markers */}
-            <div className="absolute top-10 left-0 right-0 flex justify-between px-1">
-                {['1K', '5K', '10K', '15K', '1M'].map((mark) => (
-                    <span key={mark} className="text-[11px] font-mono text-zinc-400 uppercase tracking-tighter">{mark}</span>
+            <div className="absolute top-8 left-0 right-0 flex justify-between px-1">
+                {[1, 2, 4, 8, 12].map((mark) => (
+                    <span 
+                      key={mark} 
+                      className={`text-[10px] font-mono transition-all duration-300 ${currentWeddings === mark ? "text-black font-bold scale-110" : "text-zinc-200"}`}
+                    >
+                      {mark}
+                    </span>
                 ))}
             </div>
         </div>
       </section>
 
       {/* Pricing Cards Container */}
-      <section className="w-full max-w-6xl mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+      <section className="w-full max-w-5xl mx-auto px-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch max-w-4xl mx-auto">
           
-          {/* Essential Plan */}
-          <div className="p-8 rounded-2xl bg-white border border-zinc-200 flex flex-col shadow-sm">
-            <h2 className="text-[20px] font-bold tracking-tight mb-4">Essential</h2>
+          {/* Solo Plan */}
+          <div className={`p-8 rounded-2xl bg-white border border-zinc-200 flex flex-col shadow-sm transition-opacity duration-300 ${currentWeddings > 4 ? 'opacity-50 grayscale' : 'opacity-100'}`}>
+            <h2 className="text-[20px] font-bold tracking-tight mb-4">Quartz Solo</h2>
             <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-[40px] font-bold tracking-tighter">${getPrice(19)}</span>
+                <span className="text-[40px] font-bold tracking-tighter">$79.99</span>
                 <span className="text-zinc-500 text-sm font-medium">/mo</span>
             </div>
             <p className="text-sm text-zinc-500 leading-relaxed mb-8">
-                For power users who want access to creative features.
+                Perfect for independent wedding filmmakers. Up to 4 weddings/month.
             </p>
             
-            <div className="space-y-4 mb-2">
+            <div className="space-y-4 mb-8">
                 <p className="text-xs font-bold uppercase tracking-widest text-[#050504]">Includes:</p>
                 <div className="space-y-3">
-                    {['Unlimited workspace boards', 'Unlimited viewers', 'Unlimited project templates'].map((f) => (
+                    {[
+                      'Up to 4 weddings per month',
+                      'All core features: ingest, sync, culling',
+                      'Ceremony, reception, and highlight sequences',
+                      'Premiere, Resolve, and FCP support',
+                      'Standard processing'
+                    ].map((f) => (
                         <div key={f} className="flex items-start gap-3">
                             <Check className="w-4 h-4 text-emerald-500 mt-0.5" />
                             <span className="text-sm text-zinc-500">{f}</span>
@@ -155,27 +169,37 @@ export default function PricingPage() {
                     ))}
                 </div>
             </div>
+
+            <Link href="/signup" className="mt-auto w-full bg-black text-white rounded-xl h-12 flex items-center justify-center text-[14px] font-semibold hover:bg-black/80 transition-colors">
+              Start Free Trial
+            </Link>
           </div>
 
-          {/* Premium Plan - Highlighted */}
+          {/* Studio Plan - Highlighted */}
           <div className="p-8 rounded-2xl bg-[#050504] border border-[#050504] flex flex-col shadow-xl relative overflow-hidden group">
-            <div className="absolute top-4 right-4 text-zinc-400 rotate-12 opacity-50">
+            <div className="absolute top-4 right-4 text-zinc-400 rotate-12 opacity-50 group-hover:opacity-80 transition-opacity">
                 <Sparkle weight="fill" className="w-12 h-12" />
             </div>
 
-            <h2 className="text-[20px] font-bold tracking-tight text-white mb-4">Premium</h2>
+            <h2 className="text-[20px] font-bold tracking-tight text-white mb-4">Quartz Studio</h2>
             <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-[40px] font-bold tracking-tighter text-white">${getPrice(29)}</span>
+                <span className="text-[40px] font-bold tracking-tighter text-white">$199.99</span>
                 <span className="text-zinc-400 text-sm font-medium">/mo</span>
             </div>
             <p className="text-sm text-zinc-400 leading-relaxed mb-8">
-                For creative organizations that need full control & support.
+                Built for small studios and multi-shooter teams. Up to 12 weddings/month.
             </p>
             
-            <div className="space-y-4 mb-2">
+            <div className="space-y-4 mb-8">
                 <p className="text-xs font-bold uppercase tracking-widest text-zinc-500">Includes:</p>
                 <div className="space-y-3">
-                    {['Unlimited workspace boards', 'Unlimited viewers', 'Unlimited project templates'].map((f) => (
+                    {[
+                      'Up to 12 weddings per month',
+                      'All Solo features included',
+                      'Multiple team seats',
+                      'Priority processing queue',
+                      'Batch upload multiple weddings'
+                    ].map((f) => (
                         <div key={f} className="flex items-start gap-3">
                             <Check className="w-4 h-4 text-emerald-500 mt-0.5" />
                             <span className="text-sm text-zinc-400 underline decoration-zinc-800 underline-offset-4">{f}</span>
@@ -183,38 +207,42 @@ export default function PricingPage() {
                     ))}
                 </div>
             </div>
-          </div>
 
-          {/* Enterprise Plan */}
-          <div className="p-8 rounded-2xl bg-white border border-zinc-200 flex flex-col shadow-sm">
-            <h2 className="text-[20px] font-bold tracking-tight mb-4">Enterprise</h2>
-            <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-[40px] font-bold tracking-tighter">${getPrice(59)}</span>
-                <span className="text-zinc-500 text-sm font-medium">/mo</span>
-            </div>
-            <p className="text-sm text-zinc-500 leading-relaxed mb-8">
-                For creative organizations that need full control & support.
-            </p>
-            
-            <div className="space-y-4 mb-2">
-                <p className="text-xs font-bold uppercase tracking-widest text-[#050504]">Includes:</p>
-                <div className="space-y-3">
-                    {['Unlimited workspace boards', 'Unlimited viewers', 'Unlimited project templates'].map((f) => (
-                        <div key={f} className="flex items-start gap-3">
-                            <Check className="w-4 h-4 text-emerald-500 mt-0.5" />
-                            <span className="text-sm text-zinc-500">{f}</span>
-                        </div>
-                    ))}
-                </div>
-            </div>
+            <Link href="/signup" className="mt-auto w-full bg-white text-black rounded-xl h-12 flex items-center justify-center text-[14px] font-semibold hover:bg-zinc-200 transition-colors">
+              Get Started
+            </Link>
           </div>
 
         </div>
+
+        {/* Social Addon - Subdued secondary element as in strategy */}
+        <div className="mt-12 bg-zinc-50 border border-zinc-200 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 max-w-4xl mx-auto">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-white border border-zinc-200 flex items-center justify-center">
+              <Sparkle weight="duotone" className="w-6 h-6 text-[#050504]" />
+            </div>
+            <div>
+              <h3 className="text-[17px] font-bold tracking-tight">Quartz Social Add-on</h3>
+              <p className="text-sm text-zinc-500">Unlimited vertical reel generation from your highlights + AI captions.</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-lg font-bold">+$20.00 <span className="text-xs text-zinc-400 font-normal">/mo</span></span>
+            <Link href="/signup" className="bg-black text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-black/80 transition-colors">
+              Add to Plan
+            </Link>
+          </div>
+        </div>
       </section>
 
-      <p className="mt-20 text-xs text-zinc-400 text-center max-w-lg">
-        Pricing scales with your team size and data volume. All plans include 256-bit SSL encryption and daily backups.
-      </p>
+      <div className="mt-20 text-center max-w-2xl px-6">
+        <p className="text-sm font-medium text-zinc-600 mb-2">
+          "Outsourcing a single wedding edit costs $250-$400. Quartz Solo handles 4 weddings for $79.99—that's under $20 per wedding."
+        </p>
+        <p className="text-xs text-zinc-400">
+          All plans include Premiere Pro, Resolve, and Final Cut Pro support. 2 weddings free trial.
+        </p>
+      </div>
 
     </main>
   );

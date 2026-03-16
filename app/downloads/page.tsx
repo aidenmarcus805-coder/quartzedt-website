@@ -10,6 +10,9 @@ import { ArrowSquareOut } from '@phosphor-icons/react';
 import { SiteLogoMenu } from '../components/SiteLogoMenu';
 import { UserMenu } from '../components/UserMenu';
 import { NavDropdown } from '../components/NavDropdown';
+import { Syne } from 'next/font/google';
+
+const syneFont = Syne({ subsets: ['latin'], weight: ['600'] });
 
 const MAC_URL = process.env.NEXT_PUBLIC_DESKTOP_DOWNLOAD_MAC_URL || '';
 const WINDOWS_URL = process.env.NEXT_PUBLIC_DESKTOP_DOWNLOAD_WINDOWS_URL || '';
@@ -159,7 +162,7 @@ export default function DownloadsPage() {
                         initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                        className="text-[42px] md:text-[56px] font-light tracking-tight text-black leading-tight"
+                        className={`${syneFont.className} text-[38px] md:text-[52px] font-semibold tracking-[-0.04em] text-[#1a1a1a] leading-tight font-syne`}
                     >
                         Download Quartz
                     </motion.h1>

@@ -1,0 +1,174 @@
+﻿
+> autocut@0.1.0 build
+> npx prisma generate && npx prisma db push && next build
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+
+Γ£ö Generated Prisma Client (v6.4.1) to .\node_modules\@prisma\client in 39ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Easily identify and fix slow SQL queries in your app. Optimize helps you enhance your visibility: https://pris.ly/--optimize
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "postgres", schema "public" at "aws-0-us-west-2.pooler.supabase.com:5432"
+
+The database is already in sync with the Prisma schema.
+
+Running generate... (Use --skip-generate to skip the generators)
+[2K[1A[2K[GRunning generate... - Prisma Client
+[2K[1A[2K[GΓ£ö Generated Prisma Client (v6.4.1) to .\node_modules\@prisma\client in 38ms
+
+   Γû▓ Next.js 15.5.7
+   - Environments: .env
+
+   Creating an optimized production build ...
+node.exe : [baseline-browser-mapping] The data in this module 
+is over two months old.  To ensure accurate Baseline data, 
+please update: `npm i baseline-browser-mapping@latest -D`
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Users\aiden_eh9lsbw\AppData\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~
+    + CategoryInfo          : NotSpecified: ([baseline-brows... 
+   ping@latest -D`:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+[1m[33mwarn[39m[22m - The class `ease-[0.16,1,0.3,1]` is 
+ambiguous and matches multiple utilities.
+[1m[33mwarn[39m[22m - If this is content and not a class, 
+replace it with `ease-&lsqb;0.16,1,0.3,1&rsqb;` to silence this 
+warning.
+
+[1m[33mwarn[39m[22m - The class 
+`ease-[cubic-bezier(0.16,1,0.3,1)]` is ambiguous and matches 
+multiple utilities.
+[1m[33mwarn[39m[22m - If this is content and not a class, 
+replace it with `ease-&lsqb;cubic-bezier(0.16,1,0.3,1)&rsqb;` 
+to silence this warning.
+<w> [webpack.cache.PackFileCacheStrategy] Skipped not 
+serializable cache item 'Compilation/modules|C:\Users\aiden_eh9l
+sbw\Documents\autocut\node_modules\next\dist\build\webpack\loade
+rs\css-loader\src\index.js??ruleSet[1].rules[14].oneOf[10].use[2
+]!C:\Users\aiden_eh9lsbw\Documents\autocut\node_modules\next\dis
+t\build\webpack\loaders\postcss-loader\src\index.js??ruleSet[1].
+rules[14].oneOf[10].use[3]!C:\Users\aiden_eh9lsbw\Documents\auto
+cut\app\globals.css': No serializer registered for 
+PostCSSSyntaxError
+<w> while serializing 
+webpack/lib/cache/PackFileCacheStrategy.PackContentItems -> 
+webpack/lib/NormalModule -> webpack/lib/ModuleBuildError -> 
+PostCSSSyntaxError
+Failed to compile.
+
+./app/globals.css:1:1
+Syntax error: 
+C:\Users\aiden_eh9lsbw\Documents\autocut\app\globals.css The 
+`outline-ring/50` class does not exist. If `outline-ring/50` is 
+a custom class, make sure it is defined within a `@layer` 
+directive.
+
+[1m[31m>[39m[22m[90m 1 | [39m[36m@tailwind[39m 
+base[33m;[39m
+ [90m   | [39m[1m[31m^[39m[22m
+ [90m 2 | [39m[36m@tailwind[39m components[33m;[39m
+ [90m 3 | [39m[36m@tailwind[39m utilities[33m;[39m
+
+./app/globals.css
+Syntax error: 
+C:\Users\aiden_eh9lsbw\Documents\autocut\app\globals.css The 
+`outline-ring/50` class does not exist. If `outline-ring/50` is 
+a custom class, make sure it is defined within a `@layer` 
+directive. (1:1)
+
+[1m[31m>[39m[22m[90m 1 | [39m[36m@tailwind[39m 
+base[33m;[39m
+ [90m   | [39m[1m[31m^[39m[22m
+ [90m 2 | [39m[36m@tailwind[39m components[33m;[39m
+ [90m 3 | [39m[36m@tailwind[39m utilities[33m;[39m
+
+    at tryRunOrWebpackError (C:\Users\aiden_eh9lsbw\Documents\au
+tocut\node_modules\next\dist\compiled\webpack\bundle5.js:29:3161
+19)
+    at __webpack_require_module__ (C:\Users\aiden_eh9lsbw\Docume
+nts\autocut\node_modules\next\dist\compiled\webpack\bundle5.js:2
+9:131532)
+    at __nested_webpack_require_161494__ (C:\Users\aiden_eh9lsbw
+\Documents\autocut\node_modules\next\dist\compiled\webpack\bundl
+e5.js:29:130967)
+    at C:\Users\aiden_eh9lsbw\Documents\autocut\node_modules\nex
+t\dist\compiled\webpack\bundle5.js:29:131824
+    at symbolIterator (C:\Users\aiden_eh9lsbw\Documents\autocut\
+node_modules\next\dist\compiled\neo-async\async.js:1:14444)
+    at done (C:\Users\aiden_eh9lsbw\Documents\autocut\node_modul
+es\next\dist\compiled\neo-async\async.js:1:14824)
+    at Hook.eval [as callAsync] (eval at create (C:\Users\aiden_
+eh9lsbw\Documents\autocut\node_modules\next\dist\compiled\webpac
+k\bundle5.js:14:9224), <anonymous>:15:1)
+    at Hook.CALL_ASYNC_DELEGATE [as _callAsync] (C:\Users\aiden_
+eh9lsbw\Documents\autocut\node_modules\next\dist\compiled\webpac
+k\bundle5.js:14:6378)
+    at C:\Users\aiden_eh9lsbw\Documents\autocut\node_modules\nex
+t\dist\compiled\webpack\bundle5.js:29:130687
+    at symbolIterator (C:\Users\aiden_eh9lsbw\Documents\autocut\
+node_modules\next\dist\compiled\neo-async\async.js:1:14402)
+-- inner error --
+Syntax error: 
+C:\Users\aiden_eh9lsbw\Documents\autocut\app\globals.css The 
+`outline-ring/50` class does not exist. If `outline-ring/50` is 
+a custom class, make sure it is defined within a `@layer` 
+directive. (1:1)
+
+[1m[31m>[39m[22m[90m 1 | [39m[36m@tailwind[39m 
+base[33m;[39m
+ [90m   | [39m[1m[31m^[39m[22m
+ [90m 2 | [39m[36m@tailwind[39m components[33m;[39m
+ [90m 3 | [39m[36m@tailwind[39m utilities[33m;[39m
+
+    at Object.<anonymous> (C:\Users\aiden_eh9lsbw\Documents\auto
+cut\node_modules\next\dist\build\webpack\loaders\css-loader\src\
+index.js??ruleSet[1].rules[14].oneOf[10].use[2]!C:\Users\aiden_e
+h9lsbw\Documents\autocut\node_modules\next\dist\build\webpack\lo
+aders\postcss-loader\src\index.js??ruleSet[1].rules[14].oneOf[10
+].use[3]!C:\Users\aiden_eh9lsbw\Documents\autocut\app\globals.cs
+s:1:7)
+    at C:\Users\aiden_eh9lsbw\Documents\autocut\node_modules\nex
+t\dist\compiled\webpack\bundle5.js:29:962717
+    at Hook.eval [as call] (eval at create (C:\Users\aiden_eh9ls
+bw\Documents\autocut\node_modules\next\dist\compiled\webpack\bun
+dle5.js:14:9002), <anonymous>:7:1)
+    at Hook.CALL_DELEGATE [as _call] (C:\Users\aiden_eh9lsbw\Doc
+uments\autocut\node_modules\next\dist\compiled\webpack\bundle5.j
+s:14:6272)
+    at C:\Users\aiden_eh9lsbw\Documents\autocut\node_modules\nex
+t\dist\compiled\webpack\bundle5.js:29:131565
+    at tryRunOrWebpackError (C:\Users\aiden_eh9lsbw\Documents\au
+tocut\node_modules\next\dist\compiled\webpack\bundle5.js:29:3160
+73)
+    at __webpack_require_module__ (C:\Users\aiden_eh9lsbw\Docume
+nts\autocut\node_modules\next\dist\compiled\webpack\bundle5.js:2
+9:131532)
+    at __nested_webpack_require_161494__ (C:\Users\aiden_eh9lsbw
+\Documents\autocut\node_modules\next\dist\compiled\webpack\bundl
+e5.js:29:130967)
+    at C:\Users\aiden_eh9lsbw\Documents\autocut\node_modules\nex
+t\dist\compiled\webpack\bundle5.js:29:131824
+    at symbolIterator (C:\Users\aiden_eh9lsbw\Documents\autocut\
+node_modules\next\dist\compiled\neo-async\async.js:1:14444)
+
+Generated code for C:\Users\aiden_eh9lsbw\Documents\autocut\node
+_modules\next\dist\build\webpack\loaders\css-loader\src\index.js
+??ruleSet[1].rules[14].oneOf[10].use[2]!C:\Users\aiden_eh9lsbw\D
+ocuments\autocut\node_modules\next\dist\build\webpack\loaders\po
+stcss-loader\src\index.js??ruleSet[1].rules[14].oneOf[10].use[3]
+!C:\Users\aiden_eh9lsbw\Documents\autocut\app\globals.css
+
+Import trace for requested module:
+./app/globals.css
+
+
+> Build failed because of webpack errors
