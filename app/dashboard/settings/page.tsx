@@ -43,7 +43,8 @@ function SettingRow({ icon: Icon, title, description, children }: { icon: any; t
 export default function SettingsPage() {
     const [notifications, setNotifications] = useState({
         email: true,
-        push: false daily: true,
+        push: false,
+        daily: true,
     });
 
     const [beta, setBeta] = useState({
