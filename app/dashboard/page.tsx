@@ -25,77 +25,77 @@ export default async function DashboardPage() {
     const monthsActive = Math.max(1, Math.round((Date.now() - memberSince.getTime()) / (1000 * 60 * 60 * 24 * 30)));
 
     return (
-        <div className="max-w-4xl">
+        <div className="max-w-4xl space-y-8">
             {/* Header */}
-            <div className="mb-12">
-                <h1 className="text-[42px] font-extralight tracking-[-0.04em] text-white leading-tight mb-2">
+            <div>
+                <h1 className="text-2xl md:text-3xl font-medium tracking-tight text-white mb-1">
                     Welcome back{user.name ? `, ${user.name.split(' ')[0]}` : ''}.
                 </h1>
-                <p className="text-white/30 text-[15px] font-light">Your Quartz account at a glance.</p>
+                <p className="text-white/30 text-sm font-normal">Dashboard overview of your Quartz account.</p>
             </div>
 
-            {/* Stat Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-                <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.05] rounded-2xl p-6">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/20 mb-3">Plan</p>
-                    <p className="text-[24px] font-light text-white tracking-tight">{isPro ? 'Pro' : 'Free'}</p>
-                    <p className="text-[13px] text-white/30 mt-1 font-light">{isPro ? 'Unlimited Access' : 'Trialing Access'}</p>
+            {/* Stat Cards - Dense Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="bg-white/[0.03] border border-white/[0.05] rounded-xl p-4">
+                    <p className="text-[10px] font-mono uppercase tracking-wider text-white/20 mb-2">Plan</p>
+                    <p className="text-xl font-medium text-white tracking-tight">{isPro ? 'Pro' : 'Free'}</p>
+                    <p className="text-xs text-white/30 mt-0.5 font-normal">{isPro ? 'Full Access' : 'Trialing'}</p>
                 </div>
-                <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.05] rounded-2xl p-6">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/20 mb-3">Active For</p>
-                    <p className="text-[24px] font-light text-white tracking-tight">{monthsActive}<span className="text-[15px] font-extralight text-white/30 ml-1.5 whitespace-nowrap">Months</span></p>
-                    <p className="text-[13px] text-white/30 mt-1 font-light">Since {memberSince.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</p>
+                <div className="bg-white/[0.03] border border-white/[0.05] rounded-xl p-4">
+                    <p className="text-[10px] font-mono uppercase tracking-wider text-white/20 mb-2">Duration</p>
+                    <p className="text-xl font-medium text-white tracking-tight">{monthsActive}<span className="text-xs font-normal text-white/30 ml-1">Months</span></p>
+                    <p className="text-xs text-white/30 mt-0.5 font-normal">Since {memberSince.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</p>
                 </div>
-                <div className="bg-white/[0.03] backdrop-blur-md border border-white/[0.05] rounded-2xl p-6">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/20 mb-3">Status</p>
-                    <div className="flex items-center gap-2.5 mt-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
-                        <p className="text-[24px] font-light text-white tracking-tight leading-none">Active</p>
+                <div className="bg-white/[0.03] border border-white/[0.05] rounded-xl p-4">
+                    <p className="text-[10px] font-mono uppercase tracking-wider text-white/20 mb-2">Status</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/80" />
+                        <p className="text-xl font-medium text-white tracking-tight leading-none">Active</p>
                     </div>
-                    <p className="text-[13px] text-white/30 mt-1 font-light">Verified Account</p>
+                    <p className="text-xs text-white/30 mt-1 font-normal">Verified</p>
                 </div>
             </div>
 
-            {/* Profile Card */}
-            <div className="bg-white/[0.02] border border-white/[0.04] rounded-2xl overflow-hidden mb-6">
-                <div className="px-8 flex items-center h-16 border-b border-white/[0.04]">
-                    <h2 className="text-[13px] font-bold uppercase tracking-[0.12em] text-white/20">Profile Details</h2>
+            {/* Profile Card - Single Focus Column style */}
+            <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl overflow-hidden max-w-2xl">
+                <div className="px-5 h-12 flex items-center border-b border-white/[0.04] bg-white/[0.01]">
+                    <h2 className="text-[10px] font-mono uppercase tracking-wider text-white/20">Profile Details</h2>
                 </div>
-                <div className="p-8 flex flex-col md:flex-row gap-10 items-center md:items-start text-center md:text-left">
+                <div className="p-5 flex flex-col sm:flex-row gap-6 items-start">
                     {/* Avatar */}
-                    <div className="w-24 h-24 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-3xl font-extralight text-white/20 overflow-hidden flex-shrink-0 shadow-inner">
+                    <div className="w-16 h-16 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-xl font-light text-white/20 overflow-hidden flex-shrink-0">
                         {user.image ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={user.image} alt="Avatar" className="w-full h-full object-cover grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all duration-700" />
+                            <img src={user.image} alt="Avatar" className="w-full h-full object-cover grayscale opacity-70" />
                         ) : (
                             <span>{user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'}</span>
                         )}
                     </div>
 
                     {/* Fields */}
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
+                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
                         <div>
-                            <label className="text-[10px] font-bold text-white/20 uppercase tracking-[0.15em] mb-2 block">Identity</label>
-                            <div className="text-[16px] font-light text-white/90">{user.name || <span className="text-white/20 italic">Anonymous</span>}</div>
+                            <label className="text-[10px] font-mono text-white/20 uppercase tracking-widest mb-1 block">Identity</label>
+                            <div className="text-sm font-normal text-white/90">{user.name || <span className="text-white/20 italic">Anonymous</span>}</div>
                         </div>
                         <div>
-                            <label className="text-[10px] font-bold text-white/20 uppercase tracking-[0.15em] mb-2 block">Communication</label>
-                            <div className="text-[16px] font-light text-white/90">{user.email}</div>
+                            <label className="text-[10px] font-mono text-white/20 uppercase tracking-widest mb-1 block">Contact</label>
+                            <div className="text-sm font-normal text-white/90">{user.email}</div>
                         </div>
                         <div>
-                            <label className="text-[10px] font-bold text-white/20 uppercase tracking-[0.15em] mb-2 block">Origin</label>
-                            <div className="text-[16px] font-light text-white/50">
+                            <label className="text-[10px] font-mono text-white/20 uppercase tracking-widest mb-1 block">Origin</label>
+                            <div className="text-sm font-normal text-white/50">
                                 {memberSince.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                             </div>
                         </div>
                         <div>
-                            <label className="text-[10px] font-bold text-white/20 uppercase tracking-[0.15em] mb-2 block">License</label>
+                            <label className="text-[10px] font-mono text-white/20 uppercase tracking-widest mb-1 block">License</label>
                             <div className="pt-0.5">
-                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] font-medium tracking-wide ${isPro
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-tight ${isPro
                                     ? 'bg-white text-black'
                                     : 'bg-white/[0.05] text-white/40'
                                     }`}>
-                                    {isPro ? 'QUARTZ PRO' : 'FREE TIER'}
+                                    {isPro ? 'PRO' : 'FREE'}
                                 </span>
                             </div>
                         </div>
@@ -103,16 +103,16 @@ export default async function DashboardPage() {
                 </div>
             </div>
 
-            {/* Quick Links */}
+            {/* Quick Links / CTA */}
             {!isPro && (
-                <div className="bg-white text-black rounded-2xl p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_20px_40px_rgba(0,0,0,0.3)]">
+                <div className="bg-white text-black rounded-xl p-5 flex flex-col md:flex-row items-center justify-between gap-4 max-w-2xl">
                     <div className="text-center md:text-left">
-                        <p className="font-semibold text-[18px] tracking-tight mb-1">Scale your studio with Pro.</p>
-                        <p className="text-black/50 text-[14px] font-light">Unlock automated project assembly and multi-seat licensing.</p>
+                        <p className="font-medium text-base tracking-tight mb-0.5">Scale your studio with Pro.</p>
+                        <p className="text-black/50 text-xs font-normal">Automated assembly and multi-seat sync.</p>
                     </div>
                     <Link
                         href="/pricing"
-                        className="flex-shrink-0 px-6 py-3 bg-black text-white text-[13px] font-bold uppercase tracking-widest rounded-xl hover:scale-[1.02] transition-all duration-300"
+                        className="flex-shrink-0 px-6 py-2 bg-black text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-black/90 transition-colors"
                     >
                         Explore Pro
                     </Link>

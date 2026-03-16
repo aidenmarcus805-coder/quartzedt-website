@@ -20,8 +20,8 @@ export default async function DashboardLayout({
             <Sidebar />
 
             {/* Main Content Area */}
-            <main className="flex-1 min-w-0 flex flex-col pt-12 md:pt-16 px-6 md:px-12 lg:px-20 pb-24 h-screen overflow-y-auto">
-                <div className="max-w-[1200px] w-full">
+            <main className="flex-1 min-w-0 flex flex-col pt-16 md:pt-20 px-8 md:px-12 pb-20 h-screen overflow-y-auto">
+                <div className="max-w-4xl w-full leading-relaxed">
                     {children}
                 </div>
             </main>

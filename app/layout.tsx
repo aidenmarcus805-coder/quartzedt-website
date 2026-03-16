@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
-import { Syne, DM_Sans, Playfair_Display } from 'next/font/google';
+import { Syne, DM_Sans, Playfair_Display, Geist } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from './components/AuthProvider';
 import { ScrollToTopOnLoad } from './components/ScrollToTopOnLoad';
 import { SmoothScroll } from './components/SmoothScroll';
+import { cn } from "@/lib/utils";
 
 const syne = Syne({
   variable: '--font-display',
@@ -11,12 +12,7 @@ const syne = Syne({
   display: 'swap',
 });
 
-const dmSans = DM_Sans({
-  variable: '--font-sans',
-  subsets: ['latin'],
-  display: 'swap',
-  weight: ['300', '400', '500'],
-});
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const playfair = Playfair_Display({
   variable: '--font-script',
@@ -123,7 +119,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en" className={`${syne.variable} ${dmSans.variable} ${playfair.variable}`} suppressHydrationWarning>
+    <html lang="en" className={cn(syne.variable, playfair.variable, "font-sans", geist.variable)} suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
