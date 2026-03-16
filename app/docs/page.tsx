@@ -54,7 +54,7 @@ const FAQ = [
 
 export default function DocsPage() {
   return (
-    <div className="min-h-screen bg-white text-black">
+    <div className="min-h-screen bg-[#FAF9F6] text-black">
       <section className="border-b border-black/5 bg-black text-white">
         <div className="mx-auto max-w-7xl px-6 py-24 md:px-10 md:py-28">
           <motion.div

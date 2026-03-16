@@ -68,7 +68,7 @@ export default function DownloadsPage() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-[#f5f5f0] text-black antialiased selection:bg-black selection:text-white">
+        <div className="min-h-screen bg-[#FAF9F6] text-black antialiased selection:bg-black selection:text-white">
 
             {/* ── Navigation - Cinema Bar (Unfied with Home) ─────────────────── */}
             <motion.nav
@@ -141,7 +141,7 @@ export default function DownloadsPage() {
                     className="absolute inset-0 pointer-events-none"
                     style={{
                         background:
-                            'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, transparent 30%, transparent 60%, #f5f5f0 100%)',
+                            'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, transparent 30%, transparent 60%, #FAF9F6 100%)',
                     }}
                 />
 

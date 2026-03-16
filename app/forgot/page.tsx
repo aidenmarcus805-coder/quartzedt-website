@@ -23,9 +23,9 @@ export default function ForgotPasswordPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col items-center justify-center p-6 antialiased relative overflow-hidden">
+        <div className="min-h-screen bg-[#FAF9F6] text-[#050504] flex flex-col items-center justify-center p-6 antialiased relative overflow-hidden">
             {/* Background: Subtle gradient for "lighter" tone than the pure black signin */}
-            <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_top,_#111_0%,_#050505_100%)] opacity-80" />
+            <div className="absolute inset-0 z-0 bg-transparent opacity-80" />
 
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -46,7 +46,7 @@ export default function ForgotPasswordPage() {
                     </Link>
                 </div>
 
-                <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-8 md:p-10 backdrop-blur-sm shadow-2xl">
+                <div className="bg-white border border-black/5 rounded-2xl p-8 md:p-10 backdrop-blur-sm shadow-sm">
                     <AnimatePresence mode="wait">
                         {!isSubmitted ? (
                             <motion.div
@@ -57,23 +57,23 @@ export default function ForgotPasswordPage() {
                                 className="space-y-6"
                             >
                                 <div className="space-y-2 text-center">
-                                    <h1 className="text-2xl font-light tracking-tight">Reset Password</h1>
-                                    <p className="text-sm text-white/40 font-light">
+                                    <h1 className="text-2xl font-light tracking-tight text-black">Reset Password</h1>
+                                    <p className="text-sm text-black/50 font-light">
                                         Enter your email address and we&apos;ll send you a link to reset your password.
                                     </p>
                                 </div>
 
                                 <form onSubmit={handleSubmit} className="space-y-4">
-                                    <div className="relative overflow-hidden rounded-xl bg-black/40 border border-white/[0.08] focus-within:border-white/20 transition-all h-12 flex items-center">
+                                    <div className="relative overflow-hidden rounded-xl bg-transparent border border-black/10 focus-within:border-black/30 transition-all h-12 flex items-center">
                                         <div className="absolute left-4">
-                                            <Envelope className="w-4 h-4 text-white/20" />
+                                            <Envelope className="w-4 h-4 text-black/40" />
                                         </div>
                                         <input
                                             type="email"
                                             placeholder="name@example.com"
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
-                                            className="w-full h-full bg-transparent pl-12 pr-4 text-sm font-light placeholder:text-white/10 focus:outline-none transition-all text-white/90"
+                                            className="w-full h-full bg-transparent pl-12 pr-4 text-sm font-light placeholder:text-black/30 focus:outline-none transition-all text-black"
                                             required
                                         />
                                     </div>
@@ -81,7 +81,7 @@ export default function ForgotPasswordPage() {
                                     <button
                                         type="submit"
                                         disabled={isLoading}
-                                        className="w-full bg-white text-black rounded-xl h-12 text-sm font-semibold hover:bg-[#eee] transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
+                                        className="w-full bg-black text-white rounded-xl h-12 text-sm font-semibold hover:bg-black/90 transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
                                     >
                                         {isLoading ? (
                                             <CircleNotch className="w-4 h-4 animate-spin" />
@@ -94,7 +94,7 @@ export default function ForgotPasswordPage() {
                                 <div className="text-center pt-2">
                                     <Link
                                         href="/signin"
-                                        className="inline-flex items-center gap-2 text-xs text-white/20 hover:text-white/50 transition-colors tracking-tight"
+                                        className="inline-flex items-center gap-2 text-xs text-black/40 hover:text-black/70 transition-colors tracking-tight"
                                     >
                                         <ArrowLeft className="w-3 h-3" />
                                         Back to Sign In
@@ -115,17 +115,17 @@ export default function ForgotPasswordPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <h2 className="text-xl font-light tracking-tight">Check your email</h2>
-                                    <p className="text-sm text-white/40 font-light leading-relaxed">
+                                    <h2 className="text-xl font-light tracking-tight text-black">Check your email</h2>
+                                    <p className="text-sm text-black/40 font-light leading-relaxed">
                                         We&apos;ve sent a password reset link to <br />
-                                        <span className="text-white/80 font-medium">{email}</span>
+                                        <span className="text-black/80 font-medium">{email}</span>
                                     </p>
                                 </div>
 
                                 <div className="pt-4">
                                     <Link
                                         href="/signin"
-                                        className="inline-flex items-center gap-2 text-xs text-white/20 hover:text-white/50 transition-colors tracking-tight"
+                                        className="inline-flex items-center gap-2 text-xs text-black/40 hover:text-black/70 transition-colors tracking-tight"
                                     >
                                         <ArrowLeft className="w-3 h-3" />
                                         Return to Sign In

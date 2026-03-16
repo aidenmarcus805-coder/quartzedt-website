@@ -81,7 +81,7 @@ const TROUBLESHOOTING = [
 
 export default function GuidePage() {
   return (
-    <div className="min-h-screen bg-white text-black">
+    <div className="min-h-screen bg-[#FAF9F6] text-black">
       <section className="border-b border-black/5 bg-[radial-gradient(circle_at_top,rgba(0,0,0,0.05),transparent_40%)]">
         <div className="mx-auto max-w-7xl px-6 py-24 md:px-10 md:py-32">
           <motion.div

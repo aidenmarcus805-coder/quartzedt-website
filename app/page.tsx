@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion, useInView } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Check, FilmStrip, Minus, Scissors, MagnifyingGlass, UploadSimple, User } from '@phosphor-icons/react';
+import { ArrowLeft, ArrowRight, Check, FilmStrip, Minus, Scissors, MagnifyingGlass, UploadSimple, User, Plus } from '@phosphor-icons/react';
 
 // PRICING_PLAN and PLAN removed
 
@@ -78,53 +78,14 @@ function GlobalLoader() {
           transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
           className="fixed inset-0 z-[150] flex items-center justify-center bg-black pointer-events-none"
         >
-          {/* Minimalist animated camera aperture icon */}
-          <motion.svg
-            width="24"
-            height="24"
-            viewBox="0 0 100 100"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{
-              opacity: 1,
-              scale: [1, 0.92, 1],
-              rotate: [0, 60, 120],
-            }}
-            transition={{
-              opacity: { duration: 0.6, ease: "easeOut" },
-              scale: {
-                duration: 2.4,
-                repeat: Infinity,
-                ease: [0.16, 1, 0.3, 1],
-              },
-              rotate: {
-                duration: 2.4,
-                repeat: Infinity,
-                ease: [0.16, 1, 0.3, 1],
-              },
-            }}
-          >
-            {/* 6-blade camera iris */}
-            {[0, 60, 120, 180, 240, 300].map((angle) => (
-              <motion.path
-                key={angle}
-                d="M50 50 L50 12 A38 38 0 0 1 82.9 31 Z"
-                fill="white"
-                style={{
-                  transformOrigin: '50px 50px',
-                  transform: `rotate(${angle}deg)`,
-                }}
-              />
-            ))}
-            {/* Center hole */}
-            <circle cx="50" cy="50" r="14" fill="black" />
-          </motion.svg>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logoAnimated.gif" alt="Loading" className="h-16 w-auto" />
         </motion.div>
       )}
     </AnimatePresence>
   );
 }
+
 
 // Reveal animation wrapper - more subtle
 function Reveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
@@ -343,6 +304,7 @@ export default function Home() {
   }, [workflowIdx, workflowAdvance, workflowLocked, workflowHasInteracted]);
 
   const [lowPowerMode, setLowPowerMode] = useState(false);
+  const [openProblemIdx, setOpenProblemIdx] = useState<number | null>(null);
 
   // Handle scroll for HUD state and color toggling
   useEffect(() => {
@@ -456,7 +418,7 @@ export default function Home() {
   const shutterContainerRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div ref={containerRef} className="bg-white text-black min-h-screen selection:bg-black selection:text-white antialiased">
+    <div ref={containerRef} className="bg-[#FAF9F6] text-black min-h-screen selection:bg-black selection:text-white antialiased">
       <GlobalLoader />
 
       {/* Navigation - Cinema Bar (Pro Tech) */}
@@ -726,7 +688,7 @@ export default function Home() {
         id="workflow"
         ref={firstWhiteRef}
         data-nav="light"
-        className="relative bg-paper text-black border-b border-black/5"
+        className="relative bg-[#FAF9F6] text-black border-b border-black/5"
       >
 
 
@@ -737,68 +699,23 @@ export default function Home() {
             height: `calc(100vh + ${WORKFLOW_DOOR_SCROLL_PX + WORKFLOW_SCROLL_PX_PER_STEP * WORKFLOW_STEPS.length}px)`,
           }}
         >
-          {/* Shutter Layer - Sticky on top of content (SVG Aperture) */}
+          {/* Loading overlay - animated logo only */}
           <div
             ref={shutterContainerRef}
-            className="sticky top-0 h-screen w-full z-50 pointer-events-none overflow-hidden flex items-center justify-center"
+            className="sticky top-0 h-screen w-full z-50 pointer-events-none flex items-center justify-center bg-[#050504]"
             style={{
               opacity: 'var(--shutter-opacity, 1)',
             }}
           >
-            {/* 8 Blades - Squares that translate outward. 
-                 Start: 8 squares meeting at center.
-                 End: They move outward radially.
-             */}
-            {/* SVG Mask Shutter - Guaranteed clean geometry + Mechanical lines */}
-            <svg
-              className="absolute inset-0 w-full h-full"
-              viewBox="0 0 100 100"
-              preserveAspectRatio="xMidYMid slice"
-            >
-              <defs>
-                <mask id="irisMask">
-                  <rect x="0" y="0" width="100" height="100" fill="white" />
-                  {/* The Hole: An Octagon that rotates and scales */}
-                  <polygon
-                    points="29.29,0 70.71,0 100,29.29 100,70.71 70.71,100 29.29,100 0,70.71 0,29.29"
-                    fill="black"
-                    style={{
-                      transformOrigin: '50% 50%',
-                      transform: 'rotate(calc(var(--shutter-progress, 0) * 720deg)) scale(calc(var(--shutter-progress, 0) * 20))',
-                    }}
-                  />
-                </mask>
-              </defs>
-              <rect x="0" y="0" width="100%" height="100%" fill="#000000" mask="url(#irisMask)" />
-
-              {/* Cosmetic Blade Edges - Adds "Mechanical" texture to avoid "flat cube" look */}
-              <g
-                style={{
-                  transformOrigin: '50% 50%',
-                  transform: 'rotate(calc(var(--shutter-progress, 0) * 720deg)) scale(calc(var(--shutter-progress, 0) * 20))',
-                  opacity: 0.15,
-                  pointerEvents: 'none',
-                }}
-              >
-                {/* 8 Spiral Lines radiating from the octagon vertices */}
-                {/* Vertices: 
-                    1: 29.29,0
-                    2: 70.71,0
-                    3: 100,29.29
-                    etc.
-                */}
-                <path d="M 70.71,0 L 100,-50" stroke="white" strokeWidth="0.5" />
-                <path d="M 100,29.29 L 150,0" stroke="white" strokeWidth="0.5" />
-                <path d="M 100,70.71 L 150,100" stroke="white" strokeWidth="0.5" />
-                <path d="M 70.71,100 L 100,150" stroke="white" strokeWidth="0.5" />
-                <path d="M 29.29,100 L 0,150" stroke="white" strokeWidth="0.5" />
-                <path d="M 0,70.71 L -50,100" stroke="white" strokeWidth="0.5" />
-                <path d="M 0,29.29 L -50,0" stroke="white" strokeWidth="0.5" />
-                <path d="M 29.29,0 L 0,-50" stroke="white" strokeWidth="0.5" />
-              </g>
-            </svg>
-
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logoAnimated.gif"
+              alt="Quartz"
+              className="h-16 w-auto"
+            />
           </div>
+
+
           {/* Dotted background (keep) */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
             <div
@@ -1103,7 +1020,7 @@ export default function Home() {
       </section>
 
       {/* Problems we solve */}
-      <section ref={philosophyRef} className="relative border-t border-black/5 bg-white text-black">
+      <section ref={philosophyRef} className="relative border-t border-black/5 bg-[#F5F5F0] text-black">
         <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 py-24 md:py-32">
           <div className="flex flex-col md:flex-row items-baseline justify-between gap-12 mb-20">
             <Reveal>
@@ -1116,41 +1033,69 @@ export default function Home() {
           <div className="space-y-0 border-t border-black/10">
             {[
               {
-                pain: "Drowning in footage",
-                desc: "4TB of clips after every weekend. Hours spent scrubbing for the good shots.",
-                solution: "AI-powered culling finds highlights instantly."
+                pain: "Buried in Timelines",
+                desc: "10-20 hours of editing per film. Weekends are lost to the assembly line before the first cut is even done.",
+                solution: "Quartz handles the first 8-16 hours, delivering 80% finished rough cuts while you sleep."
               },
               {
-                pain: "Audio sync nightmares",
-                desc: "4 cameras, 6 mics, ceremony drift. Manual alignment takes forever.",
-                solution: "Automatic multi-source alignment, even with drift."
+                pain: "Culling & Syncing Chaos",
+                desc: "Scrubbing through 4TB of multi-cam footage and syncing external audio recorders manually takes absolute days.",
+                solution: "Automatic waveform analysis syncs cameras and audio instantly, while AI finds your highlights."
               },
               {
-                pain: "Starting from scratch",
-                desc: "Every edit begins with a blank timeline. Hours of assembly before creativity.",
-                solution: "Export a structured rough cut in minutes."
+                pain: "The Blank Canvas Problem",
+                desc: "Starting every edit with a blank timeline. Hours of assembly are required before you can even begin to be creative.",
+                solution: "Export three structured NLE sequences—Ceremony, Reception, and Highlight—ready to polish."
+              },
+              {
+                pain: "Marketing Exhaustion",
+                desc: "You have the footage, but no time to edit vertical reels for Instagram and TikTok. Your portfolio growth stalls.",
+                solution: "Add Quartz Social to auto-generate 5-10 vertical reels from your highlights with AI captions."
               }
-            ].map((t, i) => (
+            ].map((t, i) => {
+              const isOpen = openProblemIdx === i;
+              return (
               <Reveal key={i} delay={0.1}>
                 <div className="group relative border-b border-black/10 transition-colors hover:bg-black/[0.02]">
-                  <div className="py-12 md:py-16 grid md:grid-cols-12 gap-8 items-start">
-                    <div className="md:col-span-4">
-                      <h3 className="text-2xl md:text-3xl font-light text-black group-hover:text-black/90 transition-colors">
+                  <button 
+                    onClick={() => setOpenProblemIdx(isOpen ? null : i)}
+                    className="w-full text-left py-12 md:py-16 grid md:grid-cols-12 gap-8 items-center cursor-pointer outline-none"
+                  >
+                    <div className="md:col-span-11">
+                      <h3 className="text-2xl md:text-3xl font-light text-black group-hover:text-black/70 transition-colors">
                         {t.pain}
                       </h3>
                     </div>
-                    <div className="md:col-span-4">
-                      <p className="text-lg text-black/50 font-light leading-relaxed max-w-sm">
-                        {t.desc}
-                      </p>
+                    <div className="md:col-span-1 flex justify-end">
+                      <Plus className={`w-8 h-8 text-black/40 transition-transform duration-500 ease-[0.16,1,0.3,1] ${isOpen ? 'rotate-45' : ''}`} />
                     </div>
-                    <div className="md:col-span-4 flex items-center gap-3 pt-1 md:pt-0">
-                      <span className="text-sm text-black/40 font-mono">— {t.solution}</span>
-                    </div>
-                  </div>
+                  </button>
+                  <AnimatePresence>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                        className="overflow-hidden w-full"
+                      >
+                        <div className="pb-12 md:pb-16 grid md:grid-cols-12 gap-8 items-start">
+                          <div className="md:col-span-4 hidden md:block" />
+                          <div className="md:col-span-4">
+                            <p className="text-lg text-black/60 font-light leading-relaxed max-w-sm">
+                              {t.desc}
+                            </p>
+                          </div>
+                          <div className="md:col-span-4 flex items-center gap-3 pt-4 md:pt-0">
+                            <span className="text-sm text-black/50 font-mono">— {t.solution}</span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </Reveal>
-            ))}
+            )})}
           </div>
         </div>
       </section>
@@ -1272,7 +1217,7 @@ export default function Home() {
           {/* Bottom Bar */}
           <div className="mt-24 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <p className="text-[10px] tracking-[0.3em] text-white/20 font-light">
-              © 2024 QUARTZ
+              © 2025 QUARTZ
             </p>
             <div className="flex items-center gap-8 text-[10px] tracking-[0.3em] text-white/20 font-light">
               <a href="#" className="hover:text-white/40 transition-colors">INSTAGRAM</a>

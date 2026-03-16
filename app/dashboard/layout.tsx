@@ -15,7 +15,7 @@ export default async function DashboardLayout({
     }
 
     return (
-        <div className="min-h-screen bg-white text-black antialiased selection:bg-black selection:text-white flex">
+        <div className="min-h-screen bg-[#FAF9F6] text-black antialiased selection:bg-black selection:text-white flex">
             {/* Sidebar Navigation */}
             <Sidebar />
 

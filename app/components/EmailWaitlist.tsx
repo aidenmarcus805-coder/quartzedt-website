@@ -137,7 +137,7 @@ export default function EmailWaitlist() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="w-full max-w-md mx-auto text-center py-8 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-sm"
             >
-                <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center mx-auto mb-4">
+                <div className="w-12 h-12 rounded-full bg-stone-500/20 text-stone-200 flex items-center justify-center mx-auto mb-4">
                     <Check className="w-6 h-6" />
                 </div>
                 <h3 className="text-xl font-medium text-white mb-2">You're on the list</h3>

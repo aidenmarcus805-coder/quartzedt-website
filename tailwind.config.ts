@@ -9,11 +9,26 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Keep the `paper` token, but make it true white.
+        // Warm Obsidian Palette
+        obsidian: {
+          DEFAULT: "#050504",
+          base: "#0A0A09",
+          surface: "#121211",
+          elevated: "#1A1A18",
+        },
+        champagne: {
+          DEFAULT: "#D4D4D8",
+          soft: "rgba(212, 212, 216, 0.1)",
+        },
+        cream: "#FAF9F6",
+        stone: {
+          400: "#A8A29E",
+          600: "#57534E",
+        },
+        // Legacy/Utility
         paper: "#ffffff",
-        // Signature brand accents (used sparingly).
         ink: "#0b0b0c",
-        accent: "#ff3b30",
+        accent: "#ff3b30", // Keeping this if used elsewhere, but moving to champagne for pricing
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],

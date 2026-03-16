@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowRight, ChatCircleDots, Clock, Lifebuoy, Pulse, Sparkle, WarningCircle } from '@phosphor-icons/react';
 
 const SUPPORT_GROUPS = [
   {
@@ -30,7 +29,7 @@ const FAQ = [
   },
   {
     question: 'What should I check if export fails?',
-    answer: 'Check FFmpeg installation, available disk space, file permissions, and whether the target export format is supported by your current setup.',
+    answer: 'Check FFmpeg installation, available disk space, file permissions, and whether the target target is supported by your system.',
   },
   {
     question: 'Does footage leave my computer?',
@@ -40,117 +39,99 @@ const FAQ = [
 
 export default function SupportPage() {
   return (
-    <div className="min-h-screen bg-white text-black">
-      <section className="border-b border-black/5 bg-[linear-gradient(180deg,rgba(0,0,0,0.04),transparent)]">
-        <div className="mx-auto max-w-7xl px-6 py-24 md:px-10 md:py-28">
+    <div className="min-h-screen bg-[#FAF9F6] text-[#050504]">
+      {/* Hero */}
+      <section className="border-b border-black/5">
+        <div className="mx-auto max-w-[1400px] px-6 py-32 md:px-12 md:py-48">
           <motion.div
-            initial={{ opacity: 0, y: 18 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="max-w-4xl"
           >
-            <p className="mb-6 text-[11px] font-medium uppercase tracking-[0.35em] text-black/40">Support</p>
-            <h1 className="font-display text-5xl font-light tracking-[-0.04em] md:text-7xl">
-              Help for setup issues, workflow blockers, and delivery problems.
+            <p className="mb-6 text-[11px] font-semibold uppercase tracking-[0.08em] text-black/40">Support</p>
+            <h1 className="text-[48px] sm:text-[64px] lg:text-[82px] font-extralight tracking-[-0.04em] leading-[0.95]">
+              Here to help.
+              <br />
+              <span className="text-black/30 italic">Not hide.</span>
             </h1>
-            <p className="mt-8 max-w-2xl text-lg font-light leading-8 text-black/65">
+            <p className="mt-8 max-w-2xl text-[19px] md:text-[21px] font-light leading-relaxed text-black/50">
               Use support when you need answers fast. Start with the common issues below, then escalate to direct contact if the issue still blocks delivery.
             </p>
           </motion.div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-20 md:px-10">
-        <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="rounded-3xl border border-black/7 bg-black p-10 text-white">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10">
-                <ChatCircleDots className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-[11px] font-medium uppercase tracking-[0.35em] text-white/40">Contact</p>
-                <h2 className="mt-1 text-2xl font-medium tracking-[-0.03em] text-white">Support channels</h2>
-              </div>
+      {/* Main Support Area */}
+      <section className="mx-auto max-w-[1400px] px-6 py-24 md:px-12 border-b border-black/5">
+        <div className="grid gap-12 lg:grid-cols-[1fr_1fr]">
+          
+          {/* Contact Direct */}
+          <div className="rounded-[16px] border border-black/5 bg-white p-10 md:p-14 shadow-sm flex flex-col justify-between">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-black/40 tracking-[0.08em]">Direct Access</p>
+              <h2 className="mt-4 text-[36px] font-semibold tracking-[-0.02em] text-[#050504]">Get in touch</h2>
+              <p className="mt-4 text-[16px] leading-[1.6] text-black/50 font-light mb-12">
+                For installation blocks, export failures, or billing issues. We aim to respond by the next business day.
+              </p>
             </div>
 
-            <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                <p className="text-sm font-medium text-white">Email support</p>
-                <p className="mt-2 text-sm leading-7 text-white/60">support@quartzeditor.com</p>
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div className="rounded-[12px] border border-black/5 bg-[#F5F5F0] p-6 focus-within:ring-2 focus-within:ring-black/5 transition-all">
+                <p className="text-[14px] font-bold text-[#050504] uppercase tracking-[0.04em]">Email</p>
+                <a href="mailto:support@quartzeditor.com" className="mt-2 text-[16px] text-black/60 hover:text-black hover:underline transition-colors block">
+                  support@quartzeditor.com
+                </a>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                <p className="text-sm font-medium text-white">Priority topics</p>
-                <p className="mt-2 text-sm leading-7 text-white/60">Installation, exports, billing, and production blockers.</p>
-              </div>
-            </div>
-
-            <div className="mt-8 grid gap-4 sm:grid-cols-3">
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                <Clock className="h-5 w-5 text-white/70" />
-                <p className="mt-3 text-sm text-white/60">Response target: next business day</p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                <Pulse className="h-5 w-5 text-white/70" />
-                <p className="mt-3 text-sm text-white/60">Status page: planned for release visibility</p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                <Sparkle className="h-5 w-5 text-white/70" />
-                <p className="mt-3 text-sm text-white/60">Release notes: planned inside support surface</p>
+              <div className="rounded-[12px] border border-black/5 bg-[#F5F5F0] p-6">
+                <p className="text-[14px] font-bold text-[#050504] uppercase tracking-[0.04em]">Priority Time</p>
+                <p className="mt-2 text-[16px] text-black/60">
+                  Monday - Friday <br/> 9AM - 5PM PST
+                </p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-3xl border border-black/7 bg-black/[0.02] p-10">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-black text-white">
-                <Lifebuoy className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-[11px] font-medium uppercase tracking-[0.35em] text-black/35">Knowledge base</p>
-                <h2 className="mt-1 text-2xl font-medium tracking-[-0.03em] text-black">Where to self-serve first</h2>
-              </div>
+          {/* Docs & Categories */}
+          <div className="rounded-[16px] border border-black/5 bg-[#F5F5F0] p-10 md:p-14">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-black/40">Knowledge Base</p>
+              <h2 className="mt-4 text-[36px] font-semibold tracking-[-0.02em] text-[#050504]">Self-serve docs</h2>
             </div>
 
-            <div className="mt-8 space-y-4">
+            <div className="mt-12 space-y-6">
               {SUPPORT_GROUPS.map((group) => (
-                <div key={group.title} className="rounded-2xl border border-black/7 bg-white p-5">
-                  <h3 className="text-base font-medium text-black">{group.title}</h3>
-                  <ul className="mt-3 space-y-2 text-sm text-black/60">
+                <div key={group.title} className="rounded-[12px] border border-black/5 bg-white p-6 md:p-8 hover:shadow-md transition-shadow">
+                  <h3 className="text-[18px] font-semibold text-[#050504]">{group.title}</h3>
+                  <ul className="mt-4 space-y-3 text-[15px] font-light text-black/60 list-disc list-inside">
                     {group.items.map((item) => (
-                      <li key={item}>• {item}</li>
+                      <li key={item} className="marker:text-black/30 hover:text-black transition-colors">{item}</li>
                     ))}
                   </ul>
                 </div>
               ))}
             </div>
           </div>
+
         </div>
       </section>
 
-      <section className="border-y border-black/5 bg-black/[0.015]">
-        <div className="mx-auto max-w-7xl px-6 py-20 md:px-10">
-          <p className="text-[11px] font-medium uppercase tracking-[0.35em] text-black/40">Frequently asked</p>
-          <div className="mt-8 grid gap-4 lg:grid-cols-2">
+      {/* FAQ */}
+      <section className="bg-white">
+        <div className="mx-auto max-w-[1400px] px-6 py-24 md:px-12">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-black/40 mb-12">Frequently Asked Questions</p>
+          <div className="grid gap-6 md:grid-cols-2">
             {FAQ.map((item) => (
-              <div key={item.question} className="rounded-3xl border border-black/7 bg-white p-6 shadow-[0_8px_30px_rgba(0,0,0,0.03)]">
-                <div className="flex items-start gap-3">
-                  <WarningCircle className="mt-0.5 h-5 w-5 text-black/45" />
-                  <div>
-                    <h3 className="text-lg font-medium tracking-[-0.02em] text-black">{item.question}</h3>
-                    <p className="mt-3 text-sm leading-7 text-black/60">{item.answer}</p>
-                  </div>
-                </div>
+              <div key={item.question} className="rounded-[16px] border border-black/5 bg-[#F5F5F0] p-8 md:p-10 hover:bg-black/[0.03] transition-colors">
+                <h3 className="text-[20px] font-semibold tracking-[-0.01em] text-[#050504] mb-4">{item.question}</h3>
+                <p className="text-[16px] font-light leading-[1.7] text-black/60">{item.answer}</p>
               </div>
             ))}
           </div>
 
-          <div className="mt-10 flex flex-wrap gap-3">
-            <Link href="/docs" className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-3 text-sm font-medium text-white transition hover:bg-black/90">
-              Open docs
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link href="/guide" className="inline-flex items-center gap-2 rounded-full border border-black/10 px-5 py-3 text-sm font-medium text-black transition hover:border-black/25 hover:bg-black/[0.03]">
-              Read guide
+          <div className="mt-16 flex flex-wrap gap-4">
+            <Link href="/docs" className="inline-flex items-center justify-center rounded-[12px] bg-[#171717] px-8 py-4 text-[13px] font-medium text-white transition hover:bg-black">
+              Search the Documentation
             </Link>
           </div>
         </div>

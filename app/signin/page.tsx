@@ -99,7 +99,7 @@ function SignInContent() {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center bg-[#f5f5f5] overflow-hidden font-sans">
+    <div className="relative min-h-screen w-full flex items-center bg-[#FAF9F6] overflow-hidden font-sans">
       <style jsx global>{`
         input:-webkit-autofill,
         input:-webkit-autofill:hover,
@@ -347,7 +347,7 @@ function SignInContent() {
 export default function SignInPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center">
+      <div className="min-h-screen bg-[#FAF9F6] flex items-center justify-center">
         <CircleNotch className="w-8 h-8 text-[#0266F2] animate-spin" />
       </div>
     }>

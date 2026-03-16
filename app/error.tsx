@@ -5,7 +5,7 @@ import Link from 'next/link';
 export default function GlobalError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
     <html>
-      <body className="min-h-screen bg-white text-black">
+      <body className="min-h-screen bg-[#FAF9F6] text-black">
         <div className="mx-auto flex min-h-screen max-w-3xl flex-col items-start justify-center px-6 py-20">
           <p className="text-[11px] font-medium uppercase tracking-[0.35em] text-black/40">Something broke</p>
           <h1 className="mt-6 font-display text-5xl font-light tracking-[-0.04em] md:text-6xl">

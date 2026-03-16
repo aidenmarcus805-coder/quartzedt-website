@@ -1218,7 +1218,7 @@ export default function CameraScene({
 
         {showHeroOverlays && (
           <>
-            {/* Initial hero text (bottom anchored) - CUTLINE (fades out as you scroll) */}
+            {/* Initial hero text (bottom anchored) - fades out as you scroll) */}
             <div
               ref={domIntroRef}
               className="absolute inset-0 flex flex-col justify-end items-center text-center pointer-events-none z-10"
@@ -1230,7 +1230,7 @@ export default function CameraScene({
               {/* Initial black anchor gradient for legibility over bright video frames */}
               <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none z-0" />
 
-              {/* Clean Typography Intro - Dark against Light bg */}
+              {/* Clean Typography Intro */}
               <div className="relative z-10 flex flex-col items-center pb-2">
                 <div className="flex justify-center pl-[26px] pr-0 pb-4">
                   <Image
