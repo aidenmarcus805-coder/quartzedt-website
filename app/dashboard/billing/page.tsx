@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth";
 import { prisma } from "@/app/lib/prisma";
-import { Check, CreditCard, Receipt, shieldCheck } from "@phosphor-icons/react/dist/ssr";
+import { Check, CreditCard, Receipt, ShieldCheck } from "@phosphor-icons/react/dist/ssr";
 import CheckoutButton from "./CheckoutButton";
 import { PRICING_PLAN } from "@/app/lib/constants/pricing";
 

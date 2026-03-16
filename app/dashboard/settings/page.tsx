@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Bell, Lock, Beaker, Desktop, ChatText } from '@phosphor-icons/react';
+import { Bell, Lock, Flask, Desktop, ChatText } from '@phosphor-icons/react';
 
 interface ToggleProps {
     enabled: boolean;
@@ -96,7 +96,7 @@ export default function SettingsPage() {
             {/* Access & Beta */}
             <div className="bg-white rounded-2xl border border-black/[0.06] overflow-hidden mb-4">
                 <div className="px-6 py-4 border-b border-black/[0.05] flex items-center gap-2.5">
-                    <Beaker weight="fill" className="w-4 h-4 text-black/40" />
+                    <Flask weight="fill" className="w-4 h-4 text-black/40" />
                     <h2 className="text-[13.5px] font-semibold text-black">Early Access</h2>
                 </div>
                 <div className="px-6 divide-y divide-black/[0.04]">
