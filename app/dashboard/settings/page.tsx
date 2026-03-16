@@ -2,26 +2,14 @@
 
 import { useState } from 'react';
 import { Bell, Lock, Flask, ChatText } from '@phosphor-icons/react';
+import { Switch } from "@/components/ui/switch";
 
 interface ToggleProps {
     enabled: boolean;
     onToggle: () => void;
 }
 
-function Toggle({ enabled, onToggle }: ToggleProps) {
-    return (
-        <button
-            onClick={onToggle}
-            className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-300 ease-in-out focus:outline-none ${enabled ? 'bg-white' : 'bg-white/10'
-                }`}
-        >
-            <span
-                className={`inline-block h-3 w-3 transform rounded-full bg-[#050504] transition-transform duration-300 ease-in-out ${enabled ? 'translate-x-[0.875rem]' : 'translate-x-[0.125rem]'
-                    }`}
-            />
-        </button>
-    );
-}
+
 
 function SettingRow({ icon: Icon, title, description, children }: { icon: any; title: string, description: string, children: React.ReactNode }) {
     return (
@@ -71,14 +59,14 @@ export default function SettingsPage() {
                         title="In-App Notifications"
                         description="Alerts for project completions and system updates."
                     >
-                        <Toggle enabled={notifications.email} onToggle={() => setNotifications({ ...notifications, email: !notifications.email })} />
+                        <Switch checked={notifications.email} onCheckedChange={() => setNotifications({ ...notifications, email: !notifications.email })} />
                     </SettingRow>
                     <SettingRow
                         icon={ChatText}
                         title="Email Reports"
                         description="Daily summary of studio throughput."
                     >
-                        <Toggle enabled={notifications.daily} onToggle={() => setNotifications({ ...notifications, daily: !notifications.daily })} />
+                        <Switch checked={notifications.daily} onCheckedChange={() => setNotifications({ ...notifications, daily: !notifications.daily })} />
                     </SettingRow>
                 </div>
             </div>
@@ -94,7 +82,7 @@ export default function SettingsPage() {
                         title="Early Access"
                         description="Internal beta filters and scene detection."
                     >
-                        <Toggle enabled={beta.earlyAccess} onToggle={() => setBeta({ ...beta, earlyAccess: !beta.earlyAccess })} />
+                        <Switch checked={beta.earlyAccess} onCheckedChange={() => setBeta({ ...beta, earlyAccess: !beta.earlyAccess })} />
                     </SettingRow>
                 </div>
             </div>
