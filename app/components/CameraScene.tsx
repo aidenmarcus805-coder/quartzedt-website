@@ -11,7 +11,7 @@ import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
 import { Syne } from 'next/font/google';
 
-const syneFont = Syne({ subsets: ['latin'], weight: ['800'] });
+const syneFont = Syne({ subsets: ['latin'], weight: ['500', '600', '800'] });
 
 // Create rounded rectangle geometry with proper UVs
 function createRoundedRectGeometry(width: number, height: number, radius: number) {
@@ -760,7 +760,7 @@ function PremiumWriteTo({ variant = 'dark' }: { variant?: 'dark' | 'light' }) {
   const isLight = variant === 'light';
   return (
     <span
-      className={`inline-block lowercase text-[1.12em] tracking-normal pt-2 mx-1 select-none ${isLight ? 'text-black/30' : 'text-[#333333]'}`}
+      className={`inline-block lowercase text-[1.1em] tracking-normal pt-1 mx-2 select-none ${isLight ? 'text-black/30' : 'text-[#333333]'}`}
       style={{ fontFamily: 'var(--font-script)' }}
     >
       <span
@@ -1247,7 +1247,7 @@ export default function CameraScene({
                   />
                 </div>
 
-                <p className="max-w-md px-6 text-[16px] md:text-[18px] leading-[1.6] opacity-60 font-light mx-auto mb-10 transition-colors duration-500">
+                <p className="max-w-md px-6 text-[16px] md:text-[18px] leading-[1.6] opacity-40 font-light mx-auto mb-10 transition-colors duration-500">
                   The first fully autonomous AI video editor.
                 </p>
 
@@ -1274,19 +1274,19 @@ export default function CameraScene({
               <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#e2e2e7]/60 to-transparent pointer-events-none z-0" />
 
               {/* Content aligned to grid */}
-              <div className="max-w-[1600px] mx-auto px-8 md:px-12 lg:px-16 w-full relative z-10">
+              <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 w-full relative z-10">
                 <div className="mx-auto text-center w-full">
                   {/* Main title */}
                   <div className="overflow-hidden pb-4">
                     <h1
                       ref={domTitleH1Ref}
-                      className={`${syneFont.className} text-[clamp(48px,8vw,120px)] font-semibold leading-[0.85] tracking-[-0.06em] text-current md:whitespace-nowrap transition-colors duration-500 font-syne`}
+                      className={`${syneFont.className} text-[clamp(44px,7.5vw,110px)] font-medium leading-[0.9] tracking-[-0.045em] text-current md:whitespace-nowrap transition-colors duration-500 font-syne`}
                       style={{
                         transform: 'translate3d(0, 100%, 0)',
                         willChange: 'transform',
                       }}
                     >
-                      From Weeks <PremiumWriteTo /> <span>Hours.</span>
+                      <span className="opacity-40">From Weeks</span> <PremiumWriteTo /> <span>Hours.</span>
                     </h1>
                   </div>
                 </div>

@@ -42,15 +42,15 @@ const CONTACT_TIERS = [1, 2, 4, 8, 12]; // Weddings per month tiers
 
 export default function PricingPage() {
   const { data: session } = useSession();
-  const [weddings, setWeddings] = useState([2]); // Default to 2 weddings
+  const [weddingIndex, setWeddingIndex] = useState([1]); // Default to index 1 (value 2)
 
-  const currentWeddings = weddings[0];
+  const currentWeddings = CONTACT_TIERS[weddingIndex[0]];
 
   const getSoloPrice = () => 79.99;
   const getStudioPrice = () => 199.99;
 
   return (
-    <main className="min-h-screen bg-white text-[#050504] selection:bg-[#E5E5E5] selection:text-[#050504] antialiased flex flex-col items-center pb-32">
+    <main className="min-h-screen bg-[#FAF9F6] text-[#050504] selection:bg-[#E5E5E5] selection:text-[#050504] antialiased flex flex-col items-center pb-32">
       
       {/* Navbar - Kept for consistency */}
       <nav className="fixed top-6 left-0 right-0 z-[100] flex justify-center pointer-events-none">
@@ -109,29 +109,45 @@ export default function PricingPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="mb-8"
+          className="mb-8 min-h-[24px] flex items-center justify-center"
         >
-            <span className="text-[14px] font-syne tracking-tight text-black font-bold">{currentWeddings} weddings / month</span>
+            <AnimatePresence mode="wait">
+              <motion.span 
+                key={currentWeddings}
+                initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="text-[15px] font-syne tracking-tight text-black font-bold"
+              >
+                {currentWeddings} weddings / month
+              </motion.span>
+            </AnimatePresence>
         </motion.div>
-        <div className="relative group px-1">
+        <div className="relative group px-3">
             <Slider 
-                defaultValue={[2]} 
-                max={12} 
-                min={1} 
+                defaultValue={[1]} 
+                max={CONTACT_TIERS.length - 1} 
+                min={0} 
                 step={1} 
-                value={weddings}
-                onValueChange={(val) => setWeddings(Array.isArray(val) ? val : [val])}
+                value={weddingIndex}
+                onValueChange={(val) => setWeddingIndex(Array.isArray(val) ? val : [val])}
                 className="w-full"
             />
             {/* Custom Markers */}
-            <div className="absolute top-8 left-0 right-0 flex justify-between px-1">
-                {[1, 2, 4, 8, 12].map((mark) => (
-                    <span 
+            <div className="absolute top-10 left-0 right-0 flex justify-between px-3">
+                {[1, 2, 4, 8, 12].map((mark, idx) => (
+                    <motion.span 
                       key={mark} 
-                      className={`text-[10px] font-mono transition-all duration-300 ${currentWeddings === mark ? "text-black font-bold scale-110" : "text-zinc-200"}`}
+                      animate={{ 
+                        color: currentWeddings === mark ? "#000" : "#d4d4d8",
+                        scale: currentWeddings === mark ? 1.15 : 1,
+                        fontWeight: currentWeddings === mark ? 700 : 400
+                      }}
+                      className="text-[11px] font-mono transition-all duration-300 w-4 text-center"
                     >
                       {mark}
-                    </span>
+                    </motion.span>
                 ))}
             </div>
         </div>
@@ -142,7 +158,7 @@ export default function PricingPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch max-w-4xl mx-auto">
           
           {/* Solo Plan */}
-          <div className={`p-8 rounded-2xl bg-white border border-zinc-200 flex flex-col shadow-sm transition-opacity duration-300 ${currentWeddings > 4 ? 'opacity-50 grayscale' : 'opacity-100'}`}>
+          <div className={`p-8 rounded-2xl bg-white/50 backdrop-blur-sm border border-zinc-200 flex flex-col shadow-sm transition-opacity duration-300 ${currentWeddings > 4 ? 'opacity-50 grayscale' : 'opacity-100'}`}>
             <h2 className="text-[20px] font-bold tracking-tight mb-4">Quartz Solo</h2>
             <div className="flex items-baseline gap-1 mb-6">
                 <span className="text-[40px] font-bold tracking-tighter">$79.99</span>

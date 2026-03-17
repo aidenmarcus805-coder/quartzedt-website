@@ -213,42 +213,42 @@ const WORKFLOW_STEPS = [
     icon: UploadSimple,
     start: 2,
     end: 12,
-    desc: 'Deep-scan volumes. Automatic metadata extraction and proxy generation.',
+    desc: 'Multi-source Ingest. Upload footage from camera cards, external recorders, and drones.',
   },
   {
-    label: 'Cull',
+    label: 'Analysis',
     icon: MagnifyingGlass,
     start: 24,
     end: 34,
-    desc: 'AI detects highlights, triage selects, and filters junk in seconds.',
+    desc: 'AI Moment Detection. Facial recognition and motion patterns find emotionally significant beats.',
   },
   {
-    label: 'Sync',
-    icon: Minus,
+    label: 'Assembly',
+    icon: FilmStrip,
     start: 46,
     end: 56,
-    desc: 'Sample-accurate audio-visual alignment across every camera and lav.',
+    desc: 'Multi-Sequence XML. Generate Ceremony, Reception, and Highlight timelines instantly.',
   },
   {
-    label: 'Assemble',
-    icon: FilmStrip,
+    label: 'Styles',
+    icon: Minus,
     start: 68,
     end: 78,
-    desc: 'Smart-cutting based on emotional context and narrative structure.',
+    desc: 'Creator Style Learning. Learns your pacing and color preferences from past films.',
   },
   {
-    label: 'Polish',
+    label: 'Export',
     icon: Scissors,
     start: 90,
     end: 100,
-    desc: 'Fine-tune pacing. Automated multicam switching based on audio cues.',
+    desc: 'NLE Ready. Download projects for Premiere Pro, DaVinci Resolve, or Final Cut Pro.',
   },
   {
-    label: 'Finish',
+    label: 'Social',
     icon: ArrowLeft,
     start: 112,
     end: 122,
-    desc: 'One-click export to Premiere or DaVinci Resolve timelines.',
+    desc: 'Marketing Reels. Auto-generate 5-10 vertical reels with AI captions for Instagram and TikTok.',
   },
 ];
 
@@ -436,7 +436,7 @@ export default function Home() {
                 ? 'bg-gray-50/40 border-black/5 text-black'
                 : 'bg-neutral-900/40 border-white/5 text-white'
               }`
-              : `h-20 px-7 md:px-11 lg:px-14 w-full max-w-[1800px] bg-transparent border-transparent ${navOnLight ? 'text-black' : 'text-white'
+              : `h-20 px-8 md:px-12 lg:px-16 w-full max-w-[1800px] bg-transparent border-transparent ${navOnLight ? 'text-black' : 'text-white'
               }`
             }
           `}
@@ -503,32 +503,33 @@ export default function Home() {
       </div>
 
       {/* 01 // THE ENGINE - Asymmetrical Editorial Intro */}
-      <section className="relative z-10 bg-[#050505] text-white pt-32 pb-32 md:pt-48 md:pb-48 px-6 md:px-12 lg:px-16 overflow-hidden">
-        <div className="max-w-[1400px] mx-auto relative z-10 w-full">
+      <section className="relative z-10 bg-[#050505] text-white pt-32 pb-32 md:pt-48 md:pb-48 overflow-hidden">
+        <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 relative z-10 w-full">
           {/* Editorial Intro content starts directly */}
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 items-center">
             {/* Left Column: Minimalist Editorial Text */}
-            <div className="lg:col-span-6 space-y-16">
+            <div className="lg:col-span-6 space-y-16 max-w-4xl">
               <Reveal>
                 <div className="space-y-4">
-                  <h2 className="text-[48px] sm:text-[64px] lg:text-[82px] font-extralight leading-[0.95] tracking-tight text-white/95">
-                    An autonomous<br />
-                    <span className="text-white/30 italic">editing engine.</span>
+                  <h2 className="text-[48px] sm:text-[64px] lg:text-[76px] font-medium leading-[0.95] tracking-tight text-white/95 font-syne">
+                    Your wedding editor<br />
+                    <span className="text-white/95">that doesn’t get tired.</span>
                   </h2>
                 </div>
               </Reveal>
-
+              
               <Reveal delay={0.2}>
-                <div className="max-w-md space-y-8">
-                  <p className="text-[19px] md:text-[21px] leading-relaxed text-white/40 font-light">
-                    Quartz transforms raw multicam chaos into structured narratives. Not a plugin—a standalone leap in post-production.
+                <div className="space-y-8">
+                  <p className="text-[19px] md:text-[21px] leading-relaxed text-white/30 font-light">
+                    Dump in your cameras and audio. Quartz syncs everything, trims the dead space, and builds separate timelines for the ceremony, reception, and a highlight. You open the project ready to shape the film instead of wrestling with setup.
                   </p>
                 </div>
               </Reveal>
             </div>
 
-            <div className="lg:col-span-6 relative flex justify-end items-center -mr-12 lg:-mr-32">
+
+            <div className="lg:col-span-6 relative flex justify-end items-center">
               <motion.div
                 initial={{ opacity: 0, x: 40, scale: 0.98 }}
                 whileInView={{ opacity: 1, x: 0, scale: 1 }}
@@ -553,7 +554,7 @@ export default function Home() {
       <section className="relative bg-[#050505] text-white border-t border-white/5 py-32 md:py-48 overflow-hidden">
         {/* Artifacts removed per user request for clean monochrome look */}
 
-        <div className="w-full max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16 space-y-40 md:space-y-64 relative z-10">
+        <div className="w-full max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 space-y-40 md:space-y-64 relative z-10">
 
           {/* Feature 01: Intelligent Culling */}
           <div className="relative pt-8 md:pt-12">
@@ -582,15 +583,14 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="max-w-xl"
+                className="max-w-4xl"
               >
-                <h3 className="font-light text-[40px] md:text-[56px] lg:text-[64px] leading-[1.05] tracking-tight text-white mb-8 text-balance">
-                  Weeks of work.<br />
-                  <span className="text-white/30 italic block mt-2">Done in moments.</span>
+                <h3 className="font-medium text-[40px] md:text-[52px] lg:text-[60px] leading-[1.05] tracking-tight text-white mb-8 text-balance font-syne">
+                  Culling that respects your eye.
                 </h3>
-                <div className="max-w-md">
-                  <p className="font-light text-[18px] md:text-[20px] leading-[1.6] text-white/50">
-                    Intelligent assembly. Raw footage is automatically culled and structured into a rough cut in seconds.
+                <div className="space-y-8">
+                  <p className="font-light text-[18px] md:text-[20px] leading-[1.6] text-white/30">
+                    Quartz filters out the real junk like out of focus shots and wild shakes. It leaves the in between moments you actually use. You spend your time choosing between good options, not digging through unusable footage.
                   </p>
                 </div>
               </motion.div>
@@ -624,15 +624,14 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="max-w-xl lg:justify-self-end text-left lg:pr-12 lg:order-first"
+                className="max-w-4xl lg:order-first"
               >
-                <h3 className="font-light text-[40px] md:text-[56px] lg:text-[64px] leading-[1.05] tracking-tight text-white mb-8 text-balance">
-                  Instantly synced.<br />
-                  <span className="text-white/30 italic block mt-2">Perfectly aligned.</span>
+                <h3 className="font-medium text-[40px] md:text-[52px] lg:text-[60px] leading-[1.05] tracking-tight text-white mb-8 text-balance font-syne">
+                  Multi cam sync without the ritual.
                 </h3>
-                <div className="max-w-md">
-                  <p className="font-light text-[18px] md:text-[20px] leading-[1.6] text-white/50">
-                    Waveform analysis that handles the drift for you. Multi-cam sources and external recorders, unified in one click.
+                <div className="space-y-8">
+                  <p className="font-light text-[18px] md:text-[20px] leading-[1.6] text-white/30">
+                    Ceremony cameras, lavs, and DJ feeds all line up by sound in one pass. No more ritual clapping at the altar or zooming in on waveforms at 2 a.m. You open a clean synced sequence and start cutting.
                   </p>
                 </div>
               </motion.div>
@@ -666,15 +665,14 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="max-w-xl lg:justify-self-start text-left lg:pl-12"
+                className="max-w-4xl lg:justify-self-start text-left lg:pl-12"
               >
-                <h3 className="font-light text-[40px] md:text-[56px] lg:text-[64px] leading-[1.05] tracking-tight text-white mb-8 text-balance">
-                  Creative flow,<br />
-                  <span className="text-white/30 italic block mt-2">Unlocked.</span>
+                <h3 className="font-medium text-[40px] md:text-[52px] lg:text-[60px] leading-[1.05] tracking-tight text-white mb-8 text-balance font-syne">
+                  Ceremony, reception, highlight. Already laid out.
                 </h3>
-                <div className="max-w-md">
-                  <p className="font-light text-[18px] md:text-[20px] leading-[1.6] text-white/50">
-                    Skip the assembly drudgery. Move directly to your NLE with a fully structured foundation. Edit for craft, not for organization.
+                <div className="space-y-8">
+                  <p className="font-light text-[18px] md:text-[20px] leading-[1.6] text-white/30">
+                    Quartz assembles the day into timelines for the ceremony, reception, and a long highlight. The structure is there and the dead air is gone. You can focus on the choices that make it feel like your work.
                   </p>
                 </div>
               </motion.div>
@@ -777,7 +775,7 @@ export default function Home() {
             <div className="relative h-full pt-24 pb-12 flex flex-col">
               {/* Title (gallery rhythm: aligned to content grid) */}
               <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 flex-none w-full text-left">
-                <h2 className="font-display text-[clamp(56px,5.5vw,96px)] font-light tracking-[-0.06em] leading-[0.92]">
+                <h2 className="text-[clamp(56px,5.5vw,96px)] font-medium tracking-tight leading-[0.92] font-syne">
                   The Workflow.
                 </h2>
                 <p className="mt-3 text-lg md:text-xl text-neutral-400 font-light max-w-2xl tracking-wide">
@@ -1064,7 +1062,7 @@ export default function Home() {
         <div className="max-w-[1800px] mx-auto px-8 md:px-12 lg:px-16 py-24 md:py-32">
           <div className="flex flex-col md:flex-row items-baseline justify-between gap-12 mb-20">
             <Reveal>
-              <h2 className="font-display text-[42px] md:text-[64px] font-extralight tracking-[-0.04em] leading-[1.05] text-black">
+              <h2 className="font-medium tracking-tight leading-[1.05] text-black text-[42px] md:text-[56px] font-syne">
                 The problems we solve.
               </h2>
             </Reveal>
@@ -1074,22 +1072,22 @@ export default function Home() {
             {[
               {
                 pain: "Buried in Timelines",
-                desc: "10-20 hours of editing per film. Weekends are lost to the assembly line before the first cut is even done.",
+                desc: "10-20 hours of editing per film. Lose days to assembly before the first cut is even done.",
                 solution: "Quartz handles the first 8-16 hours, delivering 80% finished rough cuts while you sleep."
               },
               {
                 pain: "Culling & Syncing Chaos",
-                desc: "Scrubbing through 4TB of multi-cam footage and syncing external audio recorders manually takes absolute days.",
+                desc: "Scrubbing through terabytes of multicam footage and syncing external audio recorders manually takes absolute days.",
                 solution: "Automatic waveform analysis syncs cameras and audio instantly, while AI finds your highlights."
               },
               {
                 pain: "The Blank Canvas Problem",
-                desc: "Starting every edit with a blank timeline. Hours of assembly are required before you can even begin to be creative.",
+                desc: "Starting every edit from scratch. Re-building the story for every wedding from zero.",
                 solution: "Export three structured NLE sequences—Ceremony, Reception, and Highlight—ready to polish."
               },
               {
                 pain: "Marketing Exhaustion",
-                desc: "You have the footage, but no time to edit vertical reels for Instagram and TikTok. Your portfolio growth stalls.",
+                desc: "No time to edit vertical reels for Instagram and TikTok. Your portfolio growth stalls because you're too busy editing.",
                 solution: "Add Quartz Social to auto-generate 5-10 vertical reels from your highlights with AI captions."
               }
             ].map((t, i) => {
@@ -1154,7 +1152,7 @@ export default function Home() {
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className="space-y-12 text-left"
             >
-              <h2 className="text-5xl md:text-7xl font-extralight tracking-[-0.04em] leading-[0.95] text-white mix-blend-difference">
+              <h2 className="text-5xl md:text-7xl font-medium tracking-tight leading-[0.95] text-white mix-blend-difference font-syne">
                 Join the waitlist.
               </h2>
 
