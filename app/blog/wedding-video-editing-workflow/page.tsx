@@ -1,17 +1,8 @@
+'use client';
+
 import { motion } from 'framer-motion';
 import { ArrowLeft } from '@phosphor-icons/react';
 import Link from 'next/link';
-import { Metadata } from 'next';
-
-export const metadata: Metadata = {
-    title: 'The Ultimate Wedding Video Editing Workflow: 2026 Guide | Quartz',
-    description: 'Learn how to speed up wedding video editing and cut from raw cards to delivery in half the time. A complete workflow guide from ingest to final export.',
-    openGraph: {
-        title: 'The Ultimate Wedding Video Editing Workflow: 2026 Guide',
-        description: 'Learn how to speed up wedding video editing and cut from raw cards to delivery in half the time',
-        type: 'article',
-    }
-};
 
 export default function WeddingVideoEditingWorkflowPage() {
     return (
@@ -28,7 +19,11 @@ export default function WeddingVideoEditingWorkflowPage() {
 
             {/* Article */}
             <article className="max-w-[800px] mx-auto px-8 py-16">
-                <div>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                >
                     {/* Meta */}
                     <div className="flex items-center gap-4 mb-8">
                         <span className="text-[10px] tracking-[0.3em] text-accent uppercase font-bold">Workflow Guide</span>
@@ -156,7 +151,7 @@ export default function WeddingVideoEditingWorkflowPage() {
                             Start your free trial
                         </Link>
                     </div>
-                </div>
+                </motion.div>
             </article>
 
             {/* Schema.org FAQ Markup for SEO */}
