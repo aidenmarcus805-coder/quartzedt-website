@@ -99,11 +99,11 @@ export const KiloClawChat = () => {
         className="w-full max-w-3xl flex flex-col gap-4 overflow-y-auto max-h-[40vh] mb-4 pointer-events-auto hide-scrollbar"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-         {messages.map((m) => (
-             <div key={m.id} className={`flex ${m.isOwner ? 'justify-end' : 'justify-start'}`}>
+         {Array.isArray(messages) && messages.map((m) => (
+             <div key={m.id || Math.random()} className={`flex ${m.isOwner ? 'justify-end' : 'justify-start'}`}>
                  <div className={`max-w-[85%] text-[14px] leading-relaxed ${m.isOwner ? 'bg-slate-100/80 text-slate-800 rounded-2xl rounded-tr-sm px-4 py-3' : 'bg-white border border-slate-200 text-slate-700 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm'}`}>
-                    {!m.isOwner && <div className="font-semibold text-[11px] text-slate-400 mb-1 uppercase tracking-wider">{m.agentName}</div>}
-                    {m.content}
+                    {!m.isOwner && <div className="font-semibold text-[11px] text-slate-400 mb-1 uppercase tracking-wider">{m.agentName || 'Swarm'}</div>}
+                    {m.content || ''}
                  </div>
              </div>
          ))}

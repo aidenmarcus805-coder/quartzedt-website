@@ -12,20 +12,19 @@ export default function OwnerGuard({ children }: { children: React.ReactNode }) 
   const { data: session, status } = useSession();
 
   useEffect(() => {
-    // Wait for session to load
-    if (status === "loading") return;
+    if (status === "loading" || isVerified) return;
 
-    // 2-Second Blank Screen Check Layer
     const verifyIdentity = async () => {
-      // Bypass fingerprint if logged in as admin via NextAuth
-      if (isOwnerEmail(session?.user?.email)) {
+      // 1. Instant check via NextAuth session
+      if (session?.user?.email && isOwnerEmail(session.user.email)) {
+          console.log("Owner session detected. Verifying...");
           setIsVerified(true);
           return;
       }
 
+      // 2. Hardware Fingerprint fallback
       try {
         const hash = await generateFingerprint();
-        
         const response = await fetch('/api/owner/verify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -35,28 +34,45 @@ export default function OwnerGuard({ children }: { children: React.ReactNode }) 
         if (response.ok) {
           const { isOwner } = await response.json();
           if (isOwner) {
-            // Trigger 150ms structural fade-in
-            setTimeout(() => {
-              setIsVerified(true);
-            }, 150);
+            setIsVerified(true);
             return;
           }
         }
-        
-        // Permanent Blank
-        console.warn("Unauthorized device signature.");
-        
       } catch (error) {
-        console.error("Verification error.");
+        console.error("Owner verification failed.");
       }
     };
 
     verifyIdentity();
-  }, [router, session, status]);
+  }, [session, status, isVerified]);
 
-  // If not verified, stay absolutely blank (Zero-Friction permanent gate)
+  // Loading State (Prevents returning undefined or staying blank too long)
+  if (status === "loading" || (!isVerified && status === "authenticated")) {
+      return (
+        <div className="min-h-screen bg-white flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4">
+                <div className="w-8 h-8 border-2 border-slate-200 border-t-slate-800 rounded-full animate-spin" />
+                <p className="text-[11px] font-mono text-slate-400 uppercase tracking-widest">Authenticating Signature...</p>
+            </div>
+        </div>
+      );
+  }
+
+  // Final Gate
   if (!isVerified) {
-    return <div className="min-h-screen bg-[#f5f7fa]" />;
+    return (
+       <div className="min-h-screen bg-white flex items-center justify-center p-8">
+           <div className="text-center">
+               <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="font-bold">!</span>
+               </div>
+               <h2 className="text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2 mb-2 uppercase tracking-tighter">Unauthorized Signature</h2>
+               <p className="text-[11px] text-slate-400 max-w-[200px] leading-relaxed">
+                   Hardware fingerprint mismatch. Access is strictly limited to authorized devices.
+               </p>
+           </div>
+       </div>
+    );
   }
 
   // Once verified, animate in

@@ -9,15 +9,17 @@ export const dynamic = 'force-dynamic';
 export default async function PipelineFeedPage({ params }: { params: Promise<{ pipeline: string }> }) {
     const { pipeline: slug } = await params;
 
-    // Fetch pipeline mapping
-    const pipeline = await (prisma as any).pipeline.findUnique({
-        where: { slug }
+    // Auto-provision pipeline if it doesn't exist
+    const pipeline = await (prisma as any).pipeline.upsert({
+        where: { slug },
+        update: {},
+        create: {
+            name: slug.charAt(0).toUpperCase() + slug.slice(1),
+            slug: slug,
+            color: slug === 'marketing' ? 'emerald' : slug === 'code' ? 'blue' : 'gray',
+            order: 0
+        }
     });
-
-    if (!pipeline && slug !== 'global') {
-        // Fallback default
-        redirect('/dashboard/owner/code');
-    }
 
     // Fetch the swarm outputs mapping to this bucket, ordered by AI Priority Score
     const outputs = await (prisma as any).clawOutput.findMany({
@@ -33,7 +35,7 @@ export default async function PipelineFeedPage({ params }: { params: Promise<{ p
     const tailwindColorClass = `bg-owner-${slug}`;
 
     return (
-        <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-300 pb-32">
+        <div className="flex flex-col gap-8 pb-32">
              
             {/* Top Dashboard Matrix */}
             <LiveStats />
@@ -51,21 +53,38 @@ export default async function PipelineFeedPage({ params }: { params: Promise<{ p
             </div>
 
             {/* The Intelligence Feed (Flat Linear Stream) */}
-            <div className="flex flex-col gap-0 w-full">
-                 {outputs.length === 0 ? (
-                     <div className="py-12 text-center text-slate-400 font-medium text-[15px]">
-                         No intelligence outputs recorded in this pipeline yet.
-                         <br/><span className="text-[13px] font-normal mt-1 block">Awaiting KiloClaw routing. Or, dispatch a command below.</span>
-                     </div>
-                 ) : (
-                     (outputs as any[]).map((output: any) => (
-                         <PipelineCard 
-                             key={output.id} 
-                             output={output} 
-                             pipelineColor={tailwindColorClass} 
-                         />
-                     ))
-                 )}
+            <div className="flex flex-col gap-0 w-full min-h-[200px]">
+                  {Array.isArray(outputs) && outputs.length === 0 ? (
+                      <div className="py-20 flex flex-col items-center text-center">
+                          <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mb-4">
+                              <span className="text-2xl">?</span>
+                          </div>
+                          <h3 className="text-slate-900 font-semibold mb-1">No intelligence recorded</h3>
+                          <p className="text-slate-400 text-sm font-normal max-w-[280px] mb-8">
+                              Awaiting KiloClaw routing for the <strong>{pipeline?.name || "Global"}</strong> pipeline.
+                          </p>
+                          <form action="/api/owner/seed-sample" method="POST">
+                               <input type="hidden" name="pipelineId" value={pipeline?.id} />
+                               <input type="hidden" name="slug" value={slug} />
+                               <button 
+                                 type="submit"
+                                 className="px-6 py-2 bg-slate-900 text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-slate-800 transition-all active:scale-95"
+                               >
+                                  Generate Sample Intel
+                               </button>
+                          </form>
+                      </div>
+                  ) : Array.isArray(outputs) ? (
+                      outputs.map((output: any) => (
+                          <PipelineCard 
+                              key={output.id} 
+                              output={output} 
+                              pipelineColor={tailwindColorClass} 
+                          />
+                      ))
+                  ) : (
+                      <div className="py-12 text-center text-slate-400">Loading Intelligence...</div>
+                  )}
             </div>
 
             {/* Swarm Communication Layer (Floating Bar) */}

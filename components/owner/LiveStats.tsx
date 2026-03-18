@@ -36,10 +36,10 @@ export const LiveStats = () => {
     }, []);
 
     const cards = [
-        { title: "Waitlist", value: stats.waitlist.current, subtitle: stats.waitlist.trend, critical: false },
-        { title: "Active Licenses", value: stats.licenses.current, subtitle: "Live location map active", critical: false },
-        { title: "MRR", value: stats.mrr.current, subtitle: stats.mrr.trend, critical: false }, // Could check >5% churn here for red
-        { title: "Projects", value: stats.projects.current, subtitle: `${stats.projects.saved} saved avg`, critical: false },
+        { title: "Waitlist", value: stats?.waitlist?.current ?? 0, subtitle: stats?.waitlist?.trend ?? '...', critical: false },
+        { title: "Active Licenses", value: stats?.licenses?.current ?? 0, subtitle: "Live location map active", critical: false },
+        { title: "MRR", value: stats?.mrr?.current ?? '0', subtitle: stats?.mrr?.trend ?? '...', critical: false },
+        { title: "Projects", value: stats?.projects?.current ?? '0', subtitle: `${stats?.projects?.saved ?? '0'} saved avg`, critical: false },
     ];
 
     return (
