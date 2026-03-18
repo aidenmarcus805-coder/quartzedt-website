@@ -97,3 +97,86 @@ model Waitlist {
   weddingsPerYear String?
   createdAt       DateTime @default(now())
 }
+
+// ----------------- OWNER DASHBOARD MODELS ----------------- //
+
+// Core Owner Model for Fingerprint Auth
+model OwnerFingerprint {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  hash      String   @unique
+  isOwner   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  lastSeen  DateTime @default(now())
+}
+
+// Group Chat Channels for Autonomous KiloClaws
+model ClawChannel {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  themeColor  String   @default("gray")
+  messages    ClawMessage[]
+  createdAt   DateTime @default(now())
+}
+
+// Messages within a KiloClaw Channel
+model ClawMessage {
+  id          String   @id @default(cuid())
+  channelId   String
+  channel     ClawChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  agentName   String   // e.g., 'KiloClaw Alpha (Code)' or 'Owner'
+  content     String   @db.Text
+  isOwner     Boolean  @default(false) // True if sent by Aiden
+  createdAt   DateTime @default(now())
+}
+
+// Dynamic Pipelines (Marketing, Code, etc.)
+model Pipeline {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  color       String   // e.g., 'emerald', 'coral', 'indigo'
+  order       Int      @default(0)
+  isArchived  Boolean  @default(false)
+  outputs     ClawOutput[]
+  createdAt   DateTime @default(now())
+}
+
+// Intelligence Feed Outputs from KiloClaw
+model ClawOutput {
+  id              String   @id @default(cuid())
+  pipelineId      String
+  pipeline        Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  
+  // Content & Trace
+  content         String   @db.Text
+  agentName       String   // e.g., 'Content Agent v3.2'
+  confidence      Float    // 0 to 100
+  predictionScore Float    // AI Prioritization score 0-100
+  
+  // Status and Meta
+  status          String   @default("DRAFT") // DRAFT (Yellow), ACTION_NEEDED (Red), APPROVED (Green), PUBLISHED (Blue)
+  suggestedAction String?  // e.g., 'Copy Full Spec', 'Deploy 42'
+  metaData        Json?    // Optional JSON for A/B testing stats, code diffs, etc.
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ----------------- MOCKED STATS PROVISIONING ----------------- //
+model Payment {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Float
+  status    String
+  createdAt DateTime @default(now())
+}
+
+model Project {
+  id            String   @id @default(cuid())
+  userId        String
+  weddingsCount Int      @default(1)
+  timeSavedHrs  Float    @default(0.0)
+  createdAt     DateTime @default(now())
+}

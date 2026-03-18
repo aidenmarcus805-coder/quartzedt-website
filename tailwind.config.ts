@@ -25,6 +25,15 @@ const config: Config = {
           400: "#A8A29E",
           600: "#57534E",
         },
+        // Owner Dashboard Exact Pipeline Mapping
+        owner: {
+           marketing: '#FF6B6B',  // coral
+           code: '#4F46E5',       // indigo
+           social: '#10B981',     // emerald
+           product: '#F59E0B',    // amber
+           seo: '#3B82F6',        // blue
+           experiments: '#8B5CF6' // violet
+        },
         // shadcn variables
         border: "var(--border)",
         input: "var(--input)",
