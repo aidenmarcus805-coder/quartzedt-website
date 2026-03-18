@@ -21,49 +21,37 @@ export const KiloClawChat = () => {
   // Hardcoded for MVP, maps to dynamic "Marketing Fleet" etc.
   const channelId = "global-swarm-main"; 
 
-  // Fast-polling connection abstraction
+  // SSE Connection for real-time swarm chatter
   useEffect(() => {
-    let interval: ReturnType<typeof setInterval>;
+    const eventSource = new EventSource(`/api/claws/stream?channelId=${channelId}`);
     
-    // Track the last fetched time to only get new messages
-    // In a real app we'd use a cursor (last Message ID), but Date is fine for MVP
-    let lastFetched = new Date(0).toISOString();
-
-    const fetchChat = async () => {
+    eventSource.onmessage = (e) => {
         try {
-            const res = await fetch(`/api/claws/stream?channelId=${channelId}`);
-            if (res.ok) {
-                const data = await res.json();
-                if (data.messages && Array.isArray(data.messages)) {
-                    // Filter messages that are newer than our last fetch
-                    const newMessages = data.messages.filter((m: any) => new Date(m.createdAt) > new Date(lastFetched));
+            const data = JSON.parse(e.data);
+            if (data.messages && Array.isArray(data.messages)) {
+                setMessages(prev => {
+                    // Deduplicate and merge
+                    const existingIds = new Set(prev.map(p => p.id));
+                    const uniqueNew = data.messages.filter((m: any) => !existingIds.has(m.id));
+                    if (uniqueNew.length === 0) return prev;
                     
-                    if (newMessages.length > 0) {
-                        // Update last fetched timestamp to the newest message
-                        lastFetched = new Date(newMessages[0].createdAt).toISOString();
-                        
-                        setMessages(prev => {
-                            // Deduplicate based on ID in case of race conditions
-                            const existingIds = new Set(prev.map(p => p.id));
-                            const uniqueNew = newMessages.filter((m: any) => !existingIds.has(m.id));
-                            return [...prev, ...uniqueNew].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-                        });
-                    }
-                }
+                    return [...prev, ...uniqueNew].sort((a, b) => 
+                        new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
+                    );
+                });
             }
-        } catch(e) {
-            console.error("Polling error:", e);
+        } catch(err) {
+            console.error("SSE Parse Error:", err);
         }
     };
 
-    // Initial fetch immediately
-    fetchChat();
+    eventSource.onerror = (e) => {
+        console.error("SSE Connection Error:", e);
+        eventSource.close();
+    };
 
-    // Poll every 3 seconds
-    interval = setInterval(fetchChat, 3000);
-
-    return () => clearInterval(interval);
-  }, []);
+    return () => eventSource.close();
+  }, [channelId]);
 
   const handleCommand = async (e: React.FormEvent) => {
     e.preventDefault();
