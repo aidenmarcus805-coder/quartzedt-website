@@ -24,7 +24,7 @@ import { GlassCard } from './GlassCard';
 import { OwnerBadge } from './OwnerBadge';
 
 function fieldClassName() {
-  return 'mt-3 w-full rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-slate-300';
+  return 'mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-200';
 }
 
 function renderSettingField(field: OwnerSettingField) {
@@ -32,17 +32,17 @@ function renderSettingField(field: OwnerSettingField) {
     const enabled = Boolean(field.value);
 
     return (
-      <div className="mt-3 flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-3">
-        <span className="text-sm font-medium text-slate-700">{enabled ? 'Enabled' : 'Disabled'}</span>
+      <div className="mt-2 flex items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2">
+        <span className="text-sm font-medium text-slate-900">{enabled ? 'Enabled' : 'Disabled'}</span>
         <span
           aria-hidden="true"
-          className={`relative inline-flex h-7 w-12 items-center rounded-full transition ${
+          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
             enabled ? 'bg-slate-900' : 'bg-slate-200'
           }`}
         >
           <span
-            className={`inline-block h-5 w-5 rounded-full bg-white transition ${
-              enabled ? 'translate-x-6' : 'translate-x-1'
+            className={`inline-block h-3 w-3 rounded-full bg-white transition-transform ${
+              enabled ? 'translate-x-5' : 'translate-x-1'
             }`}
           />
         </span>
@@ -102,37 +102,36 @@ export function OwnerOutputCard({
   showPipeline?: boolean;
 }) {
   return (
-    <GlassCard className="p-6">
+    <GlassCard className="p-4">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+          <div className="flex flex-wrap items-center gap-2 text-[10px] font-medium uppercase tracking-wider text-slate-500">
             {showPipeline ? (
-              <span className="inline-flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: output.pipelineAccent }} />
+              <span className="inline-flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: output.pipelineAccent }} />
                 {output.pipelineLabel}
               </span>
             ) : null}
+            <span>&middot;</span>
             <span>{output.category}</span>
           </div>
-          <h3 className="mt-4 text-2xl font-semibold tracking-[-0.04em] text-slate-950">{output.title}</h3>
-          <p className="mt-3 text-sm leading-6 text-slate-600">{output.excerpt}</p>
+          <h3 className="mt-2 text-base font-semibold text-slate-900">{output.title}</h3>
+          <p className="mt-1 text-sm text-slate-600 line-clamp-2">{output.excerpt}</p>
         </div>
         <OwnerBadge tone={toneFromOutputStatus(output.status)}>{formatLabel(output.status)}</OwnerBadge>
       </div>
 
-      <div className="mt-6 flex flex-wrap items-center gap-3 text-xs text-slate-500">
-        <span>By {output.author}</span>
-        <span className="h-1 w-1 rounded-full bg-slate-300" />
+      <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+        <span>{output.author}</span>
+        <span>&middot;</span>
         <span>{output.createdAtLabel}</span>
-        <span className="h-1 w-1 rounded-full bg-slate-300" />
-        <span>Destination: {output.destination}</span>
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-3">
+      <div className="mt-4 flex flex-wrap gap-2">
         <CopyTextButton value={output.copyableText} label="Copy brief" />
         <Link href={output.href} className={ownerPrimaryButtonClassName}>
           {output.routeTarget}
-          <ArrowUpRight className="h-4 w-4" />
+          <ArrowUpRight className="h-3 w-3" />
         </Link>
       </div>
     </GlassCard>
@@ -161,44 +160,37 @@ export function OwnerSuggestionCard({ suggestion }: { suggestion: OwnerSuggestio
   ].join('\n');
 
   return (
-    <GlassCard className="p-6">
+    <GlassCard className="p-4">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <div className="flex flex-wrap items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+          <div className="flex flex-wrap items-center gap-2 text-[10px] font-medium uppercase tracking-wider text-slate-500">
             <span>{suggestion.pipelineLabel}</span>
+            <span>&middot;</span>
             <span>{suggestion.type}</span>
           </div>
-          <h3 className="mt-4 text-2xl font-semibold tracking-[-0.04em] text-slate-950">{suggestion.title}</h3>
+          <h3 className="mt-2 text-base font-semibold text-slate-900">{suggestion.title}</h3>
         </div>
         <OwnerBadge tone={toneFromPriority(suggestion.priority)}>{suggestion.priority}</OwnerBadge>
       </div>
 
-      <p className="mt-4 text-sm leading-6 text-slate-600">{suggestion.summary}</p>
+      <p className="mt-2 text-sm text-slate-600">{suggestion.summary}</p>
 
-      <div className="mt-6 grid gap-4 rounded-[24px] border border-slate-200/80 bg-slate-50/80 p-4">
+      <div className="mt-4 grid gap-4 rounded-md border border-slate-100 bg-slate-50 p-3 sm:grid-cols-2">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Why now</p>
-          <p className="mt-2 text-sm leading-6 text-slate-700">{suggestion.whyNow}</p>
+          <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500">Why now</p>
+          <p className="mt-1 text-sm text-slate-700">{suggestion.whyNow}</p>
         </div>
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Execution brief</p>
-          <p className="mt-2 text-sm leading-6 text-slate-700">{suggestion.executionBrief}</p>
+          <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500">Execution brief</p>
+          <p className="mt-1 text-sm text-slate-700">{suggestion.executionBrief}</p>
         </div>
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-2">
-        {suggestion.tags.map((tag) => (
-          <span key={tag} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-            {tag}
-          </span>
-        ))}
-      </div>
-
-      <div className="mt-6 flex flex-wrap gap-3">
+      <div className="mt-4 flex flex-wrap gap-2">
         <CopyTextButton value={copyValue} label="Copy suggestion" />
         <Link href={`/dashboard/owner/pipelines/${suggestion.pipeline}`} className={ownerSecondaryButtonClassName}>
           Open {suggestion.pipelineLabel}
-          <ArrowUpRight className="h-4 w-4" />
+          <ArrowUpRight className="h-3 w-3" />
         </Link>
       </div>
     </GlassCard>
@@ -207,39 +199,40 @@ export function OwnerSuggestionCard({ suggestion }: { suggestion: OwnerSuggestio
 
 export function OwnerImportBotCard({ packageItem }: { packageItem: ImportedBotPackage }) {
   return (
-    <GlassCard className="p-6">
+    <GlassCard className="p-4">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <div className="flex flex-wrap items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+          <div className="flex flex-wrap items-center gap-2 text-[10px] font-medium uppercase tracking-wider text-slate-500">
             <span>{packageItem.source}</span>
+            <span>&middot;</span>
             <span>{packageItem.fileName}</span>
           </div>
-          <h3 className="mt-4 text-2xl font-semibold tracking-[-0.04em] text-slate-950">{packageItem.fileName}</h3>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">{packageItem.notes}</p>
+          <h3 className="mt-2 text-base font-semibold text-slate-900">{packageItem.fileName}</h3>
+          <p className="mt-1 text-sm text-slate-600">{packageItem.notes}</p>
         </div>
         <OwnerBadge tone={packageItem.status === 'active' ? 'success' : packageItem.status === 'needs-review' ? 'warning' : 'neutral'}>
           {formatLabel(packageItem.status)}
         </OwnerBadge>
       </div>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-        <div className="rounded-[24px] border border-slate-200/80 bg-slate-50/80 p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Config preview</p>
-          <pre className="mt-3 whitespace-pre-wrap break-words text-xs leading-6 text-slate-700">{packageItem.preview}</pre>
+      <div className="mt-4 grid gap-4 xl:grid-cols-2">
+        <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
+          <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500">Config preview</p>
+          <pre className="mt-2 whitespace-pre-wrap break-words text-xs text-slate-700">{packageItem.preview}</pre>
         </div>
 
-        <div className="rounded-[24px] border border-slate-200/80 bg-white/60 p-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Assignments</p>
-          <div className="mt-4 space-y-3">
+        <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
+          <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500">Assignments</p>
+          <div className="mt-2 space-y-2">
             {packageItem.assignments.map((assignment) => (
               <div
                 key={assignment.id}
-                className="flex items-start justify-between gap-4 rounded-2xl border border-slate-200/70 bg-white/80 px-4 py-3"
+                className="flex items-center justify-between gap-4 rounded-md border border-slate-200 bg-white px-3 py-2"
               >
                 <div>
-                  <p className="text-sm font-semibold text-slate-900">{assignment.name}</p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {assignment.role} · {assignment.pipelineLabel}
+                  <p className="text-sm font-medium text-slate-900">{assignment.name}</p>
+                  <p className="text-xs text-slate-500">
+                    {assignment.role} &middot; {assignment.pipelineLabel}
                   </p>
                 </div>
                 <OwnerBadge tone={assignment.active ? 'success' : 'neutral'}>
@@ -251,7 +244,7 @@ export function OwnerImportBotCard({ packageItem }: { packageItem: ImportedBotPa
         </div>
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-3">
+      <div className="mt-4 flex flex-wrap gap-2">
         <button type="button" className={ownerSecondaryButtonClassName}>
           Review roles
         </button>
@@ -260,7 +253,7 @@ export function OwnerImportBotCard({ packageItem }: { packageItem: ImportedBotPa
         </button>
         <Link href="/dashboard/owner/bot-management" className={ownerPrimaryButtonClassName}>
           Open Bot Management
-          <ArrowUpRight className="h-4 w-4" />
+          <ArrowUpRight className="h-3 w-3" />
         </Link>
       </div>
     </GlassCard>
@@ -269,31 +262,32 @@ export function OwnerImportBotCard({ packageItem }: { packageItem: ImportedBotPa
 
 export function OwnerBotCard({ bot }: { bot: BotRecord }) {
   return (
-    <GlassCard className="p-6">
+    <GlassCard className="p-4">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
-          <div className="flex flex-wrap items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+          <div className="flex flex-wrap items-center gap-2 text-[10px] font-medium uppercase tracking-wider text-slate-500">
             <span>{bot.pipelineLabel}</span>
+            <span>&middot;</span>
             <span>{bot.model}</span>
           </div>
-          <h3 className="mt-4 text-2xl font-semibold tracking-[-0.04em] text-slate-950">{bot.name}</h3>
-          <p className="mt-2 text-sm leading-6 text-slate-600">{bot.role}</p>
+          <h3 className="mt-2 text-base font-semibold text-slate-900">{bot.name}</h3>
+          <p className="mt-1 text-sm text-slate-600">{bot.role}</p>
         </div>
         <OwnerBadge tone={toneFromBotStatus(bot.status)}>{formatLabel(bot.status)}</OwnerBadge>
       </div>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+      <div className="mt-4 grid gap-4 xl:grid-cols-2">
         <div className="space-y-4">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Last action</p>
-            <p className="mt-2 text-sm leading-6 text-slate-700">{bot.lastAction}</p>
+            <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500">Last action</p>
+            <p className="mt-1 text-sm text-slate-700">{bot.lastAction}</p>
           </div>
 
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Permissions</p>
-            <div className="mt-3 flex flex-wrap gap-2">
+            <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500">Permissions</p>
+            <div className="mt-1 flex flex-wrap gap-1.5">
               {bot.permissions.map((permission) => (
-                <span key={permission} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                <span key={permission} className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
                   {permission}
                 </span>
               ))}
@@ -301,10 +295,10 @@ export function OwnerBotCard({ bot }: { bot: BotRecord }) {
           </div>
 
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Tools</p>
-            <div className="mt-3 flex flex-wrap gap-2">
+            <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500">Tools</p>
+            <div className="mt-1 flex flex-wrap gap-1.5">
               {bot.tools.map((tool) => (
-                <span key={tool} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                <span key={tool} className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
                   {tool}
                 </span>
               ))}
@@ -312,23 +306,23 @@ export function OwnerBotCard({ bot }: { bot: BotRecord }) {
           </div>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-2">
-          <div className="rounded-[24px] border border-slate-200/80 bg-slate-50/80 p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Recent actions</p>
-            <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-700">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
+            <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500">Recent actions</p>
+            <ul className="mt-2 space-y-2 text-sm text-slate-700">
               {bot.recentActions.map((action) => (
-                <li key={action} className="rounded-2xl border border-slate-200/70 bg-white/80 px-3 py-2">
+                <li key={action} className="rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs">
                   {action}
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="rounded-[24px] border border-slate-200/80 bg-slate-50/80 p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Logs</p>
-            <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-700">
+          <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
+            <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500">Logs</p>
+            <ul className="mt-2 space-y-2 text-sm text-slate-700">
               {bot.logs.map((log) => (
-                <li key={log} className="rounded-2xl border border-slate-200/70 bg-white/80 px-3 py-2">
+                <li key={log} className="rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs">
                   {log}
                 </li>
               ))}
@@ -337,16 +331,16 @@ export function OwnerBotCard({ bot }: { bot: BotRecord }) {
         </div>
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-3">
+      <div className="mt-4 flex flex-wrap gap-2">
         <button type="button" className={ownerSecondaryButtonClassName}>
-          <Shield className="h-4 w-4" />
+          <Shield className="h-3 w-3" />
           Edit permissions
         </button>
         <button type="button" className={ownerSecondaryButtonClassName}>
           {bot.status === 'active' || bot.status === 'watching' ? (
-            <PauseCircle className="h-4 w-4" />
+            <PauseCircle className="h-3 w-3" />
           ) : (
-            <RefreshCcw className="h-4 w-4" />
+            <RefreshCcw className="h-3 w-3" />
           )}
           {bot.status === 'active' || bot.status === 'watching' ? 'Pause' : 'Restart'}
         </button>
@@ -354,7 +348,7 @@ export function OwnerBotCard({ bot }: { bot: BotRecord }) {
           Reassign
         </button>
         <button type="button" className={ownerSecondaryButtonClassName}>
-          <Trash2 className="h-4 w-4" />
+          <Trash2 className="h-3 w-3" />
           Remove
         </button>
       </div>
@@ -364,32 +358,32 @@ export function OwnerBotCard({ bot }: { bot: BotRecord }) {
 
 export function OwnerCodeRefinementCard({ refinement }: { refinement: CodeRefinementSpec }) {
   return (
-    <GlassCard className="p-6 sm:p-8">
+    <GlassCard className="p-4">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">{refinement.pipelineLabel}</p>
-          <h3 className="mt-4 text-2xl font-semibold tracking-[-0.04em] text-slate-950">{refinement.title}</h3>
+          <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500">{refinement.pipelineLabel}</p>
+          <h3 className="mt-1 text-base font-semibold text-slate-900">{refinement.title}</h3>
         </div>
         <CopyTextButton value={formatCodeRefinementSpec(refinement)} label="Copy execution spec" />
       </div>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-[24px] border border-slate-200/80 bg-slate-50/80 p-5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Files to Change</p>
-          <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-700">
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
+          <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500">Files to Change</p>
+          <ul className="mt-2 space-y-2 text-sm text-slate-700">
             {refinement.filesToChange.map((file) => (
-              <li key={file} className="rounded-2xl border border-slate-200/70 bg-white/80 px-3 py-2">
+              <li key={file} className="rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs">
                 {file}
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="rounded-[24px] border border-slate-200/80 bg-slate-50/80 p-5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Alternative Approaches</p>
-          <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-700">
+        <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
+          <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500">Alternative Approaches</p>
+          <ul className="mt-2 space-y-2 text-sm text-slate-700">
             {refinement.alternativeApproaches.map((approach) => (
-              <li key={approach} className="rounded-2xl border border-slate-200/70 bg-white/80 px-3 py-2">
+              <li key={approach} className="rounded-md border border-slate-200 bg-white px-2 py-1.5 text-xs">
                 {approach}
               </li>
             ))}
@@ -397,14 +391,14 @@ export function OwnerCodeRefinementCard({ refinement }: { refinement: CodeRefine
         </div>
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-[24px] border border-slate-200/80 bg-white/70 p-5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Suggestion</p>
-          <p className="mt-3 text-sm leading-7 text-slate-700">{refinement.suggestion}</p>
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
+          <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500">Suggestion</p>
+          <p className="mt-1 text-sm text-slate-700">{refinement.suggestion}</p>
         </div>
-        <div className="rounded-[24px] border border-slate-200/80 bg-white/70 p-5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Why This Helps</p>
-          <p className="mt-3 text-sm leading-7 text-slate-700">{refinement.whyThisHelps}</p>
+        <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
+          <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500">Why This Helps</p>
+          <p className="mt-1 text-sm text-slate-700">{refinement.whyThisHelps}</p>
         </div>
       </div>
     </GlassCard>
@@ -413,17 +407,15 @@ export function OwnerCodeRefinementCard({ refinement }: { refinement: CodeRefine
 
 export function OwnerSettingsSectionCard({ section }: { section: OwnerSettingSection }) {
   return (
-    <GlassCard hover={false} className="p-6 sm:p-8">
+    <GlassCard hover={false} className="p-4">
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">{section.title}</p>
-        <p className="mt-3 text-sm leading-6 text-slate-600">{section.description}</p>
+        <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500">{section.title}</p>
       </div>
 
-      <div className="mt-6 grid gap-4">
+      <div className="mt-4 grid gap-4">
         {section.fields.map((field) => (
-          <div key={field.id} className="rounded-[24px] border border-slate-200/80 bg-slate-50/70 p-4">
-            <p className="text-sm font-semibold text-slate-900">{field.label}</p>
-            <p className="mt-2 text-sm leading-6 text-slate-600">{field.description}</p>
+          <div key={field.id} className="rounded-md border border-slate-100 bg-slate-50 p-3">
+            <p className="text-sm font-medium text-slate-900">{field.label}</p>
             {renderSettingField(field)}
           </div>
         ))}

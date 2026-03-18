@@ -27,58 +27,57 @@ export function OwnerActionLink({
 export function OwnerPageHeader({
   eyebrow,
   title,
-  description,
   actions,
 }: {
   eyebrow?: string;
   title: string;
-  description: string;
+  description?: string; // Kept for compatibility but ignored
   actions?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+    <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
       <div className="max-w-3xl">
         {eyebrow ? (
-          <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-slate-400">{eyebrow}</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{eyebrow}</p>
         ) : null}
-        <h1 className="mt-3 text-4xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-5xl">{title}</h1>
-        <p className="mt-4 max-w-2xl text-[15px] leading-7 text-slate-600">{description}</p>
+        <h1 className="mt-1 text-2xl font-semibold text-slate-900">{title}</h1>
       </div>
 
-      {actions ? <div className="flex flex-wrap gap-3">{actions}</div> : null}
+      {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
     </div>
   );
 }
 
 export function OwnerSectionHeading({
   title,
-  description,
   action,
 }: {
   title: string;
-  description?: string;
+  description?: string; // Kept for compatibility but ignored
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <h2 className="text-2xl font-semibold tracking-[-0.04em] text-slate-950">{title}</h2>
-        {description ? <p className="mt-2 text-sm leading-6 text-slate-600">{description}</p> : null}
+        <h2 className="text-lg font-medium text-slate-900">{title}</h2>
       </div>
-      {action ? <div className="flex flex-wrap gap-3">{action}</div> : null}
+      {action ? <div className="flex flex-wrap gap-2">{action}</div> : null}
     </div>
   );
 }
 
 export function OwnerSignalCard({ signal }: { signal: OwnerSignal }) {
   return (
-    <GlassCard hover={false} className="p-6">
-      <div className="flex items-start justify-between gap-4">
-        <p className="text-sm font-medium text-slate-500">{signal.label}</p>
-        <OwnerBadge tone={signal.tone}>{signal.tone}</OwnerBadge>
+    <div className="flex flex-col gap-1 border-r border-slate-200 px-4 last:border-0">
+      <div className="flex items-center gap-2">
+        <p className="text-xs font-medium text-slate-500">{signal.label}</p>
+        {signal.tone === 'CRITICAL' || signal.tone === 'WARNING' ? (
+          <OwnerBadge tone={signal.tone}>{signal.tone}</OwnerBadge>
+        ) : null}
       </div>
-      <p className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-slate-950">{signal.value}</p>
-      <p className="mt-3 text-sm leading-6 text-slate-600">{signal.detail}</p>
-    </GlassCard>
+      <div className="flex items-baseline gap-2">
+        <p className="text-lg font-semibold text-slate-900">{signal.value}</p>
+      </div>
+    </div>
   );
 }
