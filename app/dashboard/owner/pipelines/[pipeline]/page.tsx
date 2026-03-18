@@ -30,11 +30,9 @@ export default async function OwnerPipelineDetailPage({
   const bots = ownerBots.filter((bot) => bot.pipeline === slug);
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       <OwnerPageHeader
-        eyebrow="Pipeline detail"
         title={pipeline.name}
-        description={pipeline.description}
         actions={
           <>
             <OwnerActionLink href="/dashboard/owner/groupchat">Open Groupchat</OwnerActionLink>
@@ -45,137 +43,122 @@ export default async function OwnerPipelineDetailPage({
         }
       />
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <GlassCard hover={false} className="p-6">
-          <div className="flex items-start justify-between gap-4">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Status</p>
+      <div className="flex flex-wrap items-center rounded-lg border border-slate-200 bg-white py-3 shadow-sm">
+        <div className="flex flex-col gap-1 border-r border-slate-200 px-4 last:border-0">
+          <div className="flex items-center gap-2">
+            <p className="text-xs font-medium text-slate-500">Status</p>
             <OwnerBadge tone={toneFromPipelineStatus(pipeline.status)}>{pipeline.status}</OwnerBadge>
           </div>
-          <p className="mt-4 text-2xl font-semibold tracking-[-0.04em] text-slate-950">{pipeline.queueCount} queued</p>
-          <p className="mt-3 text-sm leading-6 text-slate-600">Current work waiting inside the {pipeline.name} feed.</p>
-        </GlassCard>
-        <GlassCard hover={false} className="p-6">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Assigned bots</p>
-          <p className="mt-4 text-2xl font-semibold tracking-[-0.04em] text-slate-950">{pipeline.botCount}</p>
-          <p className="mt-3 text-sm leading-6 text-slate-600">Claws currently attached to this pipeline.</p>
-        </GlassCard>
-        <GlassCard hover={false} className="p-6">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Recent outputs</p>
-          <p className="mt-4 text-2xl font-semibold tracking-[-0.04em] text-slate-950">{outputs.length}</p>
-          <p className="mt-3 text-sm leading-6 text-slate-600">Items that can be reviewed, copied, or routed onward.</p>
-        </GlassCard>
-        <GlassCard hover={false} className="p-6">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Suggestions</p>
-          <p className="mt-4 text-2xl font-semibold tracking-[-0.04em] text-slate-950">{suggestions.length}</p>
-          <p className="mt-3 text-sm leading-6 text-slate-600">Copy-ready improvements tied to this lane.</p>
-        </GlassCard>
+          <p className="text-lg font-semibold text-slate-900">{pipeline.queueCount} queued</p>
+        </div>
+        <div className="flex flex-col gap-1 border-r border-slate-200 px-4 last:border-0">
+          <p className="text-xs font-medium text-slate-500">Assigned bots</p>
+          <p className="text-lg font-semibold text-slate-900">{pipeline.botCount}</p>
+        </div>
+        <div className="flex flex-col gap-1 border-r border-slate-200 px-4 last:border-0">
+          <p className="text-xs font-medium text-slate-500">Recent outputs</p>
+          <p className="text-lg font-semibold text-slate-900">{outputs.length}</p>
+        </div>
+        <div className="flex flex-col gap-1 border-r border-slate-200 px-4 last:border-0">
+          <p className="text-xs font-medium text-slate-500">Suggestions</p>
+          <p className="text-lg font-semibold text-slate-900">{suggestions.length}</p>
+        </div>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[0.94fr_1.06fr]">
-        <GlassCard className="p-6 sm:p-8">
-          <OwnerSectionHeading
-            title="Current focus"
-            description="What this pipeline is supposed to protect and produce right now."
-          />
+      <div className="grid gap-6 xl:grid-cols-2">
+        <div className="space-y-4">
+          <OwnerSectionHeading title="Current focus" />
 
-          <p className="mt-6 text-sm leading-7 text-slate-600">{pipeline.focus}</p>
+          <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+            <p className="text-sm text-slate-700">{pipeline.focus}</p>
 
-          <div className="mt-6 rounded-[24px] border border-slate-200/80 bg-slate-50/80 p-5">
-            <div className="flex items-center gap-3 text-slate-500">
-              <Waypoints className="h-4 w-4" />
-              <p className="text-sm font-semibold text-slate-900">Assigned claws</p>
-            </div>
-            <div className="mt-4 space-y-3">
-              {bots.length > 0 ? (
-                bots.map((bot) => (
-                  <div key={bot.id} className="rounded-2xl border border-slate-200/70 bg-white/80 px-4 py-3">
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-900">{bot.name}</p>
-                        <p className="mt-1 text-sm text-slate-500">{bot.role}</p>
+            <div className="mt-6">
+              <div className="flex items-center gap-2 text-slate-500">
+                <Waypoints className="h-4 w-4" />
+                <p className="text-xs font-medium uppercase tracking-wider">Assigned claws</p>
+              </div>
+              <div className="mt-3 space-y-2">
+                {bots.length > 0 ? (
+                  bots.map((bot) => (
+                    <div key={bot.id} className="rounded-md border border-slate-100 bg-slate-50 p-3">
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <p className="text-sm font-medium text-slate-900">{bot.name}</p>
+                          <p className="text-xs text-slate-500">{bot.role}</p>
+                        </div>
+                        <OwnerBadge tone="neutral">{bot.status}</OwnerBadge>
                       </div>
-                      <OwnerBadge tone="neutral">{bot.status}</OwnerBadge>
+                      <p className="mt-2 text-xs text-slate-600">{bot.lastAction}</p>
                     </div>
-                    <p className="mt-3 text-sm leading-6 text-slate-600">{bot.lastAction}</p>
+                  ))
+                ) : (
+                  <div className="rounded-md border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
+                    No direct bot records are attached yet.
                   </div>
-                ))
-              ) : (
-                <div className="rounded-2xl border border-dashed border-slate-200 bg-white/60 px-4 py-6 text-sm text-slate-500">
-                  No direct bot records are attached yet, but the pipeline routing structure is ready.
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
-        </GlassCard>
+        </div>
 
-        <GlassCard className="p-6 sm:p-8">
-          <OwnerSectionHeading
-            title="Routing behavior"
-            description="How work should enter, be reviewed, and leave this pipeline."
-            action={<OwnerBadge tone="neutral">Owner rule set</OwnerBadge>}
-          />
+        <div className="space-y-4">
+          <OwnerSectionHeading title="Routing behavior" />
 
-          <div className="mt-6 grid gap-4">
-            <div className="rounded-[24px] border border-slate-200/80 bg-slate-50/80 p-5">
-              <div className="flex items-center gap-3 text-slate-500">
+          <div className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
+              <div className="flex items-center gap-2 text-slate-500">
                 <Route className="h-4 w-4" />
-                <p className="text-sm font-semibold text-slate-900">Intake</p>
+                <p className="text-xs font-medium uppercase tracking-wider">Intake</p>
               </div>
-              <p className="mt-3 text-sm leading-7 text-slate-600">{pipeline.routing.intake}</p>
+              <p className="mt-2 text-sm text-slate-700">{pipeline.routing.intake}</p>
             </div>
-            <div className="rounded-[24px] border border-slate-200/80 bg-slate-50/80 p-5">
-              <div className="flex items-center gap-3 text-slate-500">
+            <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
+              <div className="flex items-center gap-2 text-slate-500">
                 <Sparkles className="h-4 w-4" />
-                <p className="text-sm font-semibold text-slate-900">Review surface</p>
+                <p className="text-xs font-medium uppercase tracking-wider">Review surface</p>
               </div>
-              <p className="mt-3 text-sm leading-7 text-slate-600">{pipeline.routing.review}</p>
+              <p className="mt-2 text-sm text-slate-700">{pipeline.routing.review}</p>
             </div>
-            <div className="rounded-[24px] border border-slate-200/80 bg-slate-50/80 p-5">
-              <div className="flex items-center gap-3 text-slate-500">
+            <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
+              <div className="flex items-center gap-2 text-slate-500">
                 <Bot className="h-4 w-4" />
-                <p className="text-sm font-semibold text-slate-900">Dispatch</p>
+                <p className="text-xs font-medium uppercase tracking-wider">Dispatch</p>
               </div>
-              <p className="mt-3 text-sm leading-7 text-slate-600">{pipeline.routing.dispatch}</p>
+              <p className="mt-2 text-sm text-slate-700">{pipeline.routing.dispatch}</p>
             </div>
           </div>
-        </GlassCard>
+        </div>
       </div>
 
-      <div className="space-y-6">
-        <OwnerSectionHeading
-          title="Pipeline feed"
-          description="Recent outputs produced inside this lane, ready to review or route."
-        />
+      <div className="space-y-4">
+        <OwnerSectionHeading title="Pipeline feed" />
 
         {outputs.length > 0 ? (
-          <div className="grid gap-4">
+          <div className="grid gap-4 xl:grid-cols-2">
             {outputs.map((output) => (
               <OwnerOutputCard key={output.id} output={output} showPipeline={false} />
             ))}
           </div>
         ) : (
-          <GlassCard className="p-8 text-sm leading-7 text-slate-600">
-            This pipeline does not have any mock outputs yet, but its routing behavior and shell are in place.
-          </GlassCard>
+          <div className="rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm">
+            This pipeline does not have any mock outputs yet.
+          </div>
         )}
       </div>
 
-      <div className="space-y-6">
-        <OwnerSectionHeading
-          title="Related suggestions"
-          description="Execution-ready improvement notes tied specifically to this pipeline."
-        />
+      <div className="space-y-4">
+        <OwnerSectionHeading title="Related suggestions" />
 
         {suggestions.length > 0 ? (
-          <div className="grid gap-4">
+          <div className="grid gap-4 xl:grid-cols-2">
             {suggestions.map((suggestion) => (
               <OwnerSuggestionCard key={suggestion.id} suggestion={suggestion} />
             ))}
           </div>
         ) : (
-          <GlassCard className="p-8 text-sm leading-7 text-slate-600">
-            No suggestions are attached yet. Use Groupchat or Suggestions to generate new work for this lane.
-          </GlassCard>
+          <div className="rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm">
+            No suggestions are attached yet.
+          </div>
         )}
       </div>
     </div>

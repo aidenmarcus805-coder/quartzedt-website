@@ -1,10 +1,10 @@
 import type { BotRecord, OwnerOutput, OwnerSuggestion, OwnerTone, PipelineSummary } from './types';
 
 export const ownerPrimaryButtonClassName =
-  'inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800';
+  'inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-slate-800';
 
 export const ownerSecondaryButtonClassName =
-  'inline-flex items-center justify-center gap-2 rounded-full border border-white/80 bg-white/80 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-[0_10px_30px_-18px_rgba(15,23,42,0.28)] transition hover:border-slate-200 hover:text-slate-950';
+  'inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900';
 
 export const ownerToneClassNames: Record<OwnerTone, string> = {
   neutral: 'border-slate-200 bg-slate-100 text-slate-600',
