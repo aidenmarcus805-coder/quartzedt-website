@@ -13,11 +13,9 @@ const ownerConfigPreview = `{
 
 export default function OwnerSettingsPage() {
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       <OwnerPageHeader
-        eyebrow="Settings"
-        title="Owner defaults, keys, routing, and integrations"
-        description="Configure private owner access, bot defaults, pipeline routing rules, UI preferences, API keys, and Quartz-specific integration behavior."
+        title="Settings"
         actions={
           <>
             <OwnerActionLink href="/dashboard/owner/import-bot">Import Configs</OwnerActionLink>
@@ -28,45 +26,36 @@ export default function OwnerSettingsPage() {
         }
       />
 
-      <div className="grid gap-6 xl:grid-cols-[0.96fr_1.04fr]">
-        <GlassCard className="p-6 sm:p-8">
-          <OwnerSectionHeading
-            title="Config snapshot"
-            description="A readable owner-oriented view of the current operating defaults."
-          />
+      <div className="grid gap-6 xl:grid-cols-2">
+        <GlassCard className="p-4">
+          <OwnerSectionHeading title="Config snapshot" />
 
-          <pre className="mt-6 whitespace-pre-wrap break-words rounded-[24px] border border-slate-200/80 bg-slate-50/80 p-5 text-xs leading-6 text-slate-700">
+          <pre className="mt-4 whitespace-pre-wrap break-words rounded-md border border-slate-100 bg-slate-50 p-3 text-xs text-slate-700">
             {ownerConfigPreview}
           </pre>
         </GlassCard>
 
-        <GlassCard className="p-6 sm:p-8">
-          <OwnerSectionHeading
-            title="Why these settings exist"
-            description="The owner dashboard is not a generic account panel. These settings shape how Quartz thinks and routes work for you."
-          />
+        <GlassCard className="p-4">
+          <OwnerSectionHeading title="Why these settings exist" />
 
-          <div className="mt-6 space-y-4 text-sm leading-7 text-slate-600">
-            <div className="rounded-[24px] border border-slate-200/80 bg-slate-50/80 p-5">
+          <div className="mt-4 space-y-3 text-sm text-slate-600">
+            <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
               Authentication and verification keep the owner area private without forcing the rest of the app into owner-specific behavior.
             </div>
-            <div className="rounded-[24px] border border-slate-200/80 bg-slate-50/80 p-5">
+            <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
               Routing rules protect work from drifting into the wrong pipeline and make sure groupchat, outputs, and suggestions stay coherent.
             </div>
-            <div className="rounded-[24px] border border-slate-200/80 bg-slate-50/80 p-5">
+            <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
               Integration notes stay visible here so imported bots, KiloClaw, OpenClaw, and search tooling all remain easy to audit.
             </div>
           </div>
         </GlassCard>
       </div>
 
-      <div className="space-y-6">
-        <OwnerSectionHeading
-          title="Owner setting sections"
-          description="Everything needed to tune the private Quartz operating system before live data arrives."
-        />
+      <div className="space-y-4">
+        <OwnerSectionHeading title="Owner setting sections" />
 
-        <div className="grid gap-4">
+        <div className="grid gap-4 xl:grid-cols-2">
           {ownerSettingSections.map((section) => (
             <OwnerSettingsSectionCard key={section.id} section={section} />
           ))}

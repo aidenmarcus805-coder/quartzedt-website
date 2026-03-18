@@ -71,7 +71,7 @@ export function OwnerSignalCard({ signal }: { signal: OwnerSignal }) {
     <div className="flex flex-col gap-1 border-r border-slate-200 px-4 last:border-0">
       <div className="flex items-center gap-2">
         <p className="text-xs font-medium text-slate-500">{signal.label}</p>
-        {signal.tone === 'CRITICAL' || signal.tone === 'WARNING' ? (
+        {signal.tone === 'critical' || signal.tone === 'warning' ? (
           <OwnerBadge tone={signal.tone}>{signal.tone}</OwnerBadge>
         ) : null}
       </div>

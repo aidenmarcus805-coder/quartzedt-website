@@ -11,11 +11,9 @@ export default function OwnerOutputsPage() {
   const reviewCount = ownerOutputs.filter((output) => output.status === 'needs-review').length;
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       <OwnerPageHeader
-        eyebrow="Outputs"
-        title="Everything the claws generate"
-        description="A dedicated output surface for code refinement specs, copy drafts, product ideas, SEO notes, social content, import reviews, and system notices."
+        title="Outputs"
         actions={
           <>
             <OwnerActionLink href="/dashboard/owner/groupchat">Send to Groupchat</OwnerActionLink>
@@ -26,55 +24,48 @@ export default function OwnerOutputsPage() {
         }
       />
 
-      <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-        <GlassCard className="p-6 sm:p-8">
+      <div className="grid gap-6 xl:grid-cols-2">
+        <div className="space-y-4">
           <OwnerSectionHeading
             title="Output filters"
-            description="Scan by type mentally now, then wire these filters to real data later."
             action={<OwnerBadge tone="success">{readyCount} ready</OwnerBadge>}
           />
 
-          <div className="mt-6 flex flex-wrap gap-2">
-            {outputCategories.map((category) => (
-              <span key={category} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-600">
-                {category}
-              </span>
-            ))}
-          </div>
-
-          <div className="mt-6 rounded-[24px] border border-slate-200/80 bg-slate-50/80 p-5 text-sm leading-7 text-slate-600">
-            Every output should be easy to review, copy, send to Cursor, or route into another page. This page is built as the clean queue for that work.
-          </div>
-        </GlassCard>
-
-        <GlassCard className="p-6 sm:p-8">
-          <OwnerSectionHeading
-            title="Routing snapshot"
-            description="How much work is already ready versus still waiting for owner attention."
-          />
-
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
-            <div className="rounded-[24px] border border-slate-200/80 bg-slate-50/80 p-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Ready to move</p>
-              <p className="mt-4 text-3xl font-semibold tracking-[-0.05em] text-slate-950">{readyCount}</p>
-              <p className="mt-3 text-sm leading-6 text-slate-600">Outputs already clean enough to copy, route, or publish.</p>
+          <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="flex flex-wrap gap-2">
+              {outputCategories.map((category) => (
+                <span key={category} className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-600">
+                  {category}
+                </span>
+              ))}
             </div>
-            <div className="rounded-[24px] border border-slate-200/80 bg-slate-50/80 p-5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Needs review</p>
-              <p className="mt-4 text-3xl font-semibold tracking-[-0.05em] text-slate-950">{reviewCount}</p>
-              <p className="mt-3 text-sm leading-6 text-slate-600">Items that still want an owner check before leaving their lane.</p>
+
+            <div className="mt-4 rounded-md border border-slate-100 bg-slate-50 p-3 text-sm text-slate-600">
+              Every output should be easy to review, copy, send to Cursor, or route into another page. This page is built as the clean queue for that work.
             </div>
           </div>
-        </GlassCard>
+        </div>
+
+        <div className="space-y-4">
+          <OwnerSectionHeading title="Routing snapshot" />
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500">Ready to move</p>
+              <p className="mt-1 text-2xl font-semibold text-slate-900">{readyCount}</p>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+              <p className="text-[10px] font-medium uppercase tracking-wider text-slate-500">Needs review</p>
+              <p className="mt-1 text-2xl font-semibold text-slate-900">{reviewCount}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="space-y-6">
-        <OwnerSectionHeading
-          title="All outputs"
-          description="The latest generated work across the entire owner system, ordered as a practical scan surface."
-        />
+      <div className="space-y-4">
+        <OwnerSectionHeading title="All outputs" />
 
-        <div className="grid gap-4">
+        <div className="grid gap-4 xl:grid-cols-2">
           {ownerOutputs.map((output) => (
             <OwnerOutputCard key={output.id} output={output} />
           ))}
