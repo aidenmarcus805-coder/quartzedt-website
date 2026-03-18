@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Reusable Glassmorphism component providing Apple-esque high-end styling
- * backdrop-blur-md bg-white/80 border border-white/20 shadow-xl
+ * Formerly GlassCard, now repurposed as a minimal flat container.
+ * Retains the name to prevent breaking imports across the app temporarily.
  */
 export const GlassCard = ({ 
     children, 
@@ -15,8 +15,8 @@ export const GlassCard = ({
 }) => {
     return (
         <div className={cn(
-            "backdrop-blur-md bg-white/80 border border-white/20 shadow-xl rounded-2xl p-6",
-            hover && "transition-transform duration-150 hover:-translate-y-[2px]",
+            "bg-white border border-slate-200 rounded-xl p-5 shadow-sm",
+            hover && "transition-colors duration-150 hover:border-slate-300",
             className
         )}>
             {children}

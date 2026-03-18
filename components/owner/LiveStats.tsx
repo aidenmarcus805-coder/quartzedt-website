@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { GlassCard } from "./GlassCard";
 import { motion } from "framer-motion";
 
 export const LiveStats = () => {
@@ -37,25 +36,24 @@ export const LiveStats = () => {
     ];
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full">
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-4 w-full border-b border-slate-100 pb-6 mb-2">
             {cards.map((c, i) => (
                 <motion.div
                     key={i}
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.1, duration: 0.3 }}
+                    className="flex flex-col gap-0.5"
                 >
-                    <GlassCard className="flex flex-col gap-1 p-5 border-t-[3px] border-t-white/40">
-                        <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                            {c.title}
-                        </div>
-                        <div className="text-3xl font-display font-semibold tracking-tight text-slate-800">
-                            {c.value?.toLocaleString() || "0"}
-                        </div>
-                        <div className={`text-sm font-medium ${c.critical ? 'text-red-500' : 'text-emerald-500'} flex items-center gap-1`}>
+                    <div className="text-[11px] font-medium uppercase tracking-widest text-slate-400">
+                        {c.title}
+                    </div>
+                    <div className="text-xl font-display font-semibold tracking-tight text-slate-800 flex items-baseline gap-2">
+                        {c.value?.toLocaleString() || "0"}
+                        <span className={`text-[11px] font-medium tracking-normal ${c.critical ? 'text-red-500' : 'text-emerald-500'}`}>
                             {c.subtitle}
-                        </div>
-                    </GlassCard>
+                        </span>
+                    </div>
                 </motion.div>
             ))}
         </div>

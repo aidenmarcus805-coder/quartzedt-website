@@ -34,32 +34,29 @@ export default async function PipelineFeedPage({ params }: { params: Promise<{ p
     const tailwindColorClass = `bg-owner-${slug}`;
 
     return (
-        <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-300 pb-32">
              
             {/* Top Dashboard Matrix */}
             <LiveStats />
-            
-            {/* Swarm Communication Layer */}
-            <KiloClawChat />
 
             {/* Pipeline Feed Divider */}
-            <div className="flex items-center justify-between mt-6 -mb-2 border-b border-black/5 pb-2">
-                 <h2 className="font-display font-semibold text-2xl tracking-tight text-slate-800 capitalize flex items-center gap-2">
-                     <span className={`w-3 h-3 rounded-full ${tailwindColorClass} shadow-sm border border-black/5 block`}></span>
-                     {pipeline?.name || "Global Stream"} Intelligence Feed
+            <div className="flex items-center justify-between mt-4 border-b border-slate-200 pb-3">
+                 <h2 className="font-display font-semibold text-lg text-slate-900 tracking-tight flex items-center gap-2">
+                     <span className={`w-2 h-2 rounded-full ${tailwindColorClass} block`}></span>
+                     {pipeline?.name || "Global"} Intelligence Feed
                  </h2>
-                 <div className="flex items-center gap-2 text-sm text-slate-500 font-medium">
-                     <span>Sort: Priority <span className="opacity-50">▼</span></span>
-                     <span className="px-2 py-0.5 rounded-full bg-slate-200/50 text-slate-600">{outputs.length} open</span>
+                 <div className="flex items-center gap-3 text-[13px] text-slate-500 font-medium">
+                     <span className="flex items-center gap-1 cursor-pointer hover:text-slate-800 transition-colors">Sort: Priority <span className="opacity-50 text-[10px]">▼</span></span>
+                     <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">{outputs.length} open</span>
                  </div>
             </div>
 
-            {/* The Intelligence Feed */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* The Intelligence Feed (Flat Linear Stream) */}
+            <div className="flex flex-col gap-0 w-full">
                  {outputs.length === 0 ? (
-                     <div className="col-span-1 md:col-span-2 lg:col-span-3 p-12 text-center text-slate-400 font-medium border-2 border-dashed border-slate-300 rounded-2xl">
+                     <div className="py-12 text-center text-slate-400 font-medium text-[15px]">
                          No intelligence outputs recorded in this pipeline yet.
-                         <br/><span className="text-xs font-normal mt-1 block">Awaiting KiloClaw routing. Or, dispatch a command in the Swarm Chat above.</span>
+                         <br/><span className="text-[13px] font-normal mt-1 block">Awaiting KiloClaw routing. Or, dispatch a command below.</span>
                      </div>
                  ) : (
                      outputs.map(output => (
@@ -72,6 +69,8 @@ export default async function PipelineFeedPage({ params }: { params: Promise<{ p
                  )}
             </div>
 
+            {/* Swarm Communication Layer (Floating Bar) */}
+            <KiloClawChat />
         </div>
     );
 }

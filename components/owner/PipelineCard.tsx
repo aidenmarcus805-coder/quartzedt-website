@@ -1,4 +1,3 @@
-import { GlassCard } from "./GlassCard";
 import { Copy, Plus, Send, CheckCircle, Clock } from "lucide-react";
 
 /**
@@ -18,45 +17,41 @@ export const PipelineCard = ({ output, pipelineColor }: { output: any, pipelineC
     const statusDot = statusColors[output.status] || "bg-gray-400";
 
     return (
-        <GlassCard className="flex flex-col gap-3 group relative overflow-hidden" hover={true}>
-            {/* Absolute side accent bar tied to pipeline color */}
-            <div className={`absolute left-0 top-0 bottom-0 w-1 ${pipelineColor} opacity-50`}></div>
+        <div className="flex flex-col gap-3 group relative py-4 border-b border-slate-100 last:border-0 hover:bg-slate-50/50 transition-colors -mx-4 px-4 rounded-xl">
+            {/* Minimalist side identifier */}
+            <div className={`absolute left-0 top-4 bottom-4 w-0.5 ${pipelineColor} opacity-70 rounded-r-full`}></div>
             
-            {/* Header: Priority dot, Trace, Score */}
-            <div className="flex justify-between items-center bg-white/30 rounded-md p-2 -mx-2 -mt-2 mb-1">
-                <div className="flex items-center gap-2">
-                    <div className={`w-2.5 h-2.5 rounded-full ${statusDot} ml-1`}></div>
-                    <span className="text-xs font-semibold text-slate-500 tracking-wider">
-                         {output.agentName} <span className="text-slate-400 font-normal">→ {output.confidence}% conf</span>
-                    </span>
-                </div>
-                <div className="flex bg-slate-100 rounded-full px-2 py-0.5 items-center gap-1">
-                     <span className="text-[10px] text-slate-500 font-medium">SCORE</span>
-                     <span className="text-xs font-bold text-slate-700">{output.predictionScore}</span>
-                </div>
+            {/* Header: Agent Trace & Confidence directly inline */}
+            <div className="flex items-center gap-2 pl-3">
+                <div className={`w-2 h-2 rounded-full ${statusDot}`}></div>
+                <span className="text-xs font-semibold text-slate-800">
+                     {output.agentName}
+                </span>
+                <span className="text-xs text-slate-400">
+                     • Conf: {output.confidence}% • Score: {output.predictionScore}
+                </span>
             </div>
 
             {/* Core Content Payload */}
-            {/* MVP: Render pre-formatted text. Later map CodeSpecViewer here natively if syntax requires it */}
-            <div className="prose prose-sm prose-slate max-w-none font-sans text-slate-800 break-words whitespace-pre-wrap">
+            <div className="prose prose-sm prose-slate max-w-none font-sans text-slate-700 leading-relaxed break-words whitespace-pre-wrap pl-3">
                 {output.content}
             </div>
 
-            {/* Action Footer */}
-            <div className="mt-4 pt-4 border-t border-black/5 flex justify-between items-center opacity-70 group-hover:opacity-100 transition-opacity">
-                 <div className="text-xs font-mono text-slate-400 flex items-center gap-1">
+            {/* Action Footer - Minimal Text Links */}
+            <div className="mt-2 pl-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
+                 <div className="text-[11px] font-mono text-slate-400 flex items-center gap-1">
                     <Clock size={12} /> {(new Date(output.createdAt)).toLocaleTimeString()}
                  </div>
                  
-                 <div className="flex items-center gap-2">
-                     <button className="flex items-center gap-1 text-xs font-medium bg-white border border-black/10 px-3 py-1.5 rounded-md hover:bg-slate-50 text-slate-600 transition-colors">
-                         <Copy size={14} /> Copy
+                 <div className="flex items-center gap-3">
+                     <button className="flex items-center gap-1.5 text-[12px] font-medium text-slate-500 hover:text-slate-800 transition-colors">
+                         <Copy size={13} /> Copy
                      </button>
-                     <button className="flex items-center gap-1 text-xs font-medium bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-md hover:bg-indigo-100 text-indigo-700 transition-colors">
-                         <Send size={14} /> {output.suggestedAction || "Review"}
+                     <button className="flex items-center gap-1.5 text-[12px] font-medium text-emerald-600 hover:text-emerald-700 transition-colors">
+                         <Send size={13} /> {output.suggestedAction || "Review"}
                      </button>
                  </div>
             </div>
-        </GlassCard>
+        </div>
     );
 };

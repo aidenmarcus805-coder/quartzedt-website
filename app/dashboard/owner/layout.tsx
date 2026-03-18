@@ -20,56 +20,56 @@ const PIPELINES = [
 export default function OwnerLayout({ children }: { children: React.ReactNode }) {
   return (
     <OwnerGuard>
-      <div className="min-h-screen bg-[linear-gradient(135deg,#f5f7fa_0%,#c3cfe2_100%)] text-slate-800 font-sans flex">
+      <div className="min-h-screen bg-white text-slate-900 font-sans flex antialiased">
         
-        {/* Fixed Glass Sidebar */}
-        <div className="fixed left-0 top-0 h-full w-[280px] backdrop-blur-md bg-white/80 border-r border-white/20 shadow-xl flex flex-col z-50">
+        {/* Flat Minimalist Sidebar */}
+        <div className="fixed left-0 top-0 h-full w-[260px] bg-[#F9F9F9] border-r border-slate-200 flex flex-col z-50">
            
-           <div className="p-6 border-b border-white/30 flex items-center justify-between">
+           <div className="p-6 pb-2">
               <div>
-                <h1 className="font-display font-semibold text-lg tracking-tight">Owner Dashboard</h1>
-                <div className="flex items-center gap-2 mt-1">
-                   <span className="relative flex h-2 w-2">
-                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                     <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                <h1 className="font-display font-bold text-xl tracking-tight text-slate-900">Quartz Owner</h1>
+                <div className="flex items-center gap-2 mt-2">
+                   <span className="relative flex h-1.5 w-1.5">
+                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
                    </span>
-                   <span className="text-xs font-medium text-slate-500 uppercase tracking-widest">Live</span>
+                   <span className="text-[11px] font-medium text-slate-500 tracking-wider">SYSTEM ACTIVE</span>
                 </div>
               </div>
            </div>
 
-           <div className="p-4 flex-1 flex flex-col gap-2">
-             <div className="text-xs font-semibold text-slate-400 px-3 pb-2 uppercase tracking-widest">Pipelines</div>
+           <div className="px-3 py-6 flex-1 flex flex-col gap-1">
+             <div className="text-[11px] font-semibold text-slate-400 px-3 pb-2 tracking-wider">PIPELINES</div>
              {PIPELINES.map((p) => (
                 <div key={p.id}>
-                    {/* Native a-tag used purely for mapping simplicity. In a real environment, Link from Next is preferable. */}
-                    <a href={p.href} className="group flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-black/5 transition-colors">
-                      <div className={`w-3 h-3 rounded-full ${p.color} shadow-sm border border-black/5`}></div>
-                      <span className="font-medium text-sm text-slate-700 group-hover:text-black transition-colors">{p.name}</span>
+                    {/* Minimalist Tab */}
+                    <a href={p.href} className="group flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-200/50 transition-colors">
+                      <span className="font-medium text-[13px] text-slate-600 group-hover:text-slate-900 transition-colors">{p.name}</span>
                     </a>
                 </div>
              ))}
              
              <div className="mt-4 px-3">
-                 <button className="text-sm font-semibold text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-1">
+                 <button className="text-[13px] font-medium text-slate-400 hover:text-slate-600 transition-colors flex items-center gap-1">
                      + New Pipeline
                  </button>
              </div>
            </div>
            
-           <div className="p-4 border-t border-white/30 text-center">
-              <button className="text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors" onClick={() => {
-                   // Clear indexedDB or local logic in advanced forms
-                   window.location.href = "/";
-              }}>
-                 Logout / Zero Frame
+           <div className="p-4 mt-auto">
+              <button 
+                  className="w-full text-left px-3 py-2 text-[13px] font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-200/50 rounded-md transition-colors" 
+                  onClick={() => { window.location.href = "/"; }}
+              >
+                 Exit Dashboard
               </button>
            </div>
         </div>
 
-        {/* Dynamic Canvas Area */}
-        <main className="ml-[280px] flex-1 p-8 text-slate-900 bg-transparent flex flex-col gap-6 w-full max-w-[1400px]">
-           {children}
+        {/* Pure White Canvas Area */}
+        <main className="ml-[260px] flex-1 p-0 text-slate-900 bg-white flex flex-col w-full">
+           <div className="max-w-4xl w-full mx-auto px-8 py-10 flex flex-col gap-8">
+               {children}
+           </div>
         </main>
 
         <OwnerKeyboardShortcuts />
