@@ -19,7 +19,7 @@ export default function Sidebar() {
     const { data: session } = useSession();
     
     // Check if current user is the owner
-    const isOwner = session?.user?.email === 'aiden.marcus805@gmail.com';
+    const isOwner = session?.user?.email === 'aiden.marcus805@gmail.com' || session?.user?.email === 'aidenmarcus805@gmail.com';
 
     return (
         <aside className="w-52 flex-shrink-0 hidden md:flex flex-col border-r border-white/[0.04] bg-[#0A0A09] h-screen sticky top-0">

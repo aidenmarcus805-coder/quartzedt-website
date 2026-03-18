@@ -3,14 +3,25 @@
 import { useEffect, useState } from "react";
 import { generateFingerprint } from "@/lib/owner/fingerprint";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export default function OwnerGuard({ children }: { children: React.ReactNode }) {
   const [isVerified, setIsVerified] = useState<boolean>(false);
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   useEffect(() => {
+    // Wait for session to load
+    if (status === "loading") return;
+
     // 2-Second Blank Screen Check Layer
     const verifyIdentity = async () => {
+      // Bypass fingerprint if logged in as admin via NextAuth
+      if (session?.user?.email === 'aiden.marcus805@gmail.com' || session?.user?.email === 'aidenmarcus805@gmail.com') {
+          setIsVerified(true);
+          return;
+      }
+
       try {
         const hash = await generateFingerprint();
         
@@ -40,7 +51,7 @@ export default function OwnerGuard({ children }: { children: React.ReactNode }) 
     };
 
     verifyIdentity();
-  }, [router]);
+  }, [router, session, status]);
 
   // If not verified, stay absolutely blank (Zero-Friction permanent gate)
   if (!isVerified) {
