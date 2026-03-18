@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { User, CreditCard, Download, Gear, SignOut } from '@phosphor-icons/react';
-import { signOut } from 'next-auth/react';
+import { User, CreditCard, Download, Gear, SignOut, ShieldStar } from '@phosphor-icons/react';
+import { signOut, useSession } from 'next-auth/react';
 import { motion } from 'framer-motion';
 import { SiteLogoMenu } from '../components/SiteLogoMenu';
 
@@ -16,6 +16,10 @@ const NAV_ITEMS = [
 
 export default function Sidebar() {
     const pathname = usePathname();
+    const { data: session } = useSession();
+    
+    // Check if current user is the owner
+    const isOwner = session?.user?.email === 'aiden.marcus805@gmail.com';
 
     return (
         <aside className="w-52 flex-shrink-0 hidden md:flex flex-col border-r border-white/[0.04] bg-[#0A0A09] h-screen sticky top-0">
@@ -45,6 +49,19 @@ export default function Sidebar() {
                         </Link>
                     );
                 })}
+
+                {isOwner && (
+                    <>
+                        <p className="text-[10px] font-mono uppercase tracking-[0.1em] text-white/20 px-3 mt-4 mb-2">Admin</p>
+                        <Link
+                            href="/dashboard/owner"
+                            className="relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors duration-200 text-white/40 hover:text-white hover:bg-white/[0.02]"
+                        >
+                            <ShieldStar weight="regular" className="w-4 h-4 relative z-10 flex-shrink-0 text-white/30 hover:text-white" />
+                            <span className="relative z-10 font-normal">Owner Dashboard</span>
+                        </Link>
+                    </>
+                )}
             </nav>
 
             <div className="p-3 border-t border-white/[0.04]">
