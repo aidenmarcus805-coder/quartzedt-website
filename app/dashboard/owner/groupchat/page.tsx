@@ -9,7 +9,11 @@ export default function OwnerGroupchatPage() {
       <div className="space-y-8">
         <OwnerPageHeader
           title="OpenClaw Groupchat"
-          actions={<OwnerActionLink href="/dashboard/owner/outputs">Outputs</OwnerActionLink>}
+          actions={
+            <button type="button" className="inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-slate-800">
+              New Thread
+            </button>
+          }
         />
 
         <OwnerEmptyState title="OpenClaw is not connected" />
@@ -23,10 +27,12 @@ export default function OwnerGroupchatPage() {
         title="OpenClaw Groupchat"
         actions={
           <>
-            <OwnerActionLink href="/dashboard/owner/outputs">Review Outputs</OwnerActionLink>
-            <OwnerActionLink href="/dashboard/owner/suggestions" subtle>
-              Open Suggestions
-            </OwnerActionLink>
+            <button type="button" className="inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-slate-800">
+              New Thread
+            </button>
+            <button type="button" className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900">
+              Clear Chat
+            </button>
           </>
         }
       />

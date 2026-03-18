@@ -33,22 +33,6 @@ export default function OwnerCodeRefinementsPage() {
         }
       />
 
-      <GlassCard className="p-4">
-        <OwnerSectionHeading title="Spec format" />
-
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          {['Title', 'Files to Change', 'Suggestion', 'Why This Helps', 'Alternative Approaches'].map((item) => (
-            <div key={item} className="rounded-md border border-slate-200 bg-slate-50 p-3 text-xs font-medium text-slate-900">
-              {item}
-            </div>
-          ))}
-        </div>
-
-        <p className="mt-4 text-sm text-slate-600">
-          This page intentionally avoids raw code, raw console output, and raw diffs. It is designed for clean execution handoff.
-        </p>
-      </GlassCard>
-
       <div className="space-y-4">
         <OwnerSectionHeading title="Refinement queue" />
 

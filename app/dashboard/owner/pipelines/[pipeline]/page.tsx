@@ -55,10 +55,12 @@ export default async function OwnerPipelineDetailPage({
         title={pipeline.name}
         actions={
           <>
-            <OwnerActionLink href="/dashboard/owner/groupchat">Open Groupchat</OwnerActionLink>
-            <OwnerActionLink href="/dashboard/owner/outputs" subtle>
-              View Outputs
-            </OwnerActionLink>
+            <button type="button" className="inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-slate-800">
+              Pause Pipeline
+            </button>
+            <button type="button" className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900">
+              Clear Queue
+            </button>
           </>
         }
       />

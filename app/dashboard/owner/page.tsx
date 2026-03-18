@@ -29,10 +29,12 @@ export default function OwnerDashboardIndex() {
           title="Overview"
           actions={
             <>
-              <OwnerActionLink href="/dashboard/owner/groupchat">Open Groupchat</OwnerActionLink>
-              <OwnerActionLink href="/dashboard/owner/suggestions" subtle>
-                Suggestions
-              </OwnerActionLink>
+              <button type="button" className="inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-slate-800">
+                Refresh Data
+              </button>
+              <button type="button" className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900">
+                Export Report
+              </button>
             </>
           }
         />
@@ -48,10 +50,12 @@ export default function OwnerDashboardIndex() {
         title="Overview"
         actions={
           <>
-            <OwnerActionLink href="/dashboard/owner/groupchat">Open Groupchat</OwnerActionLink>
-            <OwnerActionLink href="/dashboard/owner/suggestions" subtle>
-              Review Suggestions
-            </OwnerActionLink>
+            <button type="button" className="inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-slate-800">
+              Refresh Data
+            </button>
+            <button type="button" className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900">
+              Export Report
+            </button>
           </>
         }
       />

@@ -33,10 +33,12 @@ export default function OwnerSettingsPage() {
         title="Settings"
         actions={
           <>
-            <OwnerActionLink href="/dashboard/owner/import-bot">Import Configs</OwnerActionLink>
-            <OwnerActionLink href="/dashboard/owner/bot-management" subtle>
-              Open Bot Management
-            </OwnerActionLink>
+            <button type="button" className="inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-slate-800">
+              Save Changes
+            </button>
+            <button type="button" className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900">
+              Reset Defaults
+            </button>
           </>
         }
       />
@@ -48,22 +50,6 @@ export default function OwnerSettingsPage() {
           <pre className="mt-4 whitespace-pre-wrap break-words rounded-md border border-slate-100 bg-slate-50 p-3 text-xs text-slate-700">
             {ownerConfigPreview}
           </pre>
-        </GlassCard>
-
-        <GlassCard className="p-4">
-          <OwnerSectionHeading title="Why these settings exist" />
-
-          <div className="mt-4 space-y-3 text-sm text-slate-600">
-            <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
-              Authentication and verification keep the owner area private without forcing the rest of the app into owner-specific behavior.
-            </div>
-            <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
-              Routing rules protect work from drifting into the wrong pipeline and make sure groupchat, outputs, and suggestions stay coherent.
-            </div>
-            <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
-              Integration notes stay visible here so imported bots, KiloClaw, OpenClaw, and search tooling all remain easy to audit.
-            </div>
-          </div>
         </GlassCard>
       </div>
 

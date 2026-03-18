@@ -31,10 +31,12 @@ export default function OwnerOutputsPage() {
         title="Outputs"
         actions={
           <>
-            <OwnerActionLink href="/dashboard/owner/groupchat">Send to Groupchat</OwnerActionLink>
-            <OwnerActionLink href="/dashboard/owner/code-refinements" subtle>
-              Open Refinements
-            </OwnerActionLink>
+            <button type="button" className="inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-slate-800">
+              Export All
+            </button>
+            <button type="button" className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900">
+              Mark All Reviewed
+            </button>
           </>
         }
       />
@@ -53,10 +55,6 @@ export default function OwnerOutputsPage() {
                   {category}
                 </span>
               ))}
-            </div>
-
-            <div className="mt-4 rounded-md border border-slate-100 bg-slate-50 p-3 text-sm text-slate-600">
-              Every output should be easy to review, copy, send to Cursor, or route into another page. This page is built as the clean queue for that work.
             </div>
           </div>
         </div>
