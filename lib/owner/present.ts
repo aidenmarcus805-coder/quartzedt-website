@@ -1,0 +1,50 @@
+import type { BotRecord, OwnerOutput, OwnerSuggestion, OwnerTone, PipelineSummary } from './types';
+
+export const ownerPrimaryButtonClassName =
+  'inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800';
+
+export const ownerSecondaryButtonClassName =
+  'inline-flex items-center justify-center gap-2 rounded-full border border-white/80 bg-white/80 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-[0_10px_30px_-18px_rgba(15,23,42,0.28)] transition hover:border-slate-200 hover:text-slate-950';
+
+export const ownerToneClassNames: Record<OwnerTone, string> = {
+  neutral: 'border-slate-200 bg-slate-100 text-slate-600',
+  success: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  warning: 'border-amber-200 bg-amber-50 text-amber-700',
+  critical: 'border-rose-200 bg-rose-50 text-rose-700',
+};
+
+export function formatLabel(value: string) {
+  return value
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+export function toneFromPipelineStatus(status: PipelineSummary['status']): OwnerTone {
+  if (status === 'healthy') return 'success';
+  if (status === 'blocked') return 'critical';
+
+  return 'warning';
+}
+
+export function toneFromOutputStatus(status: OwnerOutput['status']): OwnerTone {
+  if (status === 'ready') return 'success';
+  if (status === 'needs-review') return 'warning';
+
+  return 'neutral';
+}
+
+export function toneFromPriority(priority: OwnerSuggestion['priority']): OwnerTone {
+  if (priority === 'High') return 'critical';
+  if (priority === 'Medium') return 'warning';
+
+  return 'neutral';
+}
+
+export function toneFromBotStatus(status: BotRecord['status']): OwnerTone {
+  if (status === 'active') return 'success';
+  if (status === 'offline') return 'critical';
+  if (status === 'paused') return 'warning';
+
+  return 'neutral';
+}

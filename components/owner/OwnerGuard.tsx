@@ -2,13 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { generateFingerprint } from "@/lib/owner/fingerprint";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { isOwnerEmail } from "@/lib/owner/config";
 
 export default function OwnerGuard({ children }: { children: React.ReactNode }) {
   const [isVerified, setIsVerified] = useState<boolean>(false);
-  const router = useRouter();
   const { data: session, status } = useSession();
 
   useEffect(() => {
@@ -38,7 +36,7 @@ export default function OwnerGuard({ children }: { children: React.ReactNode }) 
             return;
           }
         }
-      } catch (error) {
+      } catch {
         console.error("Owner verification failed.");
       }
     };

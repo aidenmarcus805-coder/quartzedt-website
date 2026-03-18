@@ -1,109 +1,223 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Mic, MicOff } from "lucide-react";
 
+type SpeechRecognitionResultItem = {
+  transcript: string;
+};
+
+type SpeechRecognitionResultListItem = {
+  isFinal: boolean;
+  0: SpeechRecognitionResultItem;
+};
+
+type SpeechRecognitionEventLike = {
+  resultIndex: number;
+  results: ArrayLike<SpeechRecognitionResultListItem>;
+};
+
+type SpeechRecognitionErrorEventLike = {
+  error: string;
+};
+
+type SpeechRecognitionInstance = {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onstart: (() => void) | null;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+};
+
+type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance;
+
+type BrowserWithSpeechRecognition = Window & {
+  SpeechRecognition?: SpeechRecognitionConstructor;
+  webkitSpeechRecognition?: SpeechRecognitionConstructor;
+};
+
+const pageRoutes = [
+  { keywords: ["overview", "owner home", "home"], href: "/dashboard/owner" },
+  { keywords: ["pipelines", "pipeline list", "lanes"], href: "/dashboard/owner/pipelines" },
+  { keywords: ["groupchat", "openclaw", "chat room", "owner chat"], href: "/dashboard/owner/groupchat" },
+  { keywords: ["suggestions", "ideas", "improvements"], href: "/dashboard/owner/suggestions" },
+  { keywords: ["import bot", "imports", "openclaw json"], href: "/dashboard/owner/import-bot" },
+  { keywords: ["bot management", "manage bots", "bot roster"], href: "/dashboard/owner/bot-management" },
+  { keywords: ["outputs", "drafts", "generated work"], href: "/dashboard/owner/outputs" },
+  { keywords: ["refinements", "code refinements", "execution specs"], href: "/dashboard/owner/code-refinements" },
+  { keywords: ["settings", "api keys", "routing rules"], href: "/dashboard/owner/settings" },
+];
+
+const pipelineRoutes = [
+  { keywords: ["code pipeline", "code lane"], href: "/dashboard/owner/pipelines/code" },
+  { keywords: ["marketing pipeline", "marketing lane"], href: "/dashboard/owner/pipelines/marketing" },
+  { keywords: ["social pipeline", "social lane"], href: "/dashboard/owner/pipelines/social" },
+  { keywords: ["product pipeline", "product lane"], href: "/dashboard/owner/pipelines/product" },
+  { keywords: ["seo pipeline", "seo lane"], href: "/dashboard/owner/pipelines/seo" },
+  { keywords: ["experiments pipeline", "experiments lane"], href: "/dashboard/owner/pipelines/experiments" },
+  { keywords: ["research pipeline", "custom research"], href: "/dashboard/owner/pipelines/custom-research" },
+];
+
 export const OwnerVoiceCommander = () => {
-    const [listening, setListening] = useState(false);
-    const [transcript, setTranscript] = useState("");
+  const router = useRouter();
+  const [listening, setListening] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
+  const listeningRef = useRef(false);
 
-    useEffect(() => {
-        // Native browser web speech API - No external deps
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-            console.warn("Speech recognition not supported in this browser.");
-            return;
-        }
+  useEffect(() => {
+    listeningRef.current = listening;
+  }, [listening]);
 
-        const recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = 'en-US';
+  const processVoiceCommand = useCallback(
+    async (command: string) => {
+      const normalizedCommand = command.trim().toLowerCase();
 
-        recognition.onstart = () => {
-            setListening(true);
-        };
+      if (!normalizedCommand) {
+        return;
+      }
 
-        recognition.onresult = (event: any) => {
-            let interimTranscript = '';
-            let finalTranscript = '';
+      if (normalizedCommand.includes("stop listening") || normalizedCommand.includes("mute voice")) {
+        setListening(false);
+        return;
+      }
 
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-                const res = event.results[i];
-                if (!res || !res[0]) continue;
-                
-                if (res.isFinal) {
-                    finalTranscript += res[0].transcript;
-                } else {
-                    interimTranscript += res[0].transcript;
-                }
-            }
+      const pipelineMatch = pipelineRoutes.find((route) =>
+        route.keywords.some((keyword) => normalizedCommand.includes(keyword)),
+      );
 
-            if (finalTranscript) {
-                 setTranscript(finalTranscript);
-                 processVoiceCommand(finalTranscript.toLowerCase());
-            }
-        };
+      if (pipelineMatch) {
+        router.push(pipelineMatch.href);
+        return;
+      }
 
-        recognition.onerror = (event: any) => {
-            console.error("Speech Recognition Error", event.error);
-            setListening(false);
-        };
+      const pageMatch = pageRoutes.find((route) => route.keywords.some((keyword) => normalizedCommand.includes(keyword)));
 
-        recognition.onend = () => {
-             // Basic auto-restart logic keeping the mic hot
-             if (listening) {
-                 try { recognition.start(); } catch(e){}
-             }
-        };
+      if (pageMatch) {
+        router.push(pageMatch.href);
+        return;
+      }
 
-        if (listening) {
-             try { recognition.start(); } catch(e){}
-        } else {
-             recognition.stop();
-        }
+      if (normalizedCommand.includes("approve top")) {
+        console.log("Owner voice command captured: approve top");
+        return;
+      }
 
-        return () => {
-            recognition.stop();
-        };
+      try {
+        await fetch("/api/claws/command", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            channelId: "owner-hq",
+            content: `(Voice) ${command}`,
+          }),
+        });
+      } catch (error) {
+        console.error("Unable to send owner voice command", error);
+      }
+    },
+    [router],
+  );
 
-    }, [listening]);
+  useEffect(() => {
+    const browserWindow = window as BrowserWithSpeechRecognition;
+    const SpeechRecognition = browserWindow.SpeechRecognition ?? browserWindow.webkitSpeechRecognition;
 
-    const processVoiceCommand = async (command: string) => {
-         // Example local intent parsing. In production, this would hit logic handling
-         if (command.includes("claw") || command.includes("agent")) {
-             
-             if (command.includes("show marketing drafts") || command.includes("priority marketing")) {
-                 window.location.href = "/dashboard/owner/marketing";
-             } else if (command.includes("approve top")) {
-                 console.log("Mocking: Approving top feed outputs via Voice.");
-             } else {
-                 // Push the command to the swarm chat natively
-                 try {
-                     await fetch("/api/claws/command", {
-                         method: "POST",
-                         headers: { "Content-Type": "application/json" },
-                         body: JSON.stringify({ 
-                             channelId: "global-swarm-main", 
-                             content: `(Voice Intel) ${command}` 
-                         })
-                     });
-                 } catch(err) {
-                    console.error(err);
-                 }
-             }
-         }
+    if (!SpeechRecognition) {
+      console.warn("Speech recognition not supported in this browser.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
+
+    recognition.onstart = () => {
+      setListening(true);
     };
 
-    return (
-        <button 
-           onClick={() => setListening(!listening)}
-           className={`fixed bottom-6 right-6 p-4 rounded-full shadow-2xl transition-all duration-300 z-50 flex items-center justify-center 
-              ${listening ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse' : 'bg-slate-800 hover:bg-slate-900 text-white'}
-           `}
-           title="Toggle KiloClaw Voice Command"
-        >
-            {listening ? <Mic size={20} /> : <MicOff size={20} />}
-        </button>
-    );
+    recognition.onresult = (event) => {
+      let finalTranscript = "";
+
+      for (let index = event.resultIndex; index < event.results.length; index += 1) {
+        const result = event.results[index];
+
+        if (result?.isFinal && result[0]) {
+          finalTranscript += result[0].transcript;
+        }
+      }
+
+      if (finalTranscript) {
+        setTranscript(finalTranscript);
+        void processVoiceCommand(finalTranscript);
+      }
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error", event.error);
+      setListening(false);
+    };
+
+    recognition.onend = () => {
+      if (!listeningRef.current) {
+        return;
+      }
+
+      try {
+        recognition.start();
+      } catch {
+        setListening(false);
+      }
+    };
+
+    recognitionRef.current = recognition;
+
+    return () => {
+      listeningRef.current = false;
+      recognition.stop();
+      recognitionRef.current = null;
+    };
+  }, [processVoiceCommand]);
+
+  useEffect(() => {
+    const recognition = recognitionRef.current;
+
+    if (!recognition) {
+      return;
+    }
+
+    if (listening) {
+      try {
+        recognition.start();
+      } catch {
+        // Ignore duplicate start attempts.
+      }
+
+      return;
+    }
+
+    recognition.stop();
+  }, [listening]);
+
+  return (
+    <button
+      type="button"
+      onClick={() => setListening((current) => !current)}
+      className={`fixed bottom-6 right-6 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full border shadow-[0_24px_60px_-28px_rgba(15,23,42,0.4)] transition ${
+        listening
+          ? "border-rose-200 bg-rose-500 text-white"
+          : "border-white/80 bg-white/90 text-slate-700 backdrop-blur-xl"
+      }`}
+      title={transcript ? `Last command: ${transcript}` : "Toggle owner voice command"}
+      aria-pressed={listening}
+    >
+      {listening ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
+    </button>
+  );
 };
