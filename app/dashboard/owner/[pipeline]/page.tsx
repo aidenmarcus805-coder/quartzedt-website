@@ -58,7 +58,7 @@ export default async function PipelineFeedPage({ params }: { params: Promise<{ p
                          <br/><span className="text-[13px] font-normal mt-1 block">Awaiting KiloClaw routing. Or, dispatch a command below.</span>
                      </div>
                  ) : (
-                     outputs.map(output => (
+                     (outputs as any[]).map((output: any) => (
                          <PipelineCard 
                              key={output.id} 
                              output={output} 

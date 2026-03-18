@@ -15,7 +15,7 @@ export default async function DashboardLayout({
     }
 
     return (
-        <div className="min-h-screen font-sans flex antialiased">
+        <div className="min-h-screen bg-white text-slate-900 font-sans flex antialiased">
             {/* Sidebar Navigation */}
             <Sidebar />
 

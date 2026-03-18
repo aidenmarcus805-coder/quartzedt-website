@@ -12,7 +12,9 @@ interface Message {
 }
 
 export const KiloClawChat = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([
+    { id: 'init-1', agentName: 'Swarm Controller', content: 'Connection established. Fleet is standing by. All clusters NOMINAL.', isOwner: false, createdAt: new Date().toISOString() }
+  ]);
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   

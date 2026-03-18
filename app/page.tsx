@@ -430,7 +430,7 @@ export default function Home() {
         className="fixed top-6 left-0 right-0 z-[100] flex justify-center pointer-events-none"
       >
         <div
-          className={`relative z-10 pointer-events-auto transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center justify-between
+          className={`relative z-10 pointer-events-auto transition-all duration-500 ease-[0.16,1,0.3,1] flex items-center justify-between
             ${isScrolled
               ? `h-14 px-6 w-[calc(100%-4rem)] md:w-[calc(100%-6rem)] lg:w-[calc(100%-8rem)] max-w-[calc(1800px-4rem)] md:max-w-[calc(1800px-6rem)] lg:max-w-[calc(1800px-8rem)] rounded-full border backdrop-blur-xl shadow-sm ${navOnLight
                 ? 'bg-gray-50/40 border-black/5 text-black'
