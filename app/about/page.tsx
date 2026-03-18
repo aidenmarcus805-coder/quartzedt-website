@@ -1,7 +1,6 @@
 'use client';
 
 import { motion, useInView } from 'framer-motion';
-import { ArrowRight, Minus } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Syne, DM_Sans, Playfair_Display, Geist } from 'next/font/google';
+import { Syne, Playfair_Display, Geist } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from './components/AuthProvider';
 import { ScrollToTopOnLoad } from './components/ScrollToTopOnLoad';

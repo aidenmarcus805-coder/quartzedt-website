@@ -66,7 +66,6 @@ export default async function DashboardPage() {
                         {/* Avatar */}
                         <div className="w-16 h-16 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-xl font-light text-slate-300 overflow-hidden flex-shrink-0 shadow-inner">
                             {user.image ? (
-                                // eslint-disable-next-line @next/next/no-img-element
                                 <img src={user.image} alt="Avatar" className="w-full h-full object-cover grayscale" />
                             ) : (
                                 <span>{user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'}</span>

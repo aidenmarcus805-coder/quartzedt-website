@@ -1,8 +1,8 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { User } from '@phosphor-icons/react';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -56,8 +56,6 @@ const NAV_CATEGORIES = [
 
 export default function DownloadsPage() {
     const { data: session } = useSession();
-    const [navOnLight, setNavOnLight] = useState(true);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const navRef = useRef<HTMLElement>(null);
 

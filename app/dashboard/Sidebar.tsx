@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { User, CreditCard, Download, Gear, SignOut, ShieldStar } from '@phosphor-icons/react';
 import { signOut, useSession } from 'next-auth/react';
-import { motion } from 'framer-motion';
 import { SiteLogoMenu } from '../components/SiteLogoMenu';
 import { isOwnerEmail } from '@/lib/owner/config';
 

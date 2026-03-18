@@ -1,17 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Bell, Lock, Flask, ChatText } from '@phosphor-icons/react';
+import { Bell, Flask, ChatText, type Icon } from '@phosphor-icons/react';
 import { Switch } from "@/components/ui/switch";
 
-interface ToggleProps {
-    enabled: boolean;
-    onToggle: () => void;
-}
 
 
-
-function SettingRow({ icon: Icon, title, description, children }: { icon: any; title: string, description: string, children: React.ReactNode }) {
+function SettingRow({ icon: Icon, title, description, children }: { icon: Icon; title: string, description: string, children: React.ReactNode }) {
     return (
         <div className="flex items-center justify-between py-4">
             <div className="flex items-center gap-3">

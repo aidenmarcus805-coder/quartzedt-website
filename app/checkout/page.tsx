@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { Check, ArrowLeft, CircleNotch, ShieldCheck, CreditCard, Lock } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';

@@ -78,7 +78,6 @@ function GlobalLoader() {
           transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
           className="fixed inset-0 z-[150] flex items-center justify-center bg-black pointer-events-none"
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logoAnimated.gif" alt="Loading" className="h-16 w-auto" />
         </motion.div>
       )}
