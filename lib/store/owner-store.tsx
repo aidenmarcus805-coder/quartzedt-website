@@ -16,6 +16,7 @@ import { createOwnerMockData } from '@/lib/mock-data/owner';
 import type {
   ActivityItem,
   BotRecord,
+  BotStatus,
   ChatMessage,
   ChatThread,
   CodeRefinement,
@@ -384,7 +385,7 @@ export function OwnerStoreProvider({ children }: { children: React.ReactNode }) 
         name: bot.name,
         description: bot.role,
         systemPrompt: 'Imported bot',
-        status: bot.active ? 'active' : 'idle',
+        status: (bot.active ? 'active' : 'idle') as BotStatus,
         health: 'healthy' as const,
         model: bot.model,
         pipelineId: bot.suggestedPipelineId,

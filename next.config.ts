@@ -2,6 +2,15 @@ import type { NextConfig } from 'next';
 import { PHASE_DEVELOPMENT_SERVER } from 'next/constants';
 
 const baseConfig: NextConfig = {
+  async redirects() {
+    return [
+      {
+        source: '/owner/:path*',
+        destination: '/dashboard/owner/:path*',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
