@@ -1,10 +1,11 @@
 import { notFound } from 'next/navigation';
 import { Bot, Route, Sparkles, Waypoints } from 'lucide-react';
 
+import { OWNER_DATA_CONNECTED } from '@/lib/owner/config';
 import { GlassCard } from '@/components/owner/GlassCard';
 import { OwnerBadge } from '@/components/owner/OwnerBadge';
 import { OwnerOutputCard, OwnerSuggestionCard } from '@/components/owner/OwnerCards';
-import { OwnerActionLink, OwnerPageHeader, OwnerSectionHeading } from '@/components/owner/OwnerScaffold';
+import { OwnerActionLink, OwnerEmptyState, OwnerPageHeader, OwnerSectionHeading } from '@/components/owner/OwnerScaffold';
 import {
   getOutputsForPipeline,
   getPipelineBySlug,
@@ -19,6 +20,25 @@ export default async function OwnerPipelineDetailPage({
   params: Promise<{ pipeline: string }>;
 }) {
   const { pipeline: slug } = await params;
+
+  if (!OWNER_DATA_CONNECTED) {
+    const title = slug
+      .split('-')
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+
+    return (
+      <div className="space-y-8">
+        <OwnerPageHeader
+          title={title}
+          actions={<OwnerActionLink href="/dashboard/owner/pipelines">Back to Pipelines</OwnerActionLink>}
+        />
+
+        <OwnerEmptyState title="No pipeline data" />
+      </div>
+    );
+  }
+
   const pipeline = getPipelineBySlug(slug);
 
   if (!pipeline) {

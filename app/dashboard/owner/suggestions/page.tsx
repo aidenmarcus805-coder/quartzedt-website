@@ -1,12 +1,27 @@
 import { GlassCard } from '@/components/owner/GlassCard';
 import { OwnerBadge } from '@/components/owner/OwnerBadge';
 import { OwnerSuggestionCard } from '@/components/owner/OwnerCards';
-import { OwnerActionLink, OwnerPageHeader, OwnerSectionHeading } from '@/components/owner/OwnerScaffold';
+import { OwnerActionLink, OwnerEmptyState, OwnerPageHeader, OwnerSectionHeading } from '@/components/owner/OwnerScaffold';
+import { OWNER_DATA_CONNECTED } from '@/lib/owner/config';
 import { ownerSuggestions } from '@/lib/owner/data';
 
 const suggestionTypes = ['Code refinement', 'Marketing', 'Workflow', 'Product', 'Pipeline'];
 
 export default function OwnerSuggestionsPage() {
+  if (!OWNER_DATA_CONNECTED) {
+    return (
+      <div className="space-y-8">
+        <OwnerPageHeader
+          title="Suggestions"
+          actions={<OwnerActionLink href="/dashboard/owner/code-refinements">Refinements</OwnerActionLink>}
+        />
+
+        <OwnerSectionHeading title="All suggestions" />
+        <OwnerEmptyState title="No suggestions" />
+      </div>
+    );
+  }
+
   const highPriority = ownerSuggestions.filter((suggestion) => suggestion.priority === 'High');
 
   return (

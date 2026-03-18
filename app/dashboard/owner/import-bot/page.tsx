@@ -1,24 +1,31 @@
 import { FileJson2, ShieldCheck, Upload } from 'lucide-react';
 
+import { OWNER_DATA_CONNECTED } from '@/lib/owner/config';
 import { GlassCard } from '@/components/owner/GlassCard';
 import { OwnerImportBotCard } from '@/components/owner/OwnerCards';
-import { OwnerActionLink, OwnerPageHeader, OwnerSectionHeading } from '@/components/owner/OwnerScaffold';
+import { OwnerActionLink, OwnerEmptyState, OwnerPageHeader, OwnerSectionHeading } from '@/components/owner/OwnerScaffold';
 import { importedBotPackages } from '@/lib/owner/data';
-import { ownerSecondaryButtonClassName } from '@/lib/owner/present';
 
 export default function OwnerImportBotPage() {
+  if (!OWNER_DATA_CONNECTED) {
+    return (
+      <div className="space-y-8">
+        <OwnerPageHeader
+          title="Import Bot"
+          actions={<OwnerActionLink href="/dashboard/owner/bot-management">Bot Management</OwnerActionLink>}
+        />
+
+        <OwnerSectionHeading title="Imported packages" />
+        <OwnerEmptyState title="No imported packages" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <OwnerPageHeader
         title="Import Bot"
-        actions={
-          <>
-            <button type="button" className={ownerSecondaryButtonClassName}>
-              Upload openclaw.json
-            </button>
-            <OwnerActionLink href="/dashboard/owner/bot-management">Open Bot Management</OwnerActionLink>
-          </>
-        }
+        actions={<OwnerActionLink href="/dashboard/owner/bot-management">Open Bot Management</OwnerActionLink>}
       />
 
       <div className="grid gap-6 xl:grid-cols-2">

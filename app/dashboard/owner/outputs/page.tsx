@@ -1,12 +1,27 @@
 import { GlassCard } from '@/components/owner/GlassCard';
 import { OwnerBadge } from '@/components/owner/OwnerBadge';
 import { OwnerOutputCard } from '@/components/owner/OwnerCards';
-import { OwnerActionLink, OwnerPageHeader, OwnerSectionHeading } from '@/components/owner/OwnerScaffold';
+import { OwnerActionLink, OwnerEmptyState, OwnerPageHeader, OwnerSectionHeading } from '@/components/owner/OwnerScaffold';
+import { OWNER_DATA_CONNECTED } from '@/lib/owner/config';
 import { ownerOutputs } from '@/lib/owner/data';
 
 const outputCategories = ['Code refinement', 'Copy draft', 'Social draft', 'Product note', 'SEO suggestion', 'Import review'];
 
 export default function OwnerOutputsPage() {
+  if (!OWNER_DATA_CONNECTED) {
+    return (
+      <div className="space-y-8">
+        <OwnerPageHeader
+          title="Outputs"
+          actions={<OwnerActionLink href="/dashboard/owner/groupchat">Groupchat</OwnerActionLink>}
+        />
+
+        <OwnerSectionHeading title="All outputs" />
+        <OwnerEmptyState title="No outputs" />
+      </div>
+    );
+  }
+
   const readyCount = ownerOutputs.filter((output) => output.status === 'ready').length;
   const reviewCount = ownerOutputs.filter((output) => output.status === 'needs-review').length;
 

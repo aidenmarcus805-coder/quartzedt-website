@@ -66,6 +66,21 @@ export function OwnerSectionHeading({
   );
 }
 
+export function OwnerEmptyState({
+  title = 'Nothing here yet',
+  action,
+}: {
+  title?: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-lg border border-dashed border-slate-200 bg-white px-4 py-10 text-center shadow-sm">
+      <p className="text-sm font-medium text-slate-500">{title}</p>
+      {action ? <div className="mt-4 flex justify-center">{action}</div> : null}
+    </div>
+  );
+}
+
 export function OwnerSignalCard({ signal }: { signal: OwnerSignal }) {
   return (
     <div className="flex flex-col gap-1 border-r border-slate-200 px-4 last:border-0">

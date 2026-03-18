@@ -1,10 +1,25 @@
 import { GlassCard } from '@/components/owner/GlassCard';
 import { OwnerBadge } from '@/components/owner/OwnerBadge';
 import { OwnerBotCard } from '@/components/owner/OwnerCards';
-import { OwnerActionLink, OwnerPageHeader, OwnerSectionHeading } from '@/components/owner/OwnerScaffold';
+import { OwnerActionLink, OwnerEmptyState, OwnerPageHeader, OwnerSectionHeading } from '@/components/owner/OwnerScaffold';
+import { OWNER_DATA_CONNECTED } from '@/lib/owner/config';
 import { ownerBots, ownerPipelines } from '@/lib/owner/data';
 
 export default function OwnerBotManagementPage() {
+  if (!OWNER_DATA_CONNECTED) {
+    return (
+      <div className="space-y-8">
+        <OwnerPageHeader
+          title="Bot Management"
+          actions={<OwnerActionLink href="/dashboard/owner/import-bot">Import Bot</OwnerActionLink>}
+        />
+
+        <OwnerSectionHeading title="Bots" />
+        <OwnerEmptyState title="No bots" />
+      </div>
+    );
+  }
+
   const activeCount = ownerBots.filter((bot) => bot.status === 'active').length;
   const watchingCount = ownerBots.filter((bot) => bot.status === 'watching').length;
   const pausedCount = ownerBots.filter((bot) => bot.status === 'paused').length;

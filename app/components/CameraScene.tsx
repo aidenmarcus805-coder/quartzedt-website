@@ -588,6 +588,24 @@ function Scene({ scrollProgressRef, videoElement, mousePositionRef, hasUserScrol
   variant?: 'full' | 'gallery';
 }) {
   const monitorGroupRef = useRef<THREE.Group>(null);
+  const { gl } = useThree();
+
+  useEffect(() => {
+    const canvas = gl.domElement;
+    const handleContextLost = (event: Event) => {
+      event.preventDefault();
+      console.warn('WebGL context lost. Attempting to recover...');
+    };
+    const handleContextRestored = () => {
+      console.log('WebGL context restored.');
+    };
+    canvas.addEventListener('webglcontextlost', handleContextLost);
+    canvas.addEventListener('webglcontextrestored', handleContextRestored);
+    return () => {
+      canvas.removeEventListener('webglcontextlost', handleContextLost);
+      canvas.removeEventListener('webglcontextrestored', handleContextRestored);
+    };
+  }, [gl]);
 
   return (
     <group position={[0, 0, 0]}>
@@ -996,14 +1014,14 @@ export default function CameraScene({
     };
 
     const handleTouchStart = (e: TouchEvent) => {
-      if (!isCompleteRef.current) {
+      if (!isCompleteRef.current && e.touches && e.touches.length > 0) {
         touchStartY = e.touches[0].clientY;
       }
     };
 
     const handleTouchMove = (e: TouchEvent) => {
       hasUserScrolledRef.current = true;
-      if (!isCompleteRef.current) {
+      if (!isCompleteRef.current && e.touches && e.touches.length > 0) {
         const touchY = e.touches[0].clientY;
         const deltaY = touchStartY - touchY;
         const delta = deltaY * 0.002; // Touch sensitivity

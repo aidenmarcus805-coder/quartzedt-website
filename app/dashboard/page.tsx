@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth";
 import { prisma } from "@/app/lib/prisma";
 import Link from "next/link";
+import Image from "next/image";
 
 export default async function DashboardPage() {
     const session = await getServerSession(authOptions);
@@ -30,7 +31,7 @@ export default async function DashboardPage() {
                 {/* Header */}
                 <div>
                     <h1 className="text-2xl md:text-3xl font-medium tracking-tight text-slate-900 mb-1">
-                        Welcome back{user.name ? `, ${user.name.split(' ')[0]}` : ''}.
+                        Welcome back{user.name && typeof user.name === 'string' ? `, ${user.name.split(' ')[0]}` : ''}.
                     </h1>
                     <p className="text-slate-400 text-sm font-normal">Dashboard overview of your Quartz account.</p>
                 </div>
@@ -66,7 +67,15 @@ export default async function DashboardPage() {
                         {/* Avatar */}
                         <div className="w-16 h-16 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-xl font-light text-slate-300 overflow-hidden flex-shrink-0 shadow-inner">
                             {user.image ? (
-                                <img src={user.image} alt="Avatar" className="w-full h-full object-cover grayscale" />
+                                <Image 
+                                    src={user.image} 
+                                    alt="Avatar" 
+                                    width={64} 
+                                    height={64} 
+                                    className="w-full h-full object-cover grayscale"
+                                    crossOrigin="anonymous"
+                                    referrerPolicy="no-referrer"
+                                />
                             ) : (
                                 <span>{user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'}</span>
                             )}

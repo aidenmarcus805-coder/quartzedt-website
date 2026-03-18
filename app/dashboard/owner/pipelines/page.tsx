@@ -1,13 +1,23 @@
-import { Boxes, Route, Sparkles, Waypoints } from 'lucide-react';
-
-import { GlassCard } from '@/components/owner/GlassCard';
 import { PipelineCard } from '@/components/owner/PipelineCard';
-import { OwnerBadge } from '@/components/owner/OwnerBadge';
-import { OwnerActionLink, OwnerPageHeader, OwnerSectionHeading } from '@/components/owner/OwnerScaffold';
+import { OWNER_DATA_CONNECTED } from '@/lib/owner/config';
+import { OwnerActionLink, OwnerEmptyState, OwnerPageHeader, OwnerSectionHeading } from '@/components/owner/OwnerScaffold';
 import { ownerPipelines } from '@/lib/owner/data';
-import { ownerSecondaryButtonClassName } from '@/lib/owner/present';
 
 export default function OwnerPipelinesPage() {
+  if (!OWNER_DATA_CONNECTED) {
+    return (
+      <div className="space-y-8">
+        <OwnerPageHeader
+          title="Pipelines"
+          actions={<OwnerActionLink href="/dashboard/owner/import-bot">Assign imported bots</OwnerActionLink>}
+        />
+
+        <OwnerSectionHeading title="All pipelines" />
+        <OwnerEmptyState title="No pipelines" />
+      </div>
+    );
+  }
+
   const totalQueue = ownerPipelines.reduce((sum, pipeline) => sum + pipeline.queueCount, 0);
   const totalBots = ownerPipelines.reduce((sum, pipeline) => sum + pipeline.botCount, 0);
   const healthyLanes = ownerPipelines.filter((pipeline) => pipeline.status === 'healthy').length;
@@ -16,14 +26,7 @@ export default function OwnerPipelinesPage() {
     <div className="space-y-8">
       <OwnerPageHeader
         title="Pipelines"
-        actions={
-          <>
-            <button type="button" className={ownerSecondaryButtonClassName}>
-              Create pipeline
-            </button>
-            <OwnerActionLink href="/dashboard/owner/import-bot">Assign imported bots</OwnerActionLink>
-          </>
-        }
+        actions={<OwnerActionLink href="/dashboard/owner/import-bot">Assign imported bots</OwnerActionLink>}
       />
 
       <div className="flex flex-wrap items-center rounded-lg border border-slate-200 bg-white py-3 shadow-sm">

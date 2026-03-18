@@ -5,10 +5,12 @@ import { OwnerBadge } from '@/components/owner/OwnerBadge';
 import { OwnerOutputCard, OwnerSuggestionCard } from '@/components/owner/OwnerCards';
 import {
   OwnerActionLink,
+  OwnerEmptyState,
   OwnerPageHeader,
   OwnerSectionHeading,
   OwnerSignalCard,
 } from '@/components/owner/OwnerScaffold';
+import { OWNER_DATA_CONNECTED } from '@/lib/owner/config';
 import {
   overviewActivity,
   overviewAlerts,
@@ -18,9 +20,28 @@ import {
   pendingApprovals,
   quickActions,
 } from '@/lib/owner/data';
-import { ownerSecondaryButtonClassName } from '@/lib/owner/present';
 
 export default function OwnerDashboardIndex() {
+  if (!OWNER_DATA_CONNECTED) {
+    return (
+      <div className="space-y-8">
+        <OwnerPageHeader
+          title="Overview"
+          actions={
+            <>
+              <OwnerActionLink href="/dashboard/owner/groupchat">Open Groupchat</OwnerActionLink>
+              <OwnerActionLink href="/dashboard/owner/suggestions" subtle>
+                Suggestions
+              </OwnerActionLink>
+            </>
+          }
+        />
+
+        <OwnerEmptyState title="No owner data" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <OwnerPageHeader

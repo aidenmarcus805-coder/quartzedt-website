@@ -1,6 +1,7 @@
 import { GlassCard } from '@/components/owner/GlassCard';
 import { OwnerSettingsSectionCard } from '@/components/owner/OwnerCards';
-import { OwnerActionLink, OwnerPageHeader, OwnerSectionHeading } from '@/components/owner/OwnerScaffold';
+import { OwnerActionLink, OwnerEmptyState, OwnerPageHeader, OwnerSectionHeading } from '@/components/owner/OwnerScaffold';
+import { OWNER_DATA_CONNECTED } from '@/lib/owner/config';
 import { ownerSettingSections } from '@/lib/owner/data';
 
 const ownerConfigPreview = `{
@@ -12,6 +13,20 @@ const ownerConfigPreview = `{
 }`;
 
 export default function OwnerSettingsPage() {
+  if (!OWNER_DATA_CONNECTED) {
+    return (
+      <div className="space-y-8">
+        <OwnerPageHeader
+          title="Settings"
+          actions={<OwnerActionLink href="/dashboard/owner/import-bot">Import Configs</OwnerActionLink>}
+        />
+
+        <OwnerSectionHeading title="Owner setting sections" />
+        <OwnerEmptyState title="No settings data" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <OwnerPageHeader

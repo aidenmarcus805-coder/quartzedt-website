@@ -2,6 +2,7 @@
 
 import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Layout, SignOut, CaretDown } from '@phosphor-icons/react';
 import { 
     DropdownMenu, 
@@ -28,7 +29,7 @@ interface UserMenuProps {
 export function UserMenu({ session, navOnLight = false }: UserMenuProps) {
     const router = useRouter();
     const userImage = session.user?.image;
-    const userEmail = session.user?.email || 'User';
+    const userEmail = typeof session.user?.email === 'string' ? session.user.email : 'User';
     const firstLetter = userEmail.charAt(0).toUpperCase();
 
     return (
@@ -45,7 +46,15 @@ export function UserMenu({ session, navOnLight = false }: UserMenuProps) {
                     "group-hover:ring-primary/40"
                 )}>
                     {userImage ? (
-                        <img src={userImage} alt="" className="w-full h-full object-cover" />
+                        <Image 
+                            src={userImage} 
+                            alt="" 
+                            width={32} 
+                            height={32} 
+                            className="w-full h-full object-cover"
+                            crossOrigin="anonymous"
+                            referrerPolicy="no-referrer"
+                        />
                     ) : (
                         <span className="opacity-70 font-display">{firstLetter}</span>
                     )}
