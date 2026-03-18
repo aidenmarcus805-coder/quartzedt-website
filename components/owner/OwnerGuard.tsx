@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { generateFingerprint } from "@/lib/owner/fingerprint";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { isOwnerEmail } from "@/lib/owner/config";
 
 export default function OwnerGuard({ children }: { children: React.ReactNode }) {
   const [isVerified, setIsVerified] = useState<boolean>(false);
@@ -17,7 +18,7 @@ export default function OwnerGuard({ children }: { children: React.ReactNode }) 
     // 2-Second Blank Screen Check Layer
     const verifyIdentity = async () => {
       // Bypass fingerprint if logged in as admin via NextAuth
-      if (session?.user?.email === 'aiden.marcus805@gmail.com' || session?.user?.email === 'aidenmarcus805@gmail.com') {
+      if (isOwnerEmail(session?.user?.email)) {
           setIsVerified(true);
           return;
       }

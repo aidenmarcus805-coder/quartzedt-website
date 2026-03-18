@@ -1,17 +1,16 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/app/lib/prisma";
 import { PipelineCard } from "@/components/owner/PipelineCard";
 import { LiveStats } from "@/components/owner/LiveStats";
 import { KiloClawChat } from "@/components/owner/KiloClawChat";
 import { redirect } from "next/navigation";
 
-const prisma = new PrismaClient();
 export const dynamic = 'force-dynamic';
 
 export default async function PipelineFeedPage({ params }: { params: Promise<{ pipeline: string }> }) {
     const { pipeline: slug } = await params;
 
     // Fetch pipeline mapping
-    const pipeline = await prisma.pipeline.findUnique({
+    const pipeline = await (prisma as any).pipeline.findUnique({
         where: { slug }
     });
 
@@ -21,7 +20,7 @@ export default async function PipelineFeedPage({ params }: { params: Promise<{ p
     }
 
     // Fetch the swarm outputs mapping to this bucket, ordered by AI Priority Score
-    const outputs = await prisma.clawOutput.findMany({
+    const outputs = await (prisma as any).clawOutput.findMany({
         where: pipeline ? { pipelineId: pipeline.id } : undefined,
         orderBy: [
             { predictionScore: 'desc' },

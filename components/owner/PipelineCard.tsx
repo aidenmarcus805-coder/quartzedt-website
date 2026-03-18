@@ -4,7 +4,18 @@ import { Copy, Plus, Send, CheckCircle, Clock } from "lucide-react";
  * Universal Card mapping KiloClaw outputs in the Priority Feed.
  * Handles Code Specs, Marketing Drafts, and standard intelligence.
  */
-export const PipelineCard = ({ output, pipelineColor }: { output: any, pipelineColor: string }) => {
+interface PipelineOutput {
+    id: string;
+    agentName: string;
+    status: string;
+    confidence: number;
+    predictionScore: number;
+    content: string;
+    createdAt: string | Date;
+    suggestedAction?: string;
+}
+
+export const PipelineCard = ({ output, pipelineColor }: { output: PipelineOutput, pipelineColor: string }) => {
     
     // Status color mapping for the priority dot
     const statusColors: Record<string, string> = {

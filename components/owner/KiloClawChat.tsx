@@ -8,6 +8,7 @@ interface Message {
   agentName: string;
   content: string;
   isOwner: boolean;
+  createdAt?: string | Date;
 }
 
 export const KiloClawChat = () => {
@@ -18,26 +19,48 @@ export const KiloClawChat = () => {
   // Hardcoded for MVP, maps to dynamic "Marketing Fleet" etc.
   const channelId = "global-swarm-main"; 
 
-  // Fast-polling or SSE connection abstraction
+  // Fast-polling connection abstraction
   useEffect(() => {
-    // A simplified short-polling block as an MVP standin for SSE stability
-    let interval: ReturnType<typeof setInterval> | undefined;
+    let interval: ReturnType<typeof setInterval>;
     
+    // Track the last fetched time to only get new messages
+    // In a real app we'd use a cursor (last Message ID), but Date is fine for MVP
+    let lastFetched = new Date(0).toISOString();
+
     const fetchChat = async () => {
         try {
-            // Note: the backend stream endpoint is technically highly efficient, 
-            // but for this UI piece standard fetch polling is very stable as well.
             const res = await fetch(`/api/claws/stream?channelId=${channelId}`);
-            // If we were using standard SSE:
-            // const es = new EventSource(`/api/claws/stream?channelId=${channelId}`);
-            // (Mocking the fetch implementation due to Edge API structure complexity)
-        } catch(e) {}
+            if (res.ok) {
+                const data = await res.json();
+                if (data.messages && Array.isArray(data.messages)) {
+                    // Filter messages that are newer than our last fetch
+                    const newMessages = data.messages.filter((m: any) => new Date(m.createdAt) > new Date(lastFetched));
+                    
+                    if (newMessages.length > 0) {
+                        // Update last fetched timestamp to the newest message
+                        lastFetched = new Date(newMessages[0].createdAt).toISOString();
+                        
+                        setMessages(prev => {
+                            // Deduplicate based on ID in case of race conditions
+                            const existingIds = new Set(prev.map(p => p.id));
+                            const uniqueNew = newMessages.filter((m: any) => !existingIds.has(m.id));
+                            return [...prev, ...uniqueNew].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+                        });
+                    }
+                }
+            }
+        } catch(e) {
+            console.error("Polling error:", e);
+        }
     };
 
-    // Interval would be assigned here if we mapped fetchChat 
-    // interval = setInterval(fetchChat, 3000);
+    // Initial fetch immediately
+    fetchChat();
 
-    return () => clearInterval(interval as any);
+    // Poll every 3 seconds
+    interval = setInterval(fetchChat, 3000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const handleCommand = async (e: React.FormEvent) => {
@@ -97,8 +120,8 @@ export const KiloClawChat = () => {
       </div>
 
       {/* The Ask Bar */}
-      <div className="w-full max-w-3xl bg-white border border-slate-200 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-2 flex items-center gap-2 pointer-events-auto focus-within:ring-2 focus-within:ring-slate-200/50 transition-all">
-        <div className="w-8 h-8 rounded-full bg-[#F9F9F9] flex items-center justify-center text-slate-400 shrink-0 ml-1">
+      <div className="w-full max-w-3xl bg-white border border-slate-200 rounded-xl shadow-sm p-2 flex items-center gap-2 pointer-events-auto focus-within:border-slate-400 transition-all">
+        <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 shrink-0 ml-1">
            <Command size={14} />
         </div>
         <form onSubmit={handleCommand} className="flex-1 flex items-center relative">

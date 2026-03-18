@@ -45,7 +45,8 @@ export const authOptions: NextAuthOptions = {
         }
 
         const formData = new URLSearchParams();
-        formData.append('secret', '0x4AAAAAACgT6K7hkQIgkfaxSu2b0rDjQQc.');
+        const turnstileSecret = process.env.TURNSTILE_SECRET_KEY || '0x4AAAAAACgT6K7hkQIgkfaxSu2b0rDjQQc.'; // Using dev secret as default, move to ENV
+        formData.append('secret', turnstileSecret);
         formData.append('response', turnstileToken);
 
         const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {

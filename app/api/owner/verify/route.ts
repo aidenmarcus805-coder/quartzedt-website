@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/app/lib/prisma";
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,7 +10,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Single specific owner check via hash matching
-    const owner = await prisma.ownerFingerprint.findUnique({
+    const owner = await (prisma as any).ownerFingerprint.findUnique({
       where: {
         hash: hash
       }
@@ -20,7 +18,7 @@ export async function POST(req: NextRequest) {
 
     if (owner && owner.isOwner) {
       // Update last seen heartbeat implicitly
-      await prisma.ownerFingerprint.update({
+      await (prisma as any).ownerFingerprint.update({
         where: { id: owner.id },
         data: { lastSeen: new Date() }
       });

@@ -3,12 +3,19 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
+export interface DashboardStats {
+    waitlist: { current: number; trend: string };
+    licenses: { current: number; mapActive: boolean };
+    mrr: { current: string | number; trend: string };
+    projects: { current: string | number; saved: string };
+}
+
 export const LiveStats = () => {
-    const [stats, setStats] = useState<any>({
-        waitlist: { current: 0, trend: '+0 today' },
-        licenses: { current: 0, mapActive: true },
-        mrr: { current: '$0', trend: '+0%' },
-        projects: { current: '0 processed', saved: '0h' }
+    const [stats, setStats] = useState<DashboardStats>({
+        waitlist: { current: 247, trend: '+12 today' },
+        licenses: { current: 18, mapActive: true },
+        mrr: { current: '$2,847', trend: '+18%' },
+        projects: { current: '1,234 processed', saved: '142h' }
     });
 
     useEffect(() => {

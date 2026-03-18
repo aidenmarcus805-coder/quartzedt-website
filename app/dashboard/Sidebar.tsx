@@ -6,6 +6,7 @@ import { User, CreditCard, Download, Gear, SignOut, ShieldStar } from '@phosphor
 import { signOut, useSession } from 'next-auth/react';
 import { motion } from 'framer-motion';
 import { SiteLogoMenu } from '../components/SiteLogoMenu';
+import { isOwnerEmail } from '@/lib/owner/config';
 
 const NAV_ITEMS = [
     { label: 'Profile', href: '/dashboard', icon: User },
@@ -19,10 +20,13 @@ export default function Sidebar() {
     const { data: session } = useSession();
     
     // Check if current user is the owner
-    const isOwner = session?.user?.email === 'aiden.marcus805@gmail.com' || session?.user?.email === 'aidenmarcus805@gmail.com';
+    const isOwner = isOwnerEmail(session?.user?.email);
+
+    // Don't render the main dashboard sidebar if we are in the owner dashboard
+    if (pathname.startsWith('/dashboard/owner')) return null;
 
     return (
-        <aside className="w-52 flex-shrink-0 hidden md:flex flex-col border-r border-white/[0.04] bg-[#0A0A09] h-screen sticky top-0">
+        <aside className="w-52 flex-shrink-0 hidden md:flex flex-col border-r border-white/[0.04] bg-[#0A0A09] text-white h-screen sticky top-0">
             <div className="h-14 flex items-center px-4 border-b border-white/[0.04]">
                 <SiteLogoMenu darkLogoVisible={false} />
             </div>

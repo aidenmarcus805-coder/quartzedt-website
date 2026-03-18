@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/app/lib/prisma";
 
 // This endpoint receives un-classified Markdown/Code outputs and routes them automatically to the right bucket.
 export async function POST(req: NextRequest) {
@@ -27,13 +25,13 @@ export async function POST(req: NextRequest) {
     }
 
     // Fetch the correct Pipeline UUID from the string map provided above
-    let pipeline = await prisma.pipeline.findUnique({
+    let pipeline = await (prisma as any).pipeline.findUnique({
         where: { slug: pipelineSlug }
     });
 
     // If it literally doesn't exist, lazily spawn it.
     if (!pipeline) {
-         pipeline = await prisma.pipeline.create({
+         pipeline = await (prisma as any).pipeline.create({
              data: {
                  name: pipelineSlug.charAt(0).toUpperCase() + pipelineSlug.slice(1),
                  slug: pipelineSlug,
@@ -46,7 +44,7 @@ export async function POST(req: NextRequest) {
     const calculatedScore = Math.floor(confidence * (Math.random() * (1.2 - 0.8) + 0.8));
     
     // Output hits the feed natively
-    const output = await prisma.clawOutput.create({
+    const output = await (prisma as any).clawOutput.create({
         data: {
             pipelineId: pipeline.id,
             content: content,

@@ -1,41 +1,52 @@
 import { NextRequest } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/app/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/lib/auth";
+import { isOwnerEmail } from "@/lib/owner/config";
 
 // Keep the Edge runtime running if needed, or stick to Node for Prisma
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  
+  if (!session || !isOwnerEmail(session.user?.email)) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
   const encoder = new TextEncoder();
 
   // Create highly efficient ReadableStream for real-time pushing
   const stream = new ReadableStream({
     async start(controller) {
-      // Helper to enqueue formatted SSE chunks
+      // Persistent loop for pushing data
+      let isActive = true;
+      req.signal.addEventListener('abort', () => {
+        isActive = false;
+        controller.close();
+      });
+
+      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+      
       const sendEvent = (data: any) => {
         const chunk = `data: ${JSON.stringify(data)}\n\n`;
         controller.enqueue(encoder.encode(chunk));
       };
 
-      // Loop pushing real Prisma data + trends every 10 seconds
-      const loop = async () => {
-        try {
+      try {
+        while (isActive) {
           const waitlistCount = await prisma.waitlist.count();
           const waitlistToday = await prisma.waitlist.count({
             where: { createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } }
           });
 
           const activeDevicesCount = await prisma.desktopDevice.count({
-            where: { lastSeen: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } } // Seen in last 30d
+            where: { lastSeen: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } }
           });
 
-          const MRR = 2847; // Stub: Integrate Stripe/Payments table logic genuinely here when requested
-          const activeProjects = await prisma.project.aggregate({
-            _sum: {
-              weddingsCount: true,
-              timeSavedHrs: true
-            }
+          const MRR = 2847; // TODO: Pull from Stripe/Payments
+          const activeProjects = await (prisma as any).project.aggregate({
+            _sum: { weddingsCount: true, timeSavedHrs: true }
           });
 
           sendEvent({
@@ -47,20 +58,14 @@ export async function GET(req: NextRequest) {
               saved: `${activeProjects._sum.timeSavedHrs?.toFixed(1) || 0}h` 
             }
           });
-        } catch (e) {
-          console.error("SSE Stat fetch error:", e);
-        }
-        
-        // Push every 10s
-        setTimeout(loop, 10000);
-      };
 
-      await loop();
-      
-      // Keep connection alive
-      req.signal.addEventListener('abort', () => {
-        controller.close();
-      });
+          // Wait 10 seconds before next push
+          await delay(10000);
+        }
+      } catch (e) {
+        console.error("SSE Stat fetch error:", e);
+        if (isActive) controller.error(e);
+      }
     }
   });
 

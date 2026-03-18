@@ -1,10 +1,9 @@
 "use client";
 
 import OwnerGuard from "@/components/owner/OwnerGuard";
-import { GlassCard } from "@/components/owner/GlassCard";
 import { OwnerKeyboardShortcuts } from "@/components/owner/OwnerKeyboardShortcuts";
 import { OwnerVoiceCommander } from "@/components/owner/OwnerVoiceCommander";
-import Link from "next/navigation";
+import Link from "next/link";
 import { Activity } from "lucide-react";
 
 // The pipelines configuration mirroring the exact implementation plan
@@ -27,12 +26,13 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
            
            <div className="p-6 pb-2">
               <div>
-                <h1 className="font-display font-bold text-xl tracking-tight text-slate-900">Quartz Owner</h1>
-                <div className="flex items-center gap-2 mt-2">
+                <h1 className="font-display font-medium text-lg tracking-tight text-slate-900">Quartz Owner</h1>
+                <div className="flex items-center gap-2 mt-1.5">
                    <span className="relative flex h-1.5 w-1.5">
+                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
                    </span>
-                   <span className="text-[11px] font-medium text-slate-500 tracking-wider">SYSTEM ACTIVE</span>
+                   <span className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase">SYSTEM ACTIVE</span>
                 </div>
               </div>
            </div>
@@ -41,10 +41,9 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
              <div className="text-[11px] font-semibold text-slate-400 px-3 pb-2 tracking-wider">PIPELINES</div>
              {PIPELINES.map((p) => (
                 <div key={p.id}>
-                    {/* Minimalist Tab */}
-                    <a href={p.href} className="group flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-200/50 transition-colors">
+                    <Link href={p.href} className="group flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-200/50 transition-colors">
                       <span className="font-medium text-[13px] text-slate-600 group-hover:text-slate-900 transition-colors">{p.name}</span>
-                    </a>
+                    </Link>
                 </div>
              ))}
              
